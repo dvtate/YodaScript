@@ -1,0 +1,112 @@
+#ifndef YS2_VALUE_HPP
+#define YS2_VALUE_HPP
+
+#include <string>
+
+/*
+*
+*
+*
+*
+*/
+
+
+class Value {
+public:
+
+
+	// what kind of data is contained
+	enum {
+		EMT = 0, // empty    - value of nothing
+		NUM, // number       - double
+		REF, // reference    - reference to memory address of a Value
+		STR, // string       -
+		ARR, // array        -
+		MAC, // macro        - framed block
+		OBJ, // object/dict  -
+		LAM, // lambda       -
+
+		/* could be added in future:
+		INT ? integer		- prolly not bc would want arbitrary precision
+		CHR ? character		- prolly not bc international stuff
+		*/
+
+	} type;
+
+	// actual data contained
+	union {
+		long double num;
+		std::string* str;
+
+		Value* ref;
+
+	};
+
+
+	Value():
+		type(Value::EMT), ref(nullptr) {}
+	Value(const char* v):
+		type(Value::STR), str(new std::string(v)) {}
+	Value(const std::string v):
+		type(Value::STR), str(new std::string(v)) {}
+	Value(const long double v):
+		type(Value::NUM), num(v) {}
+	Value(Value* v):
+		type(Value::REF), ref(v) {}
+
+	// prevent memory leaks when changing the value
+	void erase()
+	{
+		// data on heap should be deleted
+		if (type < Value::STR)
+			return;
+		if (type == STR) {
+			delete str;
+		} // ...
+
+
+	}
+	~Value()
+		{ erase(); }
+
+		
+	// set self to given value
+	Value& set(const Value& v)
+	{
+		erase();
+		type = v.type;
+
+		if (type == Value::EMT)
+			ref = nullptr;
+		else if (type == Value::NUM)
+			num = v.num;
+		else if (type == Value::REF)
+			ref = v.ref;
+		else if (type == Value::STR)
+			str = new std::string(*v.str);
+
+		return *this;
+	}
+
+	// copy
+	Value(const Value& v)
+		{ set(v); }
+
+	template<class T>
+	Value& operator=(T v)
+		{ return set(v); }
+
+	bool isNull() {
+		return type == Value::REF && !ref;
+	}
+
+
+	std::string repr();
+	std::string toString();
+
+	Value& defer()
+		{ return type == REF ? ref->defer() : *this; }
+};
+
+
+#endif //YS2_VALUE_HPP
