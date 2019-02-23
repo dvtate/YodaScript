@@ -7,10 +7,8 @@
 
 #include "../operators.hpp"
 
-namespace op_line_comment {
-	extern const char* name;
-	bool condition(Frame& frame);
 
-}
+OP_NS(op_line_comment);
+OP_NS(op_multiline_comment);
 
 #endif //YS2_CTL_FLOW_HPP

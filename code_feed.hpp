@@ -1,7 +1,3 @@
-//
-// Created by tate on 20-02-19.
-//
-
 #ifndef YS2_CODE_FEED_HPP
 #define YS2_CODE_FEED_HPP
 
@@ -29,30 +25,33 @@ public:
 	CodeFeed(bool fromStdin=false): isStdin(fromStdin) {}
 
 	/// add a new line to the string
-	size_t getLine()
+	size_t getLine(const char* prompt = "... ")
 	{
+
 		if (!isStdin)
 			return false;
 
 		std::string line;
-		std::cout <<"> ";
-		std::getline(std::cin, line);
+		std::cout <<prompt;
+		if (!std::getline(std::cin, line)) // ^D
+			return false;
+
 		body += "\n" + line;
 
 		return true;
 	}
 
-	void loadFile(const char* fname)
-	{
-		std::ifstream t(fname);
-		std::stringstream buffer;
-		buffer << t.rdbuf();
-		body = buffer.str();
+	void reset() {
+		body = "";
+		offset = 0;
+		tok = "";
 	}
 
-	const char* cstr()
-	{
-		return body.c_str() + offset;
+	void loadFile(const char* fname) {
+		std::ifstream t(fname);
+		std::stringstream buffer;
+		buffer <<" " <<t.rdbuf() <<"\n";
+		body = buffer.str();
 	}
 
 	size_t lineNumber(){
@@ -64,29 +63,44 @@ public:
 	}
 
 	std::string tok;
+
+	std::string fromOffset() {
+		return body.substr(offset, body.length());
+	}
+
 	bool setTok() {
 
+
+		//std::cout <<"stok::body[offset]: \'" <<fromOffset() <<"\'\n";
 		// skip preceding space
-		while (isspace(body.at(offset)))
+		while (offset + 1 <= body.length() && isspace(body.at(offset)))
 			offset++;
+		//std::cout <<"stok::body[offset]: \'" <<fromOffset() <<"\'\n";
 
-		int i = offset;
-		char c;
-		std::cout <<"pulling initial token...\n";
-
-		do {
-			c = body.at(++i);
-			std::cout <<i - offset << "-" << c <<"\n";
-		} while (offset + i <= body.length() && !isspace(c));
-
-		if (offset + i <= body.length())
+		if (offset >= body.length())
 			return false;
 
-		this->tok = body.substr(offset, i - 1);
-		std::cout <<"tok: " <<this->tok <<std::endl;
+		size_t i = offset;
+		char c = body.at(offset);
+		//std::cout <<"pulling initial token...\n";
+
+		while (i < body.length() && !isspace(c)) {
+			c = body.at(i);
+			//std::cout <<i - offset << "-" << c <<"\n";
+			i++;
+		}
+
+		if (i > body.length())
+			return false;
+
+		if (isspace(body[i-1]))
+			i--;
+		tok = body.substr(offset, i - offset);
 
 		return true;
+
 	}
+
 };
 
 

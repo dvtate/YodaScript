@@ -2,6 +2,7 @@
 #define YS2_VALUE_HPP
 
 #include <string>
+#include <iostream>
 
 /*
 *
@@ -16,7 +17,7 @@ public:
 
 
 	// what kind of data is contained
-	enum {
+	enum vtype {
 		EMT = 0, // empty    - value of nothing
 		NUM, // number       - double
 		REF, // reference    - reference to memory address of a Value
@@ -45,14 +46,21 @@ public:
 
 	Value():
 		type(Value::EMT), ref(nullptr) {}
+	Value(const vtype t): type(t) {}
+	Value(const vtype t, const std::string v):
+			type(t), str(new std::string(v)) {
+		std::cout <<"new macro -> " <<v <<std::endl;
+	}
 	Value(const char* v):
 		type(Value::STR), str(new std::string(v)) {}
 	Value(const std::string v):
 		type(Value::STR), str(new std::string(v)) {}
 	Value(const long double v):
 		type(Value::NUM), num(v) {}
+
 	Value(Value* v):
 		type(Value::REF), ref(v) {}
+
 
 	// prevent memory leaks when changing the value
 	void erase()
@@ -60,7 +68,7 @@ public:
 		// data on heap should be deleted
 		if (type < Value::STR)
 			return;
-		if (type == STR) {
+		if (type == STR || type == MAC) {
 			delete str;
 		} // ...
 
@@ -91,9 +99,7 @@ public:
 	// copy
 	Value(const Value& v)
 		{ set(v); }
-
-	template<class T>
-	Value& operator=(T v)
+	Value& operator=(Value v)
 		{ return set(v); }
 
 	bool isNull() {

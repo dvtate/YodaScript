@@ -15,8 +15,8 @@
 #define OP_NS(NAME)\
 namespace NAME {\
 	extern const char* name;\
-	bool condition(Frame& frame);\
-	Frame::Exit act(Frame& frame);\
+	bool condition(Frame&);\
+	Frame::Exit act(Frame&);\
 }
 
 
@@ -39,11 +39,10 @@ typedef struct Token {
 *  0. above user level (ie- literals)
 *  1. user level (ie- defs and imports
 *  2. below user level (ie- operators)
-*
 */
 
 extern std::deque<Token> operators;
-int findOperator(Frame f);
+int findOperator(Frame& f);
 
 
 #endif //YS2_TOKENS_HPP

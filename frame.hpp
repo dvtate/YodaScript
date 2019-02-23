@@ -1,7 +1,3 @@
-//
-// Created by tate on 19-02-19.
-//
-
 #ifndef YS2_FRAME_HPP
 #define YS2_FRAME_HPP
 

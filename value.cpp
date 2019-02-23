@@ -15,6 +15,8 @@ std::string Value::repr()
 		return "\"" + *str + "\"";
 	} else if (type == EMT) {
 		return "empty";
+	} else if (type == MAC) {
+		return "{" + *str + "}";
 	}
 
 	return "idk";
