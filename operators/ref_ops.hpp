@@ -10,9 +10,8 @@
 
 OP_NS(op_var_literal);
 OP_NS(op_var_op);
-OP_NS(op_equals);
 OP_NS(op_copy_value);
-OP_NS(op_);
-
+OP_NS(op_equals);
+OP_NS(mod_equals);
 
 #endif //YS2_REF_OPS_HPP

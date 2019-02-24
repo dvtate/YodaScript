@@ -16,13 +16,16 @@ public:
 	std::string body;
 
 	// which char are we on
-	unsigned long long int offset : 63 {0};
+	unsigned long long int offset : 63;
 
 	// if we need more lines can we read from stdin?
-	bool isStdin : 1 { false };
+	bool isStdin : 1;
 
 	//
-	CodeFeed(bool fromStdin=false): isStdin(fromStdin) {}
+	CodeFeed(bool fromStdin=false):
+		offset(0), isStdin(fromStdin) {
+
+	}
 
 	/// add a new line to the string
 	size_t getLine(const char* prompt = "... ")
@@ -54,12 +57,16 @@ public:
 		body = buffer.str();
 	}
 
-	size_t lineNumber(){
+	size_t lineNumber(size_t c){
 		int line = 0;
-		for (int i = 0; i < offset; i++)
+		for (size_t i = 0; i < c; i++)
 			if (body.at(i) == '\n')
 				line++;
 		return line;
+	}
+
+	size_t lineNumber(){
+		return lineNumber(offset);
 	}
 
 	std::string tok;

@@ -53,19 +53,25 @@ public:
 		enum Reason {
 			ERROR = 0,	// ended in error
 			CONTINUE,	// finished running successfully
-			FEED_END,		// end of feed
+			FEED_END,	// end of feed
 			RETURN,		//
-			BREAK,
+			BREAK,		//
 			ESCAPE,
 		} reason;
 
-		size_t c_num;
+		/*
+		 * if error: keep going up frames until one has a handler
+		 * if escape(n): subtract one from line and go up, if
+		 */
+
 		std::string title;
 		std::string desc;
+		// same variable
+		union { size_t line; size_t number; };
 
 		Exit(): reason(CONTINUE) {};
-		Exit(const Exit::Reason r, const std::string r_title = "", const std::string r_desc = "", const size_t char_num = 0):
-				reason(r), title(r_title), desc(r_desc), c_num(char_num)
+		Exit(const Exit::Reason r, const std::string r_title = "", const std::string r_desc = "", const size_t line_num = 0):
+				reason(r), title(r_title), desc(r_desc), line(line_num)
 		{}
 	};
 

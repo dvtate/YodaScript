@@ -61,8 +61,9 @@ int main(int argc, char** argv) {
 			Frame::Exit e = frame.run();
 
 			if (e.reason == Frame::Exit::ERROR) {
-				std::cout <<"Error caught: ("<<e.c_num <<") "<< e.title <<": " <<e.desc <<std::endl;
-				std::cout <<"near:" <<frame.feed.body.substr(frame.feed.offset, frame.feed.body.length()) <<std::endl;
+				std::cout <<"Error caught: ("<<e.line <<") "<< e.title <<": " <<e.desc <<std::endl;
+				if (frame.feed.offset < frame.feed.body.length())
+					std::cout <<"near:" <<frame.feed.body.substr(frame.feed.offset, frame.feed.body.length()) <<std::endl;
 			}
 
 			if (frame.stack.size())
@@ -76,6 +77,15 @@ int main(int argc, char** argv) {
 			Frame main;
 			main.feed.loadFile(argv[1]);
 			Frame::Exit e = main.run();
+
+			if (e.reason == Frame::Exit::ERROR) {
+				std::cout <<"Error caught: ("<<e.line <<") "<< e.title <<": " <<e.desc <<std::endl;
+				if (main.feed.offset < main.feed.body.length())
+					std::cout <<"near:" <<main.feed.body.substr(main.feed.offset, main.feed.body.length()) <<std::endl;
+
+				std::cerr <<"ERROR may be near line " <<main.feed.lineNumber();
+			}
+
 		}
 
 	}

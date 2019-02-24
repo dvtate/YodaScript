@@ -10,5 +10,6 @@
 
 OP_NS(op_line_comment);
 OP_NS(op_multiline_comment);
+OP_NS(op_repeat_loop);
 
 #endif //YS2_CTL_FLOW_HPP

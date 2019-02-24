@@ -4,7 +4,7 @@
 #include "operators.hpp"
 #include "operators/raw_data.hpp"
 #include "operators/ctl_flow.hpp"
-
+#include "operators/stack_ctl.hpp"
 
 int findOperator(Frame& f)
 {
@@ -37,17 +37,30 @@ int findOperator(Frame& f)
 inline static std::deque<struct Token> genTokens() {
 	// loads all operators from operators/
 	std::deque<struct Token> ret = {
+
+			// const values
 			OP_NS_TO_TOK(op_const_empty),
+			OP_NS_TO_TOK(op_const_null),
+			OP_NS_TO_TOK(op_const_true),
+			OP_NS_TO_TOK(op_const_false),
+
+			// literals
 			OP_NS_TO_TOK(op_const_number),
 			OP_NS_TO_TOK(op_const_macro),
+			OP_NS_TO_TOK(op_const_string),
 
+			// data representation
 			OP_NS_TO_TOK(op_println),
 			OP_NS_TO_TOK(op_print),
+
+			// type conversion
 			OP_NS_TO_TOK(op_str),
 
+			// comments
 			OP_NS_TO_TOK(op_line_comment),
 			OP_NS_TO_TOK(op_multiline_comment),
 
+			OP_NS_TO_TOK(op_repeat_loop),
 
 	};
 

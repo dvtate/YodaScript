@@ -36,7 +36,7 @@ public:
 
 	// actual data contained
 	union {
-		long double num;
+		long double number;
 		std::string* str;
 
 		Value* ref;
@@ -48,16 +48,13 @@ public:
 		type(Value::EMT), ref(nullptr) {}
 	Value(const vtype t): type(t) {}
 	Value(const vtype t, const std::string v):
-			type(t), str(new std::string(v)) {
-		std::cout <<"new macro -> " <<v <<std::endl;
-	}
+			type(t), str(new std::string(v)) {}
 	Value(const char* v):
 		type(Value::STR), str(new std::string(v)) {}
 	Value(const std::string v):
 		type(Value::STR), str(new std::string(v)) {}
 	Value(const long double v):
-		type(Value::NUM), num(v) {}
-
+		type(Value::NUM), number(v) {}
 	Value(Value* v):
 		type(Value::REF), ref(v) {}
 
@@ -65,13 +62,12 @@ public:
 	// prevent memory leaks when changing the value
 	void erase()
 	{
-		// data on heap should be deleted
+		// only data on heap needs to be deleted
 		if (type < Value::STR)
 			return;
 		if (type == STR || type == MAC) {
 			delete str;
-		} // ...
-
+		}
 
 	}
 	~Value()
@@ -84,14 +80,15 @@ public:
 		erase();
 		type = v.type;
 
-		if (type == Value::EMT)
+		if (type == EMT)
 			ref = nullptr;
-		else if (type == Value::NUM)
-			num = v.num;
-		else if (type == Value::REF)
+		else if (type == NUM)
+			number = v.number;
+		else if (type == REF)
 			ref = v.ref;
-		else if (type == Value::STR)
+		else if (type == STR || type == MAC)
 			str = new std::string(*v.str);
+
 
 		return *this;
 	}
