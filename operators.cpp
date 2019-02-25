@@ -6,7 +6,7 @@
 #include "operators/ctl_flow.hpp"
 #include "operators/stack_ctl.hpp"
 #include "operators/types.hpp"
-
+#include "operators/ref_ops.hpp"
 
 int findOperator(Frame& f)
 {
@@ -76,6 +76,11 @@ inline static std::deque<struct Token> genTokens() {
 			OP_NS_TO_TOK(op_stk_swap),
 			OP_NS_TO_TOK(op_stk_pop),
 			OP_NS_TO_TOK(op_stk_size),
+
+			OP_NS_TO_TOK(op_var_literal),
+			OP_NS_TO_TOK(op_var_op),
+			OP_NS_TO_TOK(op_equals),
+			OP_NS_TO_TOK(op_copy_value),
 	};
 
 	return ret;

@@ -53,7 +53,8 @@ namespace op_stk_pop {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.stack.pop_back();
+		if (f.stack.size())
+			f.stack.pop_back();
 		f.feed.offset += strlen(name);
 		return Frame::Exit();
 	}

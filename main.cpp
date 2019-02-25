@@ -63,7 +63,6 @@ int main(int argc, char** argv) {
 			if (e.reason == Frame::Exit::ERROR)
 				std::cout <<e.backtrace();
 
-
 			if (frame.stack.size())
 				std::cout <<frame.stack.back().repr();
 			std::cout <<std::endl;

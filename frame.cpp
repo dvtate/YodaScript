@@ -35,3 +35,16 @@ Frame::Exit Frame::run()
 	return ev;
 
 }
+
+const Value* Frame::getVar(const std::string vname) {
+	auto v = vars.find(vname);
+
+	if (v == vars.end()) {
+		// make a new empty value
+		vars.emplace(vname, Value());
+		v = vars.find(vname);
+	}
+
+	return &v->second;
+
+}

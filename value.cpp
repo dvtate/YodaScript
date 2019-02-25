@@ -20,6 +20,8 @@ std::string Value::repr()
 		return "empty";
 	} else if (type == MAC) {
 		return "{" + *str + "}";
+ 	} else if (type == REF) {
+		return defer().toString();
 	}
 
 	return "idk";
@@ -41,6 +43,8 @@ std::string Value::toString()
 		return "empty";
 	} else if (type == MAC) {
 		return "{" + *str + "}";
+	} else if (type == REF) {
+		return defer().toString();
 	}
 
 	return "idk";

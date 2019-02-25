@@ -18,7 +18,7 @@ public:
 	std::vector<Value> stack; // should never need to be resized
 
 	// defined variables
-	std::map<std::string, Value*> vars;
+	std::unordered_map<std::string, Value> vars;
 
 	// free()'d at end of scope
 	// ! destructor not called, don't point to complex objects
@@ -48,7 +48,7 @@ public:
 		stack.reserve(30);
 	}
 	Frame(const CodeFeed cf): feed(cf) {
-		stack.reserve(30);
+		Frame();
 	}
 
 
@@ -115,9 +115,22 @@ public:
 		}
 	};
 
+
 	// evaluate code
 	Frame::Exit run();
 
+	inline Frame scope(const CodeFeed& feed) {
+		Frame ret(feed);
+		ret.prev.emplace_back(this);
+		for (Frame* f : prev)
+			ret.prev.emplace_back(f);
+		ret.stack = stack; // copy stack
+		return ret;
+	}
+
+	// look for variable, if not found create it
+	// return it's
+	const Value* getVar(const std::string vname);
 };
 
 #endif //YS2_FRAME_HPP

@@ -80,8 +80,8 @@ public:
 		type(Value::STR), str(new std::string(v)) {}
 	Value(const double v):
 		type(Value::DEC), dec(v) {}
-	Value(Value* v):
-		type(Value::REF), ref(v) {}
+	Value(const Value* v):
+		type(Value::REF), ref((Value*) v) {}
 	Value(mpz_class mp_integer):
 		type(Value::INT), mp_int(new mpz_class(mp_integer)) {}
 
