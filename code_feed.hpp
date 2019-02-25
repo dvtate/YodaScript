@@ -69,6 +69,28 @@ public:
 		return lineNumber(offset);
 	}
 
+	std::string findLine(const size_t lineNum) {
+		int line = 0;
+		size_t start = 0;
+		for (; start < body.length() && line < lineNum; start++)
+			if (body.at(start) == '\n')
+				line++;
+
+		// invalid line number
+		if (line != lineNum)
+			return "";
+
+		size_t end = start;
+		while (end < body.length()) {
+			if (body.at(end) == '\n')
+				break;
+			end++;
+		}
+
+		return body.substr(start, end - start);
+
+	}
+
 	std::string tok;
 
 	std::string fromOffset() {

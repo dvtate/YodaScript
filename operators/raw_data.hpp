@@ -15,6 +15,7 @@ OP_NS(op_const_false);
 
 // literals
 OP_NS(op_const_number);
+OP_NS(op_const_int);
 OP_NS(op_const_string);
 OP_NS(op_const_macro);
 OP_NS(op_const_list);
@@ -23,10 +24,6 @@ OP_NS(op_const_list);
 // maybe move somewhere else?
 OP_NS(op_print);
 OP_NS(op_println);
-
-// type conversion
-// maybe somewhere else?
-OP_NS(op_str);
 
 
 

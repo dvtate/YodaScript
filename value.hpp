@@ -3,6 +3,10 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include <gmp.h>
+#include <gmpxx.h>
+
 
 /*
 *
@@ -15,32 +19,53 @@
 class Value {
 public:
 
-
 	// what kind of data is contained
 	enum vtype {
 		EMT = 0, // empty    - value of nothing
-		NUM, // number       - double
+				// no value, equivalent to undefined
+
+		DEC, // float       - double
+			// double value
+
 		REF, // reference    - reference to memory address of a Value
-		STR, // string       -
-		ARR, // array        -
-		MAC, // macro        - framed block
-		OBJ, // object/dict  -
-		LAM, // lambda       -
+			// Value* pointer
+
+		STR, // string       - collection of chars
+			// string
+
+		MAC, // macro        - framed block of code
+			// string
+
+		INT, // integer
+			// gnu multiple precision int
+
+		ARR, // array        - collection of Values
+			// vector of values
+
+		OBJ, // object/dict  - fancy dict
+		    // will receive dedicated class eventually
+
+		LAM, // lambda       - fancy function
+			// will receive dedicated class eventually
 
 		/* could be added in future:
-		INT ? integer		- prolly not bc would want arbitrary precision
-		CHR ? character		- prolly not bc international stuff
+		 CHR ? character		- prolly not bc international stuff
+		 BLN ? boolean			- prolly not, truthy values are fine
 		*/
 
-	} type;
+	} type{EMT};
 
 	// actual data contained
 	union {
-		long double number;
+		double dec;
+		mpz_class* mp_int;
 		std::string* str;
 
 		Value* ref;
 
+		std::vector<Value>* arr;
+		// obj
+		// lambda
 	};
 
 
@@ -53,10 +78,16 @@ public:
 		type(Value::STR), str(new std::string(v)) {}
 	Value(const std::string v):
 		type(Value::STR), str(new std::string(v)) {}
-	Value(const long double v):
-		type(Value::NUM), number(v) {}
+	Value(const double v):
+		type(Value::DEC), dec(v) {}
 	Value(Value* v):
 		type(Value::REF), ref(v) {}
+	Value(mpz_class mp_integer):
+		type(Value::INT), mp_int(new mpz_class(mp_integer)) {}
+
+
+
+
 
 
 	// prevent memory leaks when changing the value
@@ -65,9 +96,12 @@ public:
 		// only data on heap needs to be deleted
 		if (type < Value::STR)
 			return;
-		if (type == STR || type == MAC) {
+		if (type == Value::STR || type == Value::MAC)
 			delete str;
-		}
+		if (type == Value::INT)
+			delete mp_int;
+		if (type == Value::ARR)
+			delete arr;
 
 	}
 	~Value()
@@ -82,13 +116,14 @@ public:
 
 		if (type == EMT)
 			ref = nullptr;
-		else if (type == NUM)
-			number = v.number;
+		else if (type == DEC)
+			dec = v.dec;
 		else if (type == REF)
 			ref = v.ref;
 		else if (type == STR || type == MAC)
 			str = new std::string(*v.str);
-
+		else if (type == INT)
+			mp_int = new mpz_class(*v.mp_int);
 
 		return *this;
 	}
@@ -109,6 +144,21 @@ public:
 
 	Value& defer()
 		{ return type == REF ? ref->defer() : *this; }
+
+	const char* typeName() {
+		switch (type) {
+			case EMT: return "empty";
+			case INT: return "int";
+			case DEC: return "float";
+			case REF: return "reference";
+			case STR: return "string";
+			case MAC: return "macro";
+			case ARR: return "list";
+			case OBJ: return "object";
+			case LAM: return "lambda";
+			default:  return "unknown";
+		}
+	}
 };
 
 

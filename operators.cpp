@@ -5,6 +5,8 @@
 #include "operators/raw_data.hpp"
 #include "operators/ctl_flow.hpp"
 #include "operators/stack_ctl.hpp"
+#include "operators/types.hpp"
+
 
 int findOperator(Frame& f)
 {
@@ -45,7 +47,6 @@ inline static std::deque<struct Token> genTokens() {
 			OP_NS_TO_TOK(op_const_false),
 
 			// literals
-			OP_NS_TO_TOK(op_const_number),
 			OP_NS_TO_TOK(op_const_macro),
 			OP_NS_TO_TOK(op_const_string),
 
@@ -55,13 +56,26 @@ inline static std::deque<struct Token> genTokens() {
 
 			// type conversion
 			OP_NS_TO_TOK(op_str),
+			OP_NS_TO_TOK(op_typeof),
 
 			// comments
 			OP_NS_TO_TOK(op_line_comment),
 			OP_NS_TO_TOK(op_multiline_comment),
 
+			// structures
 			OP_NS_TO_TOK(op_repeat_loop),
 
+
+			// more literals (slower execution time
+			OP_NS_TO_TOK(op_const_int),
+			OP_NS_TO_TOK(op_const_number),
+
+
+			OP_NS_TO_TOK(op_stk_clear),
+			OP_NS_TO_TOK(op_stk_dup),
+			OP_NS_TO_TOK(op_stk_swap),
+			OP_NS_TO_TOK(op_stk_pop),
+			OP_NS_TO_TOK(op_stk_size),
 	};
 
 	return ret;

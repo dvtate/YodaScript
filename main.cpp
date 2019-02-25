@@ -60,32 +60,22 @@ int main(int argc, char** argv) {
 
 			Frame::Exit e = frame.run();
 
-			if (e.reason == Frame::Exit::ERROR) {
-				std::cout <<"Error caught: ("<<e.line <<") "<< e.title <<": " <<e.desc <<std::endl;
-				if (frame.feed.offset < frame.feed.body.length())
-					std::cout <<"near:" <<frame.feed.body.substr(frame.feed.offset, frame.feed.body.length()) <<std::endl;
-			}
+			if (e.reason == Frame::Exit::ERROR)
+				std::cout <<e.backtrace();
+
 
 			if (frame.stack.size())
-				std::cout <<frame.stack.top().repr();
+				std::cout <<frame.stack.back().repr();
 			std::cout <<std::endl;
 
 		}
 	} else if (argc == 2) {
-		if (**(argv+1) != '-') {
-			std::cout <<"Running file...\n";
+		if (**(argv + 1) != '-') {
 			Frame main;
 			main.feed.loadFile(argv[1]);
 			Frame::Exit e = main.run();
-
-			if (e.reason == Frame::Exit::ERROR) {
-				std::cout <<"Error caught: ("<<e.line <<") "<< e.title <<": " <<e.desc <<std::endl;
-				if (main.feed.offset < main.feed.body.length())
-					std::cout <<"near:" <<main.feed.body.substr(main.feed.offset, main.feed.body.length()) <<std::endl;
-
-				std::cerr <<"ERROR may be near line " <<main.feed.lineNumber();
-			}
-
+			if (e.reason == Frame::Exit::ERROR)
+				std::cout <<e.backtrace();
 		}
 
 	}

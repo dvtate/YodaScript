@@ -69,27 +69,33 @@ namespace op_repeat_loop {
 
 		if (f.stack.size() < 2)
 			return bad_exit;
-		if (f.stack.top().type != Value::NUM)
+
+		mpz_class times;
+		if (f.stack.back().type == Value::INT)
+			times = *f.stack.back().mp_int;
+		else if (f.stack.back().type == Value::DEC)
+			times = f.stack.back().dec;
+		else
 			return bad_exit;
 
-		int32_t times = round(f.stack.top().number);
-		f.stack.pop();
+		f.stack.pop_back();
 
-		if (f.stack.top().type != Value::MAC)
+		if (f.stack.back().type != Value::MAC)
 			return bad_exit;
 
 		Frame loop;
-		loop.feed.body = *f.stack.top().str;
-		f.stack.pop();
+		loop.feed.body = *f.stack.back().str;
+		f.stack.pop_back();
 
 		for (uint64_t i = 0; i < times; i++) {
 			loop.feed.offset = 0;
-			Frame::Exit ev = loop.run();
-			if (ev.reason == Frame::Exit::ERROR) {
-				return ev;
-			}
+			const Frame::Exit ev = loop.run();
+			if (ev.reason == Frame::Exit::ERROR)
+				return Frame::Exit(Frame::Exit::ERROR, "In Repeat Loop", "", f.feed.lineNumber(), ev);
 		}
 
+		// merge stacks
+		f.stack.insert(f.stack.end(), loop.stack.begin(), loop.stack.end());
 
 		return Frame::Exit();
 

@@ -13,9 +13,12 @@ Frame::Exit Frame::run()
 
 		//std::cout <<"framerun::body[offset]: \'" <<feed.fromOffset() <<"\'\n";
 		int op_ind = findOperator(*this);
-		if (op_ind == -1)
-			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", "unknown token on line " + std::to_string(feed.lineNumber()) + " near `" + feed.tok + "`\n");
-
+		if (op_ind == -1) {
+			ev = Frame::Exit(Frame::Exit::ERROR, "SyntaxError",
+							 "unknown token on line " + std::to_string(feed.lineNumber()) + " near `" + feed.tok +
+							 "`\n", feed.lineNumber());
+			break;
+		}
 		if (op_ind == -2 || feed.offset >= feed.body.length())
 			return Frame::Exit(Frame::Exit::FEED_END);
 
@@ -24,13 +27,11 @@ Frame::Exit Frame::run()
 
 	} while (ev.reason == Frame::Exit::CONTINUE);
 
+
+	if (ev.reason == Frame::Exit::ERROR)
+		ev.genMsg(feed);
+
+	//std::cout <<ev.msg;
 	return ev;
 
-}
-
-
-
-
-void Frame::error(Frame::Exit e, std::string m="") {
-	// go through prev to generate stacktrace
 }

@@ -6,11 +6,14 @@
 
 std::string Value::repr()
 {
-	if (type == NUM) {
-		std::stringstream ss;
-		ss<<number;
+	if (type == DEC) {
+		std::ostringstream ss;
+		ss << dec;
 		return ss.str();
-
+	} else if (type == INT) {
+		std::ostringstream ss;
+		ss << *mp_int;
+		return ss.str();
 	} else if (type == STR) {
 		return "\"" + *str + "\"";
 	} else if (type == EMT) {
@@ -24,9 +27,13 @@ std::string Value::repr()
 
 std::string Value::toString()
 {
-	if (type == NUM) {
-		std::stringstream ss;
-		ss<<number;
+	if (type == DEC) {
+		std::ostringstream ss;
+		ss << dec;
+		return ss.str();
+	} else if (type == INT) {
+		std::ostringstream ss;
+		ss << *mp_int;
 		return ss.str();
 	} else if (type == STR) {
 		return *str;
