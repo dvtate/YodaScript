@@ -70,6 +70,7 @@ namespace op_repeat_loop {
 		if (f.stack.size() < 2)
 			return bad_exit;
 
+
 		mpz_class times;
 		if (f.stack.back().type == Value::INT)
 			times = *f.stack.back().mp_int;
@@ -83,12 +84,12 @@ namespace op_repeat_loop {
 		if (f.stack.back().type != Value::MAC)
 			return bad_exit;
 
-		Frame loop;
-		loop.feed.body = *f.stack.back().str;
+		const std::string body = *f.stack.back().str;
 		f.stack.pop_back();
+		Frame loop = f.scope(CodeFeed(body));
 
 		for (uint64_t i = 0; i < times; i++) {
-			loop.feed.offset = 0;
+			loop.feed.offset = 0; // feed bodys are now immutable :)
 			const Frame::Exit ev = loop.run();
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "In Repeat Loop", "", f.feed.lineNumber(), ev);
@@ -98,7 +99,6 @@ namespace op_repeat_loop {
 		f.stack.insert(f.stack.end(), loop.stack.begin(), loop.stack.end());
 
 		return Frame::Exit();
-
 
 	}
 }

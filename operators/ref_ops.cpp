@@ -59,8 +59,10 @@ namespace op_equals {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", "= requires a reference to assign", f.feed.lineNumber());
 		}
 
-		ref->defer().set(*v);
-
+		if (v->type == Value::REF)
+			ref->ref->set(v->ref);
+		else
+			ref->ref->set(*v);
 		return Frame::Exit();
 	}
 }
@@ -80,4 +82,17 @@ namespace op_copy_value {
 		return Frame::Exit();
 	}
 }
-OP_NS(op_copy_value);
+
+namespace op_vars {
+	const char* name = "vars";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += strlen(name);
+		for (auto v : f.vars)
+			std::cout <<v.first <<"\t" <<v.second.ref <<'\t' <<v.second.repr() <<std::endl;
+
+		return Frame::Exit();
+	}
+}

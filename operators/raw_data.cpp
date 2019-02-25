@@ -151,7 +151,7 @@ namespace op_const_number {
 		// exceptions are kinda slow
 		try {
 			stold(frame.feed.tok);
-		} catch (std::invalid_argument) {
+		} catch (const std::invalid_argument&) {
 			return false;
 		}
 		return true;
@@ -373,7 +373,7 @@ namespace op_print {
 	}
 
 	Frame::Exit act(Frame& frame) {
-		if (!frame.stack.size())
+		if (frame.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected a value to print", frame.feed.lineNumber());
 
 		std::cout <<frame.stack.back().toString();
@@ -392,7 +392,7 @@ namespace op_println {
 	}
 
 	Frame::Exit act(Frame& frame) {
-		if (!frame.stack.size())
+		if (frame.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected a value to print", frame.feed.lineNumber());
 
 		std::cout <<frame.stack.back().toString() <<std::endl;

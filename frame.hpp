@@ -34,13 +34,15 @@ public:
 	std::vector<Frame*> prev;
 
 	// values defined by and for specific operators
-	std::unordered_map<std::string, Value*> rt_vals;
+	std::unordered_map<std::string, Value> rt_vals;
 
 	~Frame()
 	{
 		// free locals
 		for (void* p : _local_ptrs)
 			free(p);
+		for (Value* v : ref_vals)
+			delete v;
 
 	}
 

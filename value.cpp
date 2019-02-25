@@ -21,7 +21,10 @@ std::string Value::repr()
 	} else if (type == MAC) {
 		return "{" + *str + "}";
  	} else if (type == REF) {
-		return defer().toString();
+		Value* v = defer();
+		if (v)
+			return v->toString();
+		return "cyclic reference";
 	}
 
 	return "idk";
@@ -44,7 +47,10 @@ std::string Value::toString()
 	} else if (type == MAC) {
 		return "{" + *str + "}";
 	} else if (type == REF) {
-		return defer().toString();
+		Value* v = defer();
+		if (v)
+			return v->toString();
+		return "cyclic reference";
 	}
 
 	return "idk";

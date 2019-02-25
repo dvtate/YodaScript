@@ -19,7 +19,9 @@ namespace NAME {\
 	Frame::Exit act(Frame&);\
 }
 
-
+// this should be included in your error messages so that
+//  we where to look if there's a false positive
+#define OP_DEBUG "(" __FILENAME__ "#" __LINE__ ")"
 
 typedef struct Token {
 
@@ -34,12 +36,6 @@ typedef struct Token {
 
 } Token;
 
-
-/* likely will need to have 3 layers
-*  0. above user level (ie- literals)
-*  1. user level (ie- defs and imports
-*  2. below user level (ie- operators)
-*/
 
 extern std::deque<Token> operators;
 int findOperator(Frame& f);

@@ -81,6 +81,7 @@ inline static std::deque<struct Token> genTokens() {
 			OP_NS_TO_TOK(op_var_op),
 			OP_NS_TO_TOK(op_equals),
 			OP_NS_TO_TOK(op_copy_value),
+			OP_NS_TO_TOK(op_vars),
 	};
 
 	return ret;

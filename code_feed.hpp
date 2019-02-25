@@ -23,9 +23,9 @@ public:
 
 	//
 	CodeFeed(bool fromStdin=false):
-		offset(0), isStdin(fromStdin) {
-
-	}
+		offset(0), isStdin(fromStdin) {	}
+	CodeFeed(const std::string& b):
+		offset(0), isStdin(false), body(b) { }
 
 	/// add a new line to the string
 	size_t getLine(const char* prompt = "... ")
@@ -58,7 +58,7 @@ public:
 	}
 
 	size_t lineNumber(size_t c){
-		int line = 0;
+		size_t line = 0;
 		for (size_t i = 0; i < c; i++)
 			if (body.at(i) == '\n')
 				line++;

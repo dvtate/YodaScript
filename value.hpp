@@ -6,7 +6,7 @@
 #include <vector>
 #include <gmp.h>
 #include <gmpxx.h>
-
+#include <algorithm>
 
 /*
 *
@@ -49,11 +49,12 @@ public:
 			// will receive dedicated class eventually
 
 		/* could be added in future:
-		 CHR ? character		- prolly not bc international stuff
+		 CHR ? character		- prolly not bc international == confusion
 		 BLN ? boolean			- prolly not, truthy values are fine
+		 RXP ? reg exp			- prolly not, could be added through lang extension
 		*/
 
-	} type{EMT};
+	} type { EMT };
 
 	// actual data contained
 	union {
@@ -91,8 +92,7 @@ public:
 
 
 	// prevent memory leaks when changing the value
-	void erase()
-	{
+	void erase() {
 		// only data on heap needs to be deleted
 		if (type < Value::STR)
 			return;
@@ -109,8 +109,7 @@ public:
 
 		
 	// set self to given value
-	Value& set(const Value& v)
-	{
+	Value& set(const Value& v) {
 		erase();
 		type = v.type;
 
@@ -142,10 +141,17 @@ public:
 	std::string repr();
 	std::string toString();
 
-	Value& defer()
-		{ return type == REF ? ref->defer() : *this; }
+	Value* defer(std::vector<Value*> pastPtrs = {}) {
+		if (type != REF)
+			return this;
 
+		if (std::find(pastPtrs.begin(), pastPtrs.end(), ref) != pastPtrs.end())
+			return nullptr;
+		pastPtrs.emplace_back(ref);
+		return defer(pastPtrs);
+	}
 	const char* typeName() {
+
 		switch (type) {
 			case EMT: return "empty";
 			case INT: return "int";
@@ -156,7 +162,9 @@ public:
 			case ARR: return "list";
 			case OBJ: return "object";
 			case LAM: return "lambda";
-			default:  return "unknown";
+			default:
+				std::cout <<"type#" <<type <<std::endl;
+				return "unknown";
 		}
 	}
 };

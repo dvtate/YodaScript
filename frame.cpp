@@ -40,11 +40,14 @@ const Value* Frame::getVar(const std::string vname) {
 	auto v = vars.find(vname);
 
 	if (v == vars.end()) {
-		// make a new empty value
-		vars.emplace(vname, Value());
+		// make a new empty value to point to
+		Value* empty = new Value();
+
+		ref_vals.emplace_back(empty);	// will get deallocated at end of frame
+		vars.emplace(vname, empty);
 		v = vars.find(vname);
 	}
 
-	return &v->second;
+	return v->second.ref;
 
 }
