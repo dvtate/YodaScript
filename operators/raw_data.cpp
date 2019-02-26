@@ -66,20 +66,22 @@ namespace op_const_string {
 	bool condition(Frame& f) {
 		return f.feed.tok[0] == '"' || f.feed.tok[0] == '\'';
 	}
+
+	// rewrite this pls
 	Frame::Exit act(Frame& f) {
 		size_t start = f.feed.offset;
-		const char quoteType = f.feed.body[f.feed.offset];
+		const char quoteType = f.feed.body[f.feed.offset++];
 
 		std::string s;
-		while (f.feed.offset <= f.feed.body.length() || f.feed.getLine()) {
+		while (f.feed.offset < f.feed.body.length() || f.feed.getLine()) {
 
-			char c = f.feed.body[++f.feed.offset];
+			char c = f.feed.body.at(f.feed.offset++);
 			//std::cout <<quoteType << "s(" <<c <<"): " <<s <<std::endl;
 
 			if (c == '\\') {
 				if (f.feed.offset >= f.feed.body.length() && !f.feed.getLine())
 					break;
-				c = f.feed.body[++f.feed.offset];
+				c = f.feed.body[f.feed.offset++];
 
 
 				if (c == '\\') s += '\\';
@@ -90,9 +92,11 @@ namespace op_const_string {
 				else if (c == 'f') s += '\f';
 				else if (c == 'v') s += '\v';
 				else if (c == 'h') {
+					if (f.feed.offset + 2 >= f.feed.body.length() && !f.feed.getLine())
+						break;
 					const char str[2] = {
-							f.feed.body[++f.feed.offset],
-							f.feed.body[f.feed.offset + 1]
+							f.feed.body.at(++f.feed.offset),
+							f.feed.body.at(f.feed.offset + 1)
 					};
 					char* ptr;
 					// convert the hex literal into a char
@@ -100,10 +104,12 @@ namespace op_const_string {
 					f.feed.offset += ptr - str - 1;
 
 				} else if (isdigit(c)) { // octal char
+					if (f.feed.offset + 2 >= f.feed.body.length() && !f.feed.getLine())
+						break;
 					const char str[3] = {
-							f.feed.body[f.feed.offset],
-							f.feed.body[f.feed.offset + 1],
-							f.feed.body[f.feed.offset + 2],
+							f.feed.body.at(f.feed.offset),
+							f.feed.body.at(f.feed.offset + 1),
+							f.feed.body.at(f.feed.offset + 2),
 					};
 					char* ptr;
 					// convert the octal literal into a char
@@ -111,15 +117,14 @@ namespace op_const_string {
 					f.feed.offset += ptr - str;
 
 				}
+
 			} else if (c == quoteType && f.feed.body[f.feed.offset - 2] != '\\') {
 				f.feed.offset++;
 				f.stack.emplace_back(s);
 				return Frame::Exit();
 			} else {
 				s += c;
-				//f.feed.offset++;
 			}
-
 
 		}
 		return Frame::Exit(Frame::Exit::ERROR, "Syntax Error", "Unterminated string literal", f.feed.lineNumber(start));
@@ -354,7 +359,7 @@ namespace op_const_macro {
 		if (!find_macro(f.feed, mac))
 			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", "EOF while scanning for brace enclosed macro");
 
-		std::cout <<mac;
+		//std::cout <<mac;
 		// push trimmed macro onto the stack
 		f.stack.emplace_back(Value(Value::MAC, mac));
 

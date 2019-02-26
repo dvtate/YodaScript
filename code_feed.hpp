@@ -39,8 +39,10 @@ public:
 		if (!std::getline(std::cin, line)) // ^D
 			return false;
 
-		body += "\n" + line;
-
+		//std::cout <<"ADDED: \'" <<line <<"'\n";
+		body += '\n';
+		body += line;
+		//std::cout <<"BODY: \'" <<body <<"'\n";
 		return true;
 	}
 

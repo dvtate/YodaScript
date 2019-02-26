@@ -141,15 +141,22 @@ public:
 	std::string repr();
 	std::string toString();
 
+	// get the value that a reference points to
 	Value* defer(std::vector<Value*> pastPtrs = {}) {
+		// end of ref recursion
 		if (type != REF)
 			return this;
 
+		// if it's been seen before it should be cyclic reference
 		if (std::find(pastPtrs.begin(), pastPtrs.end(), ref) != pastPtrs.end())
 			return nullptr;
+
+		// follow reference tree
 		pastPtrs.emplace_back(ref);
-		return defer(pastPtrs);
+		return ref->defer(pastPtrs);
 	}
+
+
 	const char* typeName() {
 
 		switch (type) {
