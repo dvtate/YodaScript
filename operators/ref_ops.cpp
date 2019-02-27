@@ -42,7 +42,41 @@ namespace op_equals {
 	Frame::Exit act(Frame& f) {
 		f.feed.offset++;
 		if (f.stack.size() < 2)
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", "= expected a reference and a value to assign", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", "set expected a reference and a value to assign", f.feed.lineNumber());
+
+		Value v2 = f.stack.back();
+		f.stack.pop_back();
+		Value v1 = f.stack.back();
+		f.stack.pop_back();
+
+		Value* ref,
+				* v;
+		if (v1.type == Value::REF) {
+			ref = &v1;
+			v = &v2;
+		} else if (v2.type == Value::REF) {
+			ref = &v2;
+			v = &v1;
+		} else {
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", std::string(name) + " requires a reference to assign", f.feed.lineNumber());
+		}
+
+		ref->defer()->set(*v);
+
+		return Frame::Exit();
+	}
+}
+
+namespace op_set {
+	const char* name = "set";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", " expected a reference and a value to assign", f.feed.lineNumber());
 
 		Value v2 = f.stack.back();
 		f.stack.pop_back();
@@ -54,19 +88,16 @@ namespace op_equals {
 		if (v1.type == Value::REF) {
 			ref = &v1;
 			v = &v2;
-		} else if (v1.type == Value::REF) {
+		} else if (v2.type == Value::REF) {
 			ref = &v2;
 			v = &v1;
 		} else {
-			return Frame::Exit(Frame::Exit::ERROR, "TypeError", "= requires a reference to assign", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", " requires a reference to assign", f.feed.lineNumber());
 		}
 
 		// if its a ref point to it,
 		// else copy data into var data
-		if (v->type == Value::REF)
-			(*ref->ref)->set(*v->ref);
-		else
-			(*ref->ref)->set(*v);
+		(*ref->ref)->set(*v);
 
 		return Frame::Exit();
 	}
@@ -100,9 +131,17 @@ namespace op_vars {
 	}
 	Frame::Exit act(Frame& f) {
 		f.feed.offset += strlen(name);
-		std::cout <<"name\tvalue address\tvalue\n";
+		std::cout <<"Current Scope:\n";
+		std::cout <<"\tname\tvalue address\tvalue\n";
 		for (auto& v : f.vars)
-			std::cout <<v.first <<"\t" <<*v.second.ref <<'\t' <<v.second.repr() <<std::endl;
+			std::cout <<"\t$" <<v.first <<"\t" <<*v.second.ref <<'\t' <<v.second.repr() <<std::endl;
+
+		unsigned short bt = 1;
+		for (Frame* pf : f.prev) {
+			std::cout << "Previous scope " << bt++ << ":\n";
+			for (auto &v : pf->vars)
+				std::cout << "\t$" << v.first << "\t" << *v.second.ref << '\t' << v.second.repr() << std::endl;
+		}
 
 		return Frame::Exit();
 	}

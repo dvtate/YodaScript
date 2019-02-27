@@ -37,13 +37,10 @@ std::string Value::repr()
 	} else if (type == MAC) {
 		return "{" + *str + "}";
  	} else if (type == REF) {
-		std::ostringstream ss;
-		ss << *ref;
-
 
 		Value* v = defer();
 		if (v)
-			return ss.str() + " " + v->repr();
+			return v->repr();
 		return "cyclic/null reference";
 	}
 
@@ -67,12 +64,10 @@ std::string Value::toString()
 	} else if (type == MAC) {
 		return "{" + *str + "}";
 	} else if (type == REF) {
-		std::ostringstream ss;
-		ss << *ref;
-
 		Value* v = defer();
 		if (v)
-			return ss.str() + " " + v->toString();
+			return v->toString();
+		return "cyclic/null reference";
 	}
 
 	return "idk";

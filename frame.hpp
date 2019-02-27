@@ -120,9 +120,9 @@ public:
 		return ret;
 	}
 
-	// look for variable, if not found create it
-	// return it's
-	std::shared_ptr<Value> getVar(const std::string& vname);
+	// if var found return it's data reference
+	std::shared_ptr<Value> getVar(const std::string&); // if var is in previous scope, set it to default ref previous scoped variable
+	std::shared_ptr<Value> findVar(const std::string& name); // find var from prev scopes
 };
 
 #endif //YS2_FRAME_HPP

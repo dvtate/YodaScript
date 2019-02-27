@@ -34,17 +34,35 @@ Frame::Exit Frame::run()
 
 }
 
-std::shared_ptr<Value> Frame::getVar(const std::string& vname) {
-	auto v = vars.find(vname);
-
-	if (v == vars.end()) {
+std::shared_ptr<Value> Frame::getVar(const std::string& name) {
+	std::shared_ptr<Value> v = findVar(name);
+	if (!v) {
 		// make a new empty value to point to
 		std::shared_ptr<Value> e = std::make_shared<Value>();
-		vars.emplace(vname, e);
+		vars.emplace(name, e);
 		ref_vals.emplace_back(e);
-		v = vars.find(vname);
+		return e;
 	}
-	return *v->second.ref;
+	return v;
+}
 
+
+std::shared_ptr<Value> Frame::findVar(const std::string &name) {
+	auto v = vars.find(name);
+	if (v != vars.end())
+		return *v->second.ref;
+
+	// check previous scopes
+	for (Frame* scope : prev) {
+		v = scope->vars.find(name);
+		if (v != scope->vars.end()) {
+			// set it to a ref to tht var's value (double reference)
+			std::shared_ptr<Value> r = std::make_shared<Value>(v->second);
+			vars.emplace(name, r);
+			ref_vals.emplace_back(r);
+			return r;
+		}
+	}
+	return nullptr;
 
 }

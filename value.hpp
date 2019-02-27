@@ -116,6 +116,11 @@ public:
 	// set self to given value
 	Value& set(const Value& v) {
 		erase();
+		return set_noerase(v);
+	}
+
+	// set self to given value
+	inline Value& set_noerase(const Value& v) {
 		type = v.type;
 
 		if (type == DEC) {
@@ -133,14 +138,9 @@ public:
 
 	// copy
 	Value(const Value& v)
-		{ set(v); std::cout <<"copy\n";}
+		{ set_noerase(v); std::cout <<"copy\n";}
 	Value& operator=(const Value& v)
 		{ return set(v); }
-
-	bool isNull() {
-		return type == Value::REF && !ref;
-	}
-
 
 	std::string repr();
 	std::string toString();
@@ -157,6 +157,8 @@ public:
 
 		// follow reference tree
 		pastPtrs.emplace_back(ref);
+		if (!ref || !*ref)
+			return nullptr;
 		return (*ref)->defer(pastPtrs);
 	}
 
@@ -173,7 +175,7 @@ public:
 			case OBJ: return "object";
 			case LAM: return "lambda";
 			default:
-				std::cout <<"type#" <<(const int)type <<std::endl;
+				std::cout <<"unknown type#" <<(const long)type <<std::endl;
 				return "unknown";
 		}
 	}
