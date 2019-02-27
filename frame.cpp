@@ -22,7 +22,6 @@ Frame::Exit Frame::run()
 		if (op_ind == -2 || feed.offset >= feed.body.length())
 			return Frame::Exit(Frame::Exit::FEED_END);
 
-		//std::cout <<"framerun::body[offset]: \'" <<feed.fromOffset() <<"\'\n";
 		ev = operators[op_ind].act(*this);
 
 	} while (ev.reason == Frame::Exit::CONTINUE);
@@ -31,23 +30,21 @@ Frame::Exit Frame::run()
 	if (ev.reason == Frame::Exit::ERROR)
 		ev.genMsg(feed);
 
-	//std::cout <<ev.msg;
 	return ev;
 
 }
 
-const Value* Frame::getVar(const std::string vname) {
+std::shared_ptr<Value> Frame::getVar(const std::string& vname) {
 	auto v = vars.find(vname);
 
 	if (v == vars.end()) {
 		// make a new empty value to point to
-		Value* empty = new Value();
-
-		ref_vals.emplace_back(empty);	// will get deallocated at end of frame
-		vars.emplace(vname, empty);
+		std::shared_ptr<Value> e = std::make_shared<Value>();
+		vars.emplace(vname, e);
+		ref_vals.emplace_back(e);
 		v = vars.find(vname);
 	}
+	return *v->second.ref;
 
-	return v->second.ref;
 
 }

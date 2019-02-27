@@ -29,7 +29,7 @@ namespace op_const_null {
 		return frame.feed.tok == name;
 	}
 	Frame::Exit act(Frame& frame) {
-		frame.stack.emplace_back((Value*)nullptr);
+		frame.stack.emplace_back((std::shared_ptr<Value>)nullptr);
 		frame.feed.offset += strlen(name);
 		return Frame::Exit();
 	}
@@ -232,7 +232,7 @@ bool find_list (CodeFeed& feed, std::string& ret) {
 		} else if (c == '\"') {
 			do {
 				if (!ignore_until_c(feed, "\"")) {
-					std::cerr <<"Unterminated string in list\n";
+					std::cerr <<"Unterminated string(\") in list\n";
 					return false;
 				}
 			} while (feed.body[feed.offset - 1] == '\\');
@@ -247,17 +247,8 @@ bool find_list (CodeFeed& feed, std::string& ret) {
 				}
 			} while (feed.body[feed.offset - 1] == '\\');
 
-			// list
-		} else if (c == '{') {
-			std::string s;
-			if (!find_list(feed, s)) {
-				std::cerr <<"unterminated macro within list\n";
-				return false;
-			}
 		}
 	}
-
-
 
 	feed.offset -= 3;
 
@@ -324,13 +315,6 @@ bool find_macro (CodeFeed& feed, std::string& ret) {
 			} while (feed.body[feed.offset - 1] == '\\');
 			feed.offset++;
 
-			// list
-		} else if (c == '(') {
-			std::string s;
-			if (!find_list(feed, s)) {
-				std::cerr <<"unterminated list within macro\n";
-				return false;
-			}
 		}
 	}
 

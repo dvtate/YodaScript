@@ -7,6 +7,7 @@
 std::string Value::repr()
 {
 	if (type == DEC) {
+		// add .0 for whole numbers
 		std::ostringstream ss;
 		ss << dec;
 		return ss.str();
@@ -36,10 +37,14 @@ std::string Value::repr()
 	} else if (type == MAC) {
 		return "{" + *str + "}";
  	} else if (type == REF) {
+		std::ostringstream ss;
+		ss << *ref;
+
+
 		Value* v = defer();
 		if (v)
-			return v->toString();
-		return "cyclic reference";
+			return ss.str() + " " + v->repr();
+		return "cyclic/null reference";
 	}
 
 	return "idk";
@@ -62,10 +67,12 @@ std::string Value::toString()
 	} else if (type == MAC) {
 		return "{" + *str + "}";
 	} else if (type == REF) {
+		std::ostringstream ss;
+		ss << *ref;
+
 		Value* v = defer();
 		if (v)
-			return v->toString();
-		return "cyclic reference";
+			return ss.str() + " " + v->toString();
 	}
 
 	return "idk";

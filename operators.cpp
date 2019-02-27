@@ -27,7 +27,8 @@ int findOperator(Frame& f)
 	std::cout <<"\tbody[offset]: \'" <<f.feed.fromOffset() <<"\'\n";
 	 */
 
-	for (int i = 0; i < operators.size(); i++)
+	// check condition for each operator
+	for (int i = 0; i < operators.size(); i++) // O(N) oof
 		if (operators[i].condition(f))
 			return i;
 

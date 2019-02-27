@@ -7,6 +7,8 @@
 #include <gmp.h>
 #include <gmpxx.h>
 #include <algorithm>
+#include <memory>
+
 
 /*
 *
@@ -27,11 +29,11 @@ public:
 		DEC, // float       - double
 			// double value
 
-		REF, // reference    - reference to memory address of a Value
-			// Value* pointer
-
 		STR, // string       - collection of chars
 			// string
+
+		REF, // reference    - reference to memory address of a Value
+			// shared_ptr
 
 		MAC, // macro        - framed block of code
 			// string
@@ -62,16 +64,16 @@ public:
 		mpz_class* mp_int;
 		std::string* str;
 
-		Value* ref;
+		//Value* ref;
 
+		std::shared_ptr<Value>* ref;
 		std::vector<Value>* arr;
 		// obj
 		// lambda
 	};
 
-
 	Value():
-		type(Value::EMT), ref(nullptr) {}
+		type(Value::EMT) {}
 	Value(const vtype t): type(t) {}
 	Value(const vtype t, const std::string v):
 			type(t), str(new std::string(v)) {}
@@ -81,8 +83,8 @@ public:
 		type(Value::STR), str(new std::string(v)) {}
 	Value(const double v):
 		type(Value::DEC), dec(v) {}
-	Value(const Value* v):
-		type(Value::REF), ref((Value*) v) {}
+	Value(std::shared_ptr<Value> ref):
+		type(Value::REF), ref(new std::shared_ptr<Value>(ref)) {}
 	Value(mpz_class mp_integer):
 		type(Value::INT), mp_int(new mpz_class(mp_integer)) {}
 
@@ -100,12 +102,15 @@ public:
 			delete str;
 		if (type == Value::INT)
 			delete mp_int;
+		if (type == REF)
+			delete ref;
 		if (type == Value::ARR)
 			delete arr;
 
 	}
-	~Value()
-		{ erase(); }
+	~Value(){
+		erase();
+	}
 
 		
 	// set self to given value
@@ -113,24 +118,23 @@ public:
 		erase();
 		type = v.type;
 
-		if (type == EMT)
-			ref = nullptr;
-		else if (type == DEC)
+		if (type == DEC) {
 			dec = v.dec;
-		else if (type == REF)
-			ref = v.ref;
-		else if (type == STR || type == MAC)
+		} else if (type == REF) {
+			ref = new std::shared_ptr<Value>();
+			*ref = *v.ref;
+		} else if (type == STR || type == MAC) {
 			str = new std::string(*v.str);
-		else if (type == INT)
+		} else if (type == INT) {
 			mp_int = new mpz_class(*v.mp_int);
-
+		}
 		return *this;
 	}
 
 	// copy
 	Value(const Value& v)
-		{ set(v); }
-	Value& operator=(Value v)
+		{ set(v); std::cout <<"copy\n";}
+	Value& operator=(const Value& v)
 		{ return set(v); }
 
 	bool isNull() {
@@ -142,7 +146,7 @@ public:
 	std::string toString();
 
 	// get the value that a reference points to
-	Value* defer(std::vector<Value*> pastPtrs = {}) {
+	Value* defer(std::vector<std::shared_ptr<Value>*> pastPtrs = {}) {
 		// end of ref recursion
 		if (type != REF)
 			return this;
@@ -153,12 +157,11 @@ public:
 
 		// follow reference tree
 		pastPtrs.emplace_back(ref);
-		return ref->defer(pastPtrs);
+		return (*ref)->defer(pastPtrs);
 	}
 
 
 	const char* typeName() {
-
 		switch (type) {
 			case EMT: return "empty";
 			case INT: return "int";
@@ -170,7 +173,7 @@ public:
 			case OBJ: return "object";
 			case LAM: return "lambda";
 			default:
-				std::cout <<"type#" <<type <<std::endl;
+				std::cout <<"type#" <<(const int)type <<std::endl;
 				return "unknown";
 		}
 	}

@@ -19,13 +19,12 @@ public:
 
 	// defined variables
 	std::unordered_map<std::string, Value> vars;
+	std::vector<Value> ref_vals; // deleted as they go out of scope
 
 	// free()'d at end of scope
 	// ! destructor not called, don't point to complex objects
 	std::vector<void*> _local_ptrs;
 
-	// values referenced in current scope
-	std::vector<Value*> ref_vals;
 
 	// where is the code coming from
 	CodeFeed feed;
@@ -41,9 +40,6 @@ public:
 		// free locals
 		for (void* p : _local_ptrs)
 			free(p);
-		for (Value* v : ref_vals)
-			delete v;
-
 	}
 
 	Frame(){
@@ -82,25 +78,19 @@ public:
 		std::vector<Exit> trace{};
 
 		Exit(): reason(CONTINUE) {};
-		Exit(const Exit::Reason r, const std::string r_title = "", const std::string r_desc = "", const size_t line_num = 0):
+		Exit(const Exit::Reason r, const std::string& r_title = "", const std::string& r_desc = "", const size_t line_num = 0):
 				reason(r), title(r_title), desc(r_desc), line(line_num)
 		{}
-		Exit(const Exit::Reason r, const std::string r_title, const std::string r_desc, const size_t line_num, const Exit& e):
+		Exit(const Exit::Reason r, const std::string& r_title, const std::string& r_desc, const size_t line_num, const Exit& e):
 				reason(r), title(r_title), desc(r_desc), line(line_num)
 		{
-			trace.push_back(e);
-			for (Exit ev : e.trace)
-				trace.push_back(ev);
+			trace.emplace_back(e);
+			for (const Exit& ev : e.trace)
+				trace.emplace_back(ev);
 		}
 
-		Exit(const Exit& e) {
-			reason = e.reason;
-			title = e.title;
-			desc = e.desc;
-			number = e.number;
-			trace = e.trace;
-			msg = e.msg;
-		}
+		Exit(const Exit& e):
+			reason(e.reason), title(e.title), desc(e.desc), number(e.number), trace(e.trace), msg(e.msg) {}
 
 
 		std::string msg{""};
@@ -132,7 +122,7 @@ public:
 
 	// look for variable, if not found create it
 	// return it's
-	const Value* getVar(const std::string vname);
+	std::shared_ptr<Value> getVar(const std::string& vname);
 };
 
 #endif //YS2_FRAME_HPP
