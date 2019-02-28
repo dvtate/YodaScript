@@ -353,42 +353,98 @@ namespace op_const_macro {
 	}
 }
 
+namespace op_const_list {
 
-namespace op_print {
-	const char* name = "print";
+	// separate different parts of the list into sections
+	inline std::vector<std::string> split_list(std::string& str) {
 
-	bool condition(Frame& frame) {
-		return frame.feed.tok == name;
+		size_t pos = 0, past = 0;
+		uint16_t ldepth = 0; // up to 65k dimensions
+		uint16_t sdepth = 0; // up to 65k layers of nested structures
+		bool quoted = false; // are we in a string?
+		bool line_comment = false; //commented until newline?
+		std::vector<std::string> ret;
+
+		for (size_t i = 0; i < str.size(); i++) {
+
+			switch (str[i]) {
+				case '(':
+					if (!line_comment && !quoted)
+						ldepth++;
+					break;
+				case ')':
+					if (!line_comment && !quoted)
+						ldepth--;
+					break;
+				case '{':
+					if (!line_comment && !quoted)
+						sdepth++;
+					break;
+				case '}':
+					if (!line_comment && !quoted)
+						sdepth--;
+					break;
+				case '\"':
+					if (!line_comment)
+						if (!(quoted && str[i-1] == '\\')) // make sure quote isn't escaped
+							quoted = !quoted;
+					break;
+				case '#':
+					if (!quoted) line_comment = true;
+					break;
+				case '/': // ignore multi-line comment
+					if (str[i + 1] == '*')
+						while (i < str.length() - 1
+								&& str[i] != '*'
+								&& str[++i] != '/');
+
+					break;
+				case '\n':
+					line_comment = quoted = false;
+					break;
+				case ',':
+					if ( !quoted && !line_comment && ldepth <= 0  && sdepth <= 0) {
+						ret.emplace_back(str.substr(past, pos - past));
+						past = pos + 1;
+					}
+					break;
+			}
+			pos++;
+		}
+
+		// gets value after last comma
+		ret.push_back(str.substr(past, pos - past));
+
+
+		return ret;
+
+
 	}
 
-	Frame::Exit act(Frame& frame) {
-		if (frame.stack.empty())
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected a value to print", frame.feed.lineNumber());
+	const char* name = "(";
+	bool condition(Frame& f) {
+		return f.feed.tok[0] == '(';
+	}
+	Frame::Exit act(Frame& f) {
+		std::vector<Value> ret;
+		std::string l_body;
+		if (!find_list(f.feed, l_body))
+			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", "EOF while scanning for list");
 
-		std::cout <<frame.stack.back().toString();
-		frame.stack.pop_back();
-		frame.feed.offset += strlen(name);
+		std::vector<std::string> elems = split_list(l_body);
+		Frame elem_proc = f.scope(CodeFeed());
+		ret.reserve(elems.size());
+		for (size_t i = 0; i < elems.size(); i++) {
+			elem_proc.feed.body = elems[i];
+			elem_proc.feed.offset = 0;
+			Frame::Exit ev = elem_proc.run();
+			if (ev.reason == Frame::Exit::ERROR)
+				return Frame::Exit(Frame::Exit::ERROR, "Syntax Error", "Error while processing elem " + std::to_string(i) + " in list literal.", f.feed.lineNumber());
+
+			ret.emplace_back(elem_proc.stack.empty() ? Value() : elem_proc.stack.back());
+			elem_proc.stack.clear();
+		}
+		f.stack.emplace_back(ret);
 		return Frame::Exit();
 	}
-
-}
-
-namespace op_println {
-	const char* name = "println";
-
-	bool condition(Frame& frame) {
-		return frame.feed.tok == name;
-	}
-
-	Frame::Exit act(Frame& frame) {
-		if (frame.stack.empty())
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected a value to print", frame.feed.lineNumber());
-
-		std::cout <<frame.stack.back().toString() <<std::endl;
-		frame.stack.pop_back();
-
-		frame.feed.offset += strlen(name);
-		return Frame::Exit();
-	}
-
 }

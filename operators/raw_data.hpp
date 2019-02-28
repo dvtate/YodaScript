@@ -20,10 +20,6 @@ OP_NS(op_const_string);
 OP_NS(op_const_macro);
 OP_NS(op_const_list);
 
-// data representation
-// maybe move somewhere else?
-OP_NS(op_print);
-OP_NS(op_println);
 
 
 

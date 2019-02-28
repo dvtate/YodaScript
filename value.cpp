@@ -4,6 +4,14 @@
 
 #include "value.hpp"
 
+
+inline static size_t countLines(const std::string& s) {
+	size_t lc = 0;
+	for (char c : s)
+		if (c == '\n')
+			lc++;
+	return lc;
+}
 std::string Value::repr()
 {
 	if (type == DEC) {
@@ -42,6 +50,12 @@ std::string Value::repr()
 		if (v)
 			return v->repr();
 		return "cyclic/null reference";
+	} else if (type == ARR) {
+		std::string ret = "(";
+		for (Value& v : *arr)
+			ret += v.repr() + ", ";
+		ret[ret.length() - 1] = ')';
+		return ret;
 	}
 
 	return "idk";
@@ -62,12 +76,18 @@ std::string Value::toString()
 	} else if (type == EMT) {
 		return "empty";
 	} else if (type == MAC) {
-		return "{" + *str + "}";
+		return "{" + std::to_string(countLines(*str)) + "lines }";
 	} else if (type == REF) {
 		Value* v = defer();
 		if (v)
 			return v->toString();
 		return "cyclic/null reference";
+	} else if (type == ARR) {
+		std::string ret = "(";
+		for (Value& v : *arr)
+			ret += v.repr() + ", ";
+		ret[ret.length() - 1] = ')';
+		return ret;
 	}
 
 	return "idk";

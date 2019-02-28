@@ -11,9 +11,9 @@
 
 
 /*
-*
-*
-*
+* - could contain any reperesentable value
+* - union + enum system to preserve memory
+* -
 *
 */
 
@@ -87,8 +87,10 @@ public:
 		type(Value::REF), ref(new std::shared_ptr<Value>(ref)) {}
 	Value(mpz_class mp_integer):
 		type(Value::INT), mp_int(new mpz_class(mp_integer)) {}
-
-
+	Value(const std::vector<Value>& v):
+		type(Value::ARR), arr(new std::vector<Value>(v)) {}
+	Value(const nullptr_t& null):
+		type(REF), ref(new std::shared_ptr<Value>(nullptr)) {}
 
 
 
@@ -132,6 +134,8 @@ public:
 			str = new std::string(*v.str);
 		} else if (type == INT) {
 			mp_int = new mpz_class(*v.mp_int);
+		} else if (type == ARR) {
+			arr = new std::vector<Value>(*v.arr);
 		}
 		return *this;
 	}
@@ -164,6 +168,8 @@ public:
 
 
 	const char* typeName() {
+		// could be optimized to an array of strings
+		// and using type as index, but im not certain if i can keep the values in correct order
 		switch (type) {
 			case EMT: return "empty";
 			case INT: return "int";
@@ -178,6 +184,45 @@ public:
 				std::cout <<"unknown type#" <<(const long)type <<std::endl;
 				return "unknown";
 		}
+	}
+
+	bool truthy() {
+		if (type == EMT)	return false;
+		if (type == REF)	return ref && *ref != nullptr;
+		if (type == INT)	return *mp_int != 0;
+		if (type == DEC)	return dec != 0;
+		if (type == STR)	return (bool) str->length();
+		if (type == ARR)	return !arr->empty();
+		if (type == OBJ || type == MAC || type == LAM)
+			return true;
+
+		std::cout <<"invalid type in Value.truthy()\n";
+		// glitch
+		return false;
+	}
+
+	// should i?
+	bool operator==(Value& v) {
+		if (v.type != type)
+			return false;
+		if (type == EMT)
+			return true;
+		if (type == INT)
+			return *v.mp_int == *mp_int;
+		if (type == DEC)
+			return v.dec == dec;
+		if (type == STR || type == MAC)
+			return *v.str == *str;
+
+		// returns if they reference same data,
+		// use copy operator if u wanna compare by value
+		// TODO: move this to an `is` operator
+		if (type == REF)
+			return v.defer() == defer();
+
+		// for now at least
+		//if (type == LAM || type == OBJ)
+			return false;
 	}
 };
 

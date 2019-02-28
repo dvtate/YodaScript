@@ -21,6 +21,17 @@ namespace op_equals_to {
 	}
 	Frame::Exit act(Frame& f) {
 		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected 2 values to compare", f.feed.lineNumber());
+
+		bool cmp;
+		Value v1 = f.stack.back();
+		f.stack.pop_back();
+		cmp = v1 == f.stack.back();
+		f.stack.pop_back();
+
+		f.stack.emplace_back((unsigned long)cmp);
+
 		return Frame::Exit();
 	}
 

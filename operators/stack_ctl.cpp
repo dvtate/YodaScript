@@ -36,7 +36,7 @@ namespace op_stk_swap {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-
+		f.feed.offset += strlen(name);
 		if (!f.stack.size())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError",
 							   std::string(name) + " expected an 2 items to swap",

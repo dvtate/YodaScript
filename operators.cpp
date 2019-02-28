@@ -7,6 +7,8 @@
 #include "operators/stack_ctl.hpp"
 #include "operators/types.hpp"
 #include "operators/ref_ops.hpp"
+#include "operators/io.hpp"
+#include "operators/boolean_ops.hpp"
 
 int findOperator(Frame& f)
 {
@@ -49,11 +51,13 @@ inline static std::deque<struct Token> genTokens() {
 
 			// literals
 			OP_NS_TO_TOK(op_const_macro),
+			OP_NS_TO_TOK(op_const_list),
 			OP_NS_TO_TOK(op_const_string),
 
-			// data representation
+			// cio
 			OP_NS_TO_TOK(op_println),
 			OP_NS_TO_TOK(op_print),
+			OP_NS_TO_TOK(op_input),
 
 			// type conversion
 			OP_NS_TO_TOK(op_str),
@@ -84,6 +88,8 @@ inline static std::deque<struct Token> genTokens() {
 			OP_NS_TO_TOK(op_set), 	 // give a variable a new value
 			OP_NS_TO_TOK(op_copy_value),
 			OP_NS_TO_TOK(op_vars),
+
+			OP_NS_TO_TOK(op_equals_to)
 	};
 
 	return ret;
