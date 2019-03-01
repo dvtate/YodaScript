@@ -27,10 +27,7 @@ namespace op_equals_to {
 		bool cmp;
 		Value v1 = f.stack.back();
 		f.stack.pop_back();
-		cmp = v1 == f.stack.back();
-		f.stack.pop_back();
-
-		f.stack.emplace_back((unsigned long)cmp);
+		f.stack.back() = (unsigned long) (v1 == f.stack.back());
 
 		return Frame::Exit();
 	}

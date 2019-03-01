@@ -5,62 +5,6 @@
 #include <gmpxx.h>
 #include "literals.hpp"
 
-
-namespace op_const_empty {
-
-	const char* name = "empty";
-
-	bool condition(Frame& frame) {
-		return frame.feed.tok == name;
-	}
-
-	Frame::Exit act(Frame& frame) {
-		// push an empty value onto the stack
-		frame.stack.emplace_back(Value());
-		frame.feed.offset += strlen(name);
-		return Frame::Exit();
-	}
-}
-
-namespace op_const_null {
-	const char* name = "null";
-
-	bool condition(Frame& frame) {
-		return frame.feed.tok == name;
-	}
-	Frame::Exit act(Frame& frame) {
-		frame.stack.emplace_back((std::shared_ptr<Value>)nullptr);
-		frame.feed.offset += strlen(name);
-		return Frame::Exit();
-	}
-
-}
-
-namespace op_const_true {
-	const char* name = "true";
-
-	bool condition(Frame& frame) {
-		return frame.feed.tok == name;
-	}
-	Frame::Exit act(Frame& frame) {
-		frame.stack.emplace_back(1.0);
-		frame.feed.offset += strlen(name);
-		return Frame::Exit();
-	}
-}
-namespace op_const_false {
-	const char* name = "false";
-
-	bool condition(Frame& frame) {
-		return frame.feed.tok == name;
-	}
-	Frame::Exit act(Frame& frame) {
-		frame.stack.emplace_back(0.0);
-		frame.feed.offset += strlen(name);
-		return Frame::Exit();
-	}
-}
-
 namespace op_const_string {
 	const char* name = "\"";
 	bool condition(Frame& f) {
@@ -432,7 +376,7 @@ namespace op_const_list {
 			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI "EOF while scanning for list");
 
 		std::vector<std::string> elems = split_list(l_body);
-		Frame elem_proc = f.scope(CodeFeed());
+		Frame elem_proc = f.scope(CodeFeed(), false);
 		ret.reserve(elems.size());
 		for (size_t i = 0; i < elems.size(); i++) {
 			elem_proc.feed.body = elems[i];

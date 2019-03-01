@@ -124,7 +124,7 @@ public:
 		if (i > body.length())
 			return false;
 
-		if (isspace(body[i-1]))
+		if (isspace(body[i - 1]))
 			i--;
 		tok = body.substr(offset, i - offset);
 

@@ -1,5 +1,6 @@
 
 #include <ctype.h>
+#include "namespace.hpp"
 #include "operators.hpp"
 #include "frame.hpp"
 
@@ -11,26 +12,56 @@ Frame::Frame(const CodeFeed& cf): feed(cf) {
 	stack.reserve(30);
 }
 
+Frame::Exit Frame::runDef(const Def& def) {
+	if (def.native && def.act) {
+		return def.act(*this);
+
+	} else if (def.run) {
+
+		stack.emplace_back(*def._val);
+		feed.offset--;
+		Frame::Exit exit;
+		operators::callByName(*this, "@", exit);
+		return exit;
+
+	} else {
+		stack.emplace_back(*def._val);
+		return Frame::Exit();
+	}
+}
+inline bool check_def(Frame& f, Frame::Exit& ev) {
+	if (operators::callOperator(f, ev, f.defs))
+		return true;
+	for (Frame* fp : f.prev)
+		if (operators::callOperator(f, ev, fp->defs))
+			return true;
+
+	return false;
+}
 Frame::Exit Frame::run()
 {
 	//std::cout <<"running line: " <<feed.body <<std::endl;
 
 	Frame::Exit ev;
 	do {
-
-		//std::cout <<"framerun::body[offset]: \'" <<feed.fromOffset() <<"\'\n";
-		int op_ind = findOperator(*this);
-		if (op_ind == -1) {
-			ev = Frame::Exit(Frame::Exit::ERROR, "SyntaxError",
-							 "unknown token on line " + std::to_string(feed.lineNumber()) + " near `" + feed.tok +
-							 "`\n", feed.lineNumber());
-			break;
+		while (ev.reason == Frame::Exit::CONTINUE && stack.back().type == Value::DEF) {
+			Def d = *stack.back().def;
+			stack.pop_back();
+			ev = runDef(d);
 		}
-		if (op_ind == -2 || feed.offset >= feed.body.length())
+
+		// get first token once so that we dont have to find it for every operator
+		// stored in feed.tok
+		if (!feed.setTok())
 			return Frame::Exit(Frame::Exit::FEED_END);
 
-		ev = operators[op_ind].act(*this);
+		//std::cout <<"tok" <<feed.tok<<std::endl;
 
+		if (!check_def(*this, ev) && !operators::callOperator(*this, ev) && !operators::callToken(*this, ev)) {
+			ev = Frame::Exit(Frame::Exit::ERROR, "SyntaxError",
+							 "unknown token near `" + feed.tok + "`\n", feed.lineNumber());
+			break;
+		}
 	} while (ev.reason == Frame::Exit::CONTINUE);
 
 
@@ -85,8 +116,3 @@ Frame Frame::scope(const CodeFeed& feed, bool copy_stack) {
 
 	return ret;
 }
-
-
-class Frame_Exit : public Frame::Exit {
-	// same shit here :)
-};

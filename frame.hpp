@@ -76,11 +76,6 @@ public:
 	std::unordered_map<std::string, Value> vars;
 	std::vector<Value> ref_vals; // deleted as they go out of scope
 
-	// free()'d at end of scope
-	// ! destructor not called, don't point to complex objects
-	std::vector<void*> _local_ptrs;
-
-
 	// where is the code coming from
 	CodeFeed feed;
 
@@ -90,11 +85,11 @@ public:
 	// values defined by and for specific operators
 	std::unordered_map<std::string, Value> rt_vals;
 
+	// locally defined operators
+	Namespace defs;
+
 	~Frame()
 	{
-		// free locals
-		for (void* p : _local_ptrs)
-			free(p);
 	}
 
 	Frame();
@@ -104,12 +99,14 @@ public:
 
 	// evaluate code
 	Frame::Exit run();
-
+	Frame::Exit runDef(const Def& def);
 	Frame scope(const CodeFeed& feed, bool copy_stack = true);
 
 	// if var found return it's data reference
 	std::shared_ptr<Value> getVar(const std::string&); // if var is in previous scope, set it to default ref previous scoped variable
 	std::shared_ptr<Value> findVar(const std::string& name); // find var from prev scopes
+
+
 };
 
 

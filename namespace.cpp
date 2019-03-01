@@ -9,7 +9,7 @@
 Def::Def(const Value& value, const bool runnable):
 	_val(new Value(value)), native(false), run(runnable) {}
 Def::Def(Exit (*action)(Frame&)):
-	native(true), act(act){}
+	native(true), act(action){}
 Def::Def(const Def& def):
 	native(def.native), run(def.run) {
 	if (def.native)

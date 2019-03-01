@@ -17,8 +17,8 @@ class Exit;
 class Def {
 public:
 
-	bool native : 1;	// use the fxnptr?
-	bool run : 1;
+	bool native;	// use the fxnptr?
+	bool run;
 	Value* _val;
 	Exit (*act)(Frame&);
 

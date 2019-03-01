@@ -5,8 +5,10 @@
 
 #include <deque>
 
+#include "namespace.hpp"
 #include "frame.hpp"
 #include "code_feed.hpp"
+
 
 // convert a token namespace to a Token obj
 #define OP_NS_TO_TOK(NS) Token({ NS::name, NS::condition, NS::act })
@@ -18,6 +20,9 @@ namespace NAME {\
 	bool condition(Frame&);\
 	Frame::Exit act(Frame&);\
 }
+
+
+#define OP_NS_TO_PAIR(ns) { ns::name, ns::act }
 
 
 // this should be included in your error messages so that
@@ -41,9 +46,25 @@ typedef struct Token {
 
 } Token;
 
+namespace operators {
 
-extern std::deque<Token> operators;
-int findOperator(Frame& f);
+	// tokens.find is O(N)
+	extern std::deque<Token> tokens;
 
+	// operators.find is O(1)
+	extern Namespace operators;
+
+	// operators.find
+	Def findOperator(Frame& f);
+
+	// tokens.find
+	int findToken(Frame& f);
+
+	// callByName(f, "@", ev)
+	bool callByName(Frame& f, const std::string &name, Frame::Exit &exit);
+	bool callOperator(Frame& f, Frame::Exit& exit, const Namespace& ns);
+	bool callOperator(Frame& f, Frame::Exit& exit);
+	bool callToken(Frame& f, Frame::Exit& exit);
+}
 
 #endif //YS2_TOKENS_HPP

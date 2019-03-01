@@ -5,32 +5,34 @@
 #include "value.hpp"
 #include "namespace.hpp"
 
-
+// constructors
 Value::Value():
-		type(Value::EMT) {}
-Value::Value(const vtype t): type(t) {}
+	type(Value::EMT) {}
+Value::Value(const vtype t):
+	type(t) {}
 Value::Value(const vtype t, const std::string v):
-		type(t), str(new std::string(v)) {}
+	type(t), str(new std::string(v)) {}
 Value::Value(const char* v):
-		type(Value::STR), str(new std::string(v)) {}
+	type(Value::STR), str(new std::string(v)) {}
 Value::Value(const std::string& v):
-		type(Value::STR), str(new std::string(v)) {}
+	type(Value::STR), str(new std::string(v)) {}
 Value::Value(const double v):
-		type(Value::DEC), dec(v) {}
+	type(Value::DEC), dec(v) {}
 Value::Value(std::shared_ptr<Value> ref):
 	type(Value::REF), ref(new std::shared_ptr<Value>(ref)) {}
 Value::Value(const vtype t, const std::shared_ptr<Value>& ref):
-		type(t), ref(new std::shared_ptr<Value>(ref)) {}
+	type(t), ref(new std::shared_ptr<Value>(ref)) {}
 Value::Value(mpz_class mp_integer):
 	type(Value::INT), mp_int(new mpz_class(mp_integer)) {}
 Value::Value(const std::vector<Value>& v):
-		type(Value::ARR), arr(new std::vector<Value>(v)) {}
+	type(Value::ARR), arr(new std::vector<Value>(v)) {}
 Value::Value(const nullptr_t& null):
-		type(REF), ref(new std::shared_ptr<Value>(nullptr)) {}
+	type(REF), ref(new std::shared_ptr<Value>(nullptr)) {}
 Value::Value(const Def& def):
-		type(DEF), def(new Def(def)) {}
+	type(DEF), def(new Def(def)) {}
 Value::Value(const Namespace& ns):
-		type(NSP), ns(new Namespace(ns)) {}
+	type(NSP), ns(new Namespace(ns)) {}
+
 
 void Value::erase() {
 	// only data on heap needs to be deleted
@@ -109,7 +111,6 @@ std::string Value::repr() {
 	} else if (type == MAC) {
 		return "{" + *str + "}";
 	} else if (type == REF || type == IMR) {
-
 		Value* v = (Value*) defer();
 		if (v)
 			return v->repr();
@@ -118,8 +119,9 @@ std::string Value::repr() {
 		std::string ret = "(";
 		for (Value& v : *arr)
 			ret += v.repr() + ", ";
-		ret[ret.length() - 1] = ')';
-		return ret;
+		ret[ret.length() - 2] = ')';
+
+		return ret.substr(0, ret.length() - 1);
 	}
 
 	return "idk";
@@ -208,6 +210,8 @@ const char* Value::typeName() {
 		case ARR: return "list";
 		case OBJ: return "object";
 		case LAM: return "lambda";
+		case NSP: return "namespace";
+		case DEF: return "def";
 
 		default:
 			std::cout <<"unknown type#" <<(const long)type <<std::endl;

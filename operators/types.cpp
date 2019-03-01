@@ -16,7 +16,7 @@ namespace op_typeof {
 		if (!f.stack.size())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI + std::string(name) + "expected a value to find type of", f.feed.lineNumber());
 
-		f.stack.back() = Value(f.stack.back().typeName());
+		f.stack.back().set(f.stack.back().typeName());
 		f.feed.offset += strlen(name);
 		return Frame::Exit();
 	}
@@ -30,8 +30,8 @@ namespace op_str {
 
 	Frame::Exit act(Frame& frame) {
 		if (!frame.stack.size())
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI+ std::string(name) + " expected a value to stringify", frame.feed.lineNumber());
-		frame.stack.back() = frame.stack.back().repr();
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI + std::string(name) + " expected a value to stringify", frame.feed.lineNumber());
+		frame.stack.back() = frame.stack.back().toString();
 		frame.feed.offset += strlen(name);
 		return Frame::Exit();
 	}

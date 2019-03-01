@@ -19,5 +19,4 @@ OP_NS(op_not)
 OP_NS(op_and)
 OP_NS(op_or)
 
-
 #endif //YS2_BOOLEAN_OPS_HPP
