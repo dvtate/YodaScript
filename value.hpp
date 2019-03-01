@@ -8,7 +8,7 @@
 #include <gmpxx.h>
 #include <algorithm>
 #include <memory>
-
+#include <unordered_map>
 
 /*
 * - could contain any reperesentable value
@@ -16,6 +16,8 @@
 * -
 *
 */
+
+#include "namespace.hpp"
 
 
 class Value {
@@ -35,6 +37,8 @@ public:
 		REF, // reference    - reference to memory address of a Value
 			// shared_ptr
 
+		IMR, // immuteable reference - reference to memory that isn't allowed to be changed (change this object)
+			// identical to REF in every other way
 		MAC, // macro        - framed block of code
 			// string
 
@@ -50,7 +54,14 @@ public:
 		LAM, // lambda       - fancy function
 			// will receive dedicated class eventually
 
+		DEF, // defined term
+		//
+
+		NSP, // namespace
+
 		/* could be added in future:
+		 DEF ? definition		- contains struct Def { function pointer || shared_ptr<Macro> } which gets run as soon as it is created
+		 NSP ? namespace		- see dvtate/planning/yoda/namespaces
 		 CHR ? character		- prolly not bc international == confusion
 		 BLN ? boolean			- prolly not, truthy values are fine
 		 RXP ? reg exp			- prolly not, could be added through lang extension
@@ -70,46 +81,29 @@ public:
 		std::vector<Value>* arr;
 		// obj
 		// lambda
+
+		std::unordered_map<std::string, Def>* ns;
+		Def* def;
 	};
 
-	Value():
-		type(Value::EMT) {}
-	Value(const vtype t): type(t) {}
-	Value(const vtype t, const std::string v):
-			type(t), str(new std::string(v)) {}
-	Value(const char* v):
-		type(Value::STR), str(new std::string(v)) {}
-	Value(const std::string v):
-		type(Value::STR), str(new std::string(v)) {}
-	Value(const double v):
-		type(Value::DEC), dec(v) {}
-	Value(std::shared_ptr<Value> ref):
-		type(Value::REF), ref(new std::shared_ptr<Value>(ref)) {}
-	Value(mpz_class mp_integer):
-		type(Value::INT), mp_int(new mpz_class(mp_integer)) {}
-	Value(const std::vector<Value>& v):
-		type(Value::ARR), arr(new std::vector<Value>(v)) {}
-	Value(const nullptr_t& null):
-		type(REF), ref(new std::shared_ptr<Value>(nullptr)) {}
 
-
+	Value();
+	Value(const vtype);
+	Value(const vtype, const std::string);
+	Value(const char*);
+	Value(const std::string&);
+	Value(const double);
+	Value(std::shared_ptr<Value>);
+	Value(const vtype t, const std::shared_ptr<Value>&);
+	Value(mpz_class);
+	Value(const std::vector<Value>&);
+	Value(const nullptr_t&);
+	Value(const Def&);
+	Value(const std::unordered_map<std::string, Def>&);
 
 
 	// prevent memory leaks when changing the value
-	void erase() {
-		// only data on heap needs to be deleted
-		if (type < Value::STR)
-			return;
-		if (type == Value::STR || type == Value::MAC)
-			delete str;
-		if (type == Value::INT)
-			delete mp_int;
-		if (type == REF)
-			delete ref;
-		if (type == Value::ARR)
-			delete arr;
-
-	}
+	void erase();
 	~Value(){
 		erase();
 	}
@@ -122,108 +116,27 @@ public:
 	}
 
 	// set self to given value
-	inline Value& set_noerase(const Value& v) {
-		type = v.type;
-
-		if (type == DEC) {
-			dec = v.dec;
-		} else if (type == REF) {
-			ref = new std::shared_ptr<Value>();
-			*ref = *v.ref;
-		} else if (type == STR || type == MAC) {
-			str = new std::string(*v.str);
-		} else if (type == INT) {
-			mp_int = new mpz_class(*v.mp_int);
-		} else if (type == ARR) {
-			arr = new std::vector<Value>(*v.arr);
-		}
-		return *this;
-	}
+	Value& set_noerase(const Value& v);
 
 	// copy
 	Value(const Value& v)
 		{ set_noerase(v); std::cout <<"copy\n";}
 	Value& operator=(const Value& v)
-		{ return set(v); }
+		{ set(v); return *this;}
 
-	std::string repr();
-	std::string toString();
+	std::string repr();		// represent value
+	std::string toString();	// stringify value
 
 	// get the value that a reference points to
-	Value* defer(std::vector<std::shared_ptr<Value>*> pastPtrs = {}) {
-		// end of ref recursion
-		if (type != REF)
-			return this;
+	const Value* defer(std::vector<std::shared_ptr<Value>*> pastPtrs = {});
 
-		// if it's been seen before it should be cyclic reference
-		if (std::find(pastPtrs.begin(), pastPtrs.end(), ref) != pastPtrs.end())
-			return nullptr;
+	// get muteable value
+	// stops at immuteable references
+	Value* deferMuteable(std::vector<std::shared_ptr<Value>*> pastPtrs = {});
 
-		// follow reference tree
-		pastPtrs.emplace_back(ref);
-		if (!ref || !*ref)
-			return nullptr;
-		return (*ref)->defer(pastPtrs);
-	}
-
-
-	const char* typeName() {
-		// could be optimized to an array of strings
-		// and using type as index, but im not certain if i can keep the values in correct order
-		switch (type) {
-			case EMT: return "empty";
-			case INT: return "int";
-			case DEC: return "float";
-			case REF: return "reference";
-			case STR: return "string";
-			case MAC: return "macro";
-			case ARR: return "list";
-			case OBJ: return "object";
-			case LAM: return "lambda";
-			default:
-				std::cout <<"unknown type#" <<(const long)type <<std::endl;
-				return "unknown";
-		}
-	}
-
-	bool truthy() {
-		if (type == EMT)	return false;
-		if (type == REF)	return ref && *ref != nullptr;
-		if (type == INT)	return *mp_int != 0;
-		if (type == DEC)	return dec != 0;
-		if (type == STR)	return (bool) str->length();
-		if (type == ARR)	return !arr->empty();
-		if (type == OBJ || type == MAC || type == LAM)
-			return true;
-
-		std::cout <<"invalid type in Value.truthy()\n";
-		// glitch
-		return false;
-	}
-
-	// should i?
-	bool operator==(Value& v) {
-		if (v.type != type)
-			return false;
-		if (type == EMT)
-			return true;
-		if (type == INT)
-			return *v.mp_int == *mp_int;
-		if (type == DEC)
-			return v.dec == dec;
-		if (type == STR || type == MAC)
-			return *v.str == *str;
-
-		// returns if they reference same data,
-		// use copy operator if u wanna compare by value
-		// TODO: move this to an `is` operator
-		if (type == REF)
-			return v.defer() == defer();
-
-		// for now at least
-		//if (type == LAM || type == OBJ)
-			return false;
-	}
+	const char* typeName();
+	bool truthy();
+	bool operator==(Value& v);
 };
 
 

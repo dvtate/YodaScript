@@ -2,7 +2,7 @@
 #include <iostream>
 #include <deque>
 #include "operators.hpp"
-#include "operators/raw_data.hpp"
+#include "operators/literals.hpp"
 #include "operators/ctl_flow.hpp"
 #include "operators/stack_ctl.hpp"
 #include "operators/types.hpp"
@@ -88,8 +88,11 @@ inline static std::deque<struct Token> genTokens() {
 			OP_NS_TO_TOK(op_set), 	 // give a variable a new value
 			OP_NS_TO_TOK(op_copy_value),
 			OP_NS_TO_TOK(op_vars),
+			OP_NS_TO_TOK(op_const),
 
-			OP_NS_TO_TOK(op_equals_to)
+			OP_NS_TO_TOK(op_equals_to),
+			OP_NS_TO_TOK(op_exec),
+
 	};
 
 	return ret;

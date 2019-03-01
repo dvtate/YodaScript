@@ -22,7 +22,7 @@ namespace op_stk_dup {
 	Frame::Exit act(Frame& f) {
 		if (!f.stack.size())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError",
-					std::string(name) + " expected an element on to duplicate",
+					DEBUG_FLI + std::string(name) + " expected an element on to duplicate",
 					f.feed.lineNumber());
 
 		f.stack.push_back(f.stack.back());
@@ -39,7 +39,7 @@ namespace op_stk_swap {
 		f.feed.offset += strlen(name);
 		if (!f.stack.size())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError",
-							   std::string(name) + " expected an 2 items to swap",
+							   DEBUG_FLI + std::string(name) + " expected an 2 items to swap",
 							   f.feed.lineNumber());
 
 		std::swap(f.stack.back(), f.stack[f.stack.size() - 2]);

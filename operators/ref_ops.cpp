@@ -26,7 +26,7 @@ namespace op_var_op {
 	}
 	Frame::Exit act(Frame& f) {
 		if (!f.stack.size() || f.stack.back().type != Value::STR)
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", "$ operator expected a string variable name", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " $ operator expected a string variable name", f.feed.lineNumber());
 
 		f.stack.back() = Value(f.getVar(*f.stack.back().str));
 		f.feed.offset++;
@@ -42,7 +42,7 @@ namespace op_equals {
 	Frame::Exit act(Frame& f) {
 		f.feed.offset++;
 		if (f.stack.size() < 2)
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", "set expected a reference and a value to assign", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " = expected a reference and a value to assign", f.feed.lineNumber());
 
 		Value v2 = f.stack.back();
 		f.stack.pop_back();
@@ -58,10 +58,10 @@ namespace op_equals {
 			ref = &v2;
 			v = &v1;
 		} else {
-			return Frame::Exit(Frame::Exit::ERROR, "TypeError", std::string(name) + " requires a reference to assign", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI + std::string(name) + " requires a reference to assign", f.feed.lineNumber());
 		}
 
-		ref->defer()->set(*v);
+		ref->deferMuteable()->set(*v);
 
 		return Frame::Exit();
 	}
@@ -76,7 +76,7 @@ namespace op_set {
 	Frame::Exit act(Frame& f) {
 		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", " expected a reference and a value to assign", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " set expected a reference and a value to assign", f.feed.lineNumber());
 
 		Value v2 = f.stack.back();
 		f.stack.pop_back();
@@ -92,7 +92,7 @@ namespace op_set {
 			ref = &v2;
 			v = &v1;
 		} else {
-			return Frame::Exit(Frame::Exit::ERROR, "TypeError", " requires a reference to assign", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " set requires a reference to assign", f.feed.lineNumber());
 		}
 
 		// if its a ref point to it,
@@ -111,9 +111,9 @@ namespace op_copy_value {
 	Frame::Exit act(Frame& f) {
 		f.feed.offset++;
 		if (!f.stack.size())
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", "~ expected a reference to defer", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " ~ expected a reference to defer", f.feed.lineNumber());
 
-		Value* v = f.stack.back().defer();
+		const Value* v = f.stack.back().defer();
 		if (v)
 			f.stack.back().set(*v);
 		else
@@ -134,15 +134,34 @@ namespace op_vars {
 		std::cout <<"Current Scope:\n";
 		std::cout <<"\tname\tvalue address\tvalue\n";
 		for (auto& v : f.vars)
-			std::cout <<"\t$" <<v.first <<"\t" <<*v.second.ref <<'\t' <<v.second.repr() <<std::endl;
+			std::cout <<"\t$" <<v.first <<'\t' <<(*v.second.ref)->typeName() <<'\t' <<*v.second.ref <<'\t' <<v.second.repr() <<std::endl;
 
 		unsigned short bt = 1;
 		for (Frame* pf : f.prev) {
 			std::cout << "Previous scope " << bt++ << ":\n";
 			for (auto &v : pf->vars)
-				std::cout << "\t$" << v.first << "\t" << *v.second.ref << '\t' << v.second.repr() << std::endl;
+				std::cout << "\t$" << v.first  <<'\t' <<(*v.second.ref)->typeName() <<'\t' <<*v.second.ref <<'\t' <<v.second.repr() <<std::endl;
 		}
 
+		return Frame::Exit();
+	}
+}
+
+namespace op_const {
+	const char* name = "const";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "const expected a reference to make immutable", f.feed.lineNumber());
+
+
+		std::shared_ptr<Value> v = std::make_shared<Value>(f.stack.back());
+
+		f.stack.back() = Value(Value::IMR, v);
+
+		f.feed.offset += strlen(name);
 		return Frame::Exit();
 	}
 }

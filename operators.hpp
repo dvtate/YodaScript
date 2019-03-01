@@ -19,9 +19,14 @@ namespace NAME {\
 	Frame::Exit act(Frame&);\
 }
 
+
 // this should be included in your error messages so that
 //  we where to look if there's a false positive
-#define OP_DEBUG "(" __FILENAME__ "#" __LINE__ ")"
+#ifdef DEBUG
+	#define DEBUG_FLI "(" __FILENAME__ "#" __LINE__ ")"
+#else
+	#define DEBUG_FLI ""
+#endif
 
 typedef struct Token {
 

@@ -32,7 +32,7 @@ namespace op_print {
 
 	Frame::Exit act(Frame& frame) {
 		if (frame.stack.empty())
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected a value to print", frame.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI + std::string(name) + " expected a value to print", frame.feed.lineNumber());
 
 		std::cout <<frame.stack.back().toString();
 		frame.stack.pop_back();
@@ -51,7 +51,7 @@ namespace op_println {
 
 	Frame::Exit act(Frame& frame) {
 		if (frame.stack.empty())
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected a value to print", frame.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI + std::string(name) + " expected a value to print", frame.feed.lineNumber());
 
 		std::cout <<frame.stack.back().toString() <<std::endl;
 		frame.stack.pop_back();

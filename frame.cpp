@@ -3,6 +3,13 @@
 #include "operators.hpp"
 #include "frame.hpp"
 
+Frame::Frame(){
+	stack.reserve(30);
+}
+
+Frame::Frame(const CodeFeed& cf): feed(cf) {
+	stack.reserve(30);
+}
 
 Frame::Exit Frame::run()
 {
@@ -66,3 +73,20 @@ std::shared_ptr<Value> Frame::findVar(const std::string &name) {
 	return nullptr;
 
 }
+
+Frame Frame::scope(const CodeFeed& feed, bool copy_stack) {
+	Frame ret(feed);
+	ret.prev.emplace_back(this);
+	for (Frame* f : prev)
+		ret.prev.emplace_back(f);
+
+	if (copy_stack)
+		ret.stack = stack; // copy stack
+
+	return ret;
+}
+
+
+class Frame_Exit : public Frame::Exit {
+	// same shit here :)
+};
