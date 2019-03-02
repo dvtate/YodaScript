@@ -103,6 +103,17 @@ namespace op_repeat_loop {
 	}
 }
 
+Frame::Exit runMacro(Frame& f, const std::string& macro, const bool merge_stack = true) {
+	Frame block = f.scope(CodeFeed(macro), merge_stack);
+	Frame::Exit ev = block.run();
+	if (merge_stack)
+		f.stack = block.stack;
+	return ev;
+}
+
+Frame::Exit runLambda(Frame& f, const Value& lam, const bool merge_stack = true) {
+	return Frame::Exit();
+}
 
 namespace op_exec {
 	const char* name = "@";
@@ -119,20 +130,16 @@ namespace op_exec {
 		if (!ref)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " null/cyclic reference passed to @ operator", f.feed.lineNumber());
 		Value v = *ref; // copy in case of race condition
-
+		f.stack.pop_back();
 		if (v.type == Value::MAC || v.type == Value::STR) {
-			Frame block = f.scope(CodeFeed(*v.str));
-			f.stack.pop_back();
-			Frame::Exit ev = block.run();
+			const Frame::Exit ev = runMacro(f, *v.str, true);
 			if (ev.reason == Frame::Exit::ERROR)
-				return Frame::Exit(Frame::Exit::ERROR, DEBUG_FLI "In " + std::string(v.typeName()) + " @ ", "", f.feed.lineNumber(), ev);
-			f.stack = block.stack;
+				return Frame::Exit(Frame::Exit::ERROR,
+						DEBUG_FLI "In " + std::string(v.typeName()) + " @ ", "", f.feed.lineNumber(), ev);
 
 		} else if (v.type == Value::LAM) {
-			f.stack.pop_back();
 			std::cout <<"lambda exec not implemented\n";
 		} else {
-			f.stack.pop_back();
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "non-exectuteable type (" + std::string(v.typeName()) + ") passed to @ operator", f.feed.lineNumber());
 		}
 

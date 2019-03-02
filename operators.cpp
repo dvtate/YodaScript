@@ -17,7 +17,6 @@
 #include "operators/data_types.hpp"
 #include "operators/const.hpp"
 
-
 namespace operators {
 	int findToken(Frame &f) {
 
@@ -99,9 +98,9 @@ namespace operators {
 		}
 		return false;
 	}
-	inline static std::deque<struct Token> genTokens() {
+	inline static std::vector<struct Token> genTokens() {
 		// loads all operators from operators/
-		std::deque<struct Token> ret = {
+		return std::vector<struct Token>({
 				OP_NS_TO_TOK(op_var_literal),
 
 				// literals
@@ -115,11 +114,8 @@ namespace operators {
 				// more literals (slower execution time
 				OP_NS_TO_TOK(op_const_int),
 				OP_NS_TO_TOK(op_const_number),
-
-
-		};
-
-		return ret;
+				OP_NS_TO_TOK(op_ns_member_req),
+		});
 	}
 
 	inline static Namespace genOperators() {
@@ -153,12 +149,11 @@ namespace operators {
 			OP_NS_TO_PAIR(op_str),
 			OP_NS_TO_PAIR(op_typeof),
 			OP_NS_TO_PAIR(op_namespace),
-
 		});
 	}
 
 	Namespace operators = genOperators();
-	std::deque<struct Token> tokens = genTokens();
+	std::vector<struct Token> tokens = genTokens();
 
 
 	bool callByName(Frame &f, const std::string &name, Frame::Exit &exit) {
@@ -170,7 +165,6 @@ namespace operators {
 				exit = d->second.act(f);
 				return true;
 			} else if (d->second.run) {
-
 				f.stack.emplace_back(*d->second._val);
 				f.feed.offset--;
 				return callByName(f, "@", exit);
@@ -181,7 +175,7 @@ namespace operators {
 			}
 		}
 
-		for (Token t : tokens)
+		for (const Token& t : tokens)
 			if (t.name == name) {
 				exit = t.act(f);
 				return true;

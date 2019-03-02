@@ -2,8 +2,7 @@
 #ifndef YS2_TOKENS_HPP
 #define YS2_TOKENS_HPP
 
-
-#include <deque>
+#include <vector>
 
 #include "namespace.hpp"
 #include "frame.hpp"
@@ -49,7 +48,7 @@ typedef struct Token {
 namespace operators {
 
 	// tokens.find is O(N)
-	extern std::deque<Token> tokens;
+	extern std::vector<Token> tokens;
 
 	// operators.find is O(1)
 	extern Namespace operators;

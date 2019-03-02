@@ -202,7 +202,6 @@ bool find_list (CodeFeed& feed, std::string& ret) {
 	feed.offset += 3;
 	return true;
 
-
 }
 
 bool find_macro (CodeFeed& feed, std::string& ret) {

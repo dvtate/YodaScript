@@ -69,11 +69,14 @@ public:
 
 class Frame {
 public:
+	typedef class Exit Exit;
+
 	// functioning stack
 	std::vector<Value> stack; // should never need to be resized
 
 	// defined variables
 	std::unordered_map<std::string, Value> vars;
+
 	std::vector<Value> ref_vals; // deleted as they go out of scope
 
 	// where is the code coming from
@@ -87,15 +90,10 @@ public:
 
 	// locally defined operators
 	Namespace defs;
-
-	~Frame()
-	{
-	}
-
 	Frame();
 	Frame(const CodeFeed&);
 
-	typedef class Exit Exit;
+	~Frame() = default;
 
 	// evaluate code
 	Frame::Exit run();
@@ -105,7 +103,6 @@ public:
 	// if var found return it's data reference
 	std::shared_ptr<Value> getVar(const std::string&); // if var is in previous scope, set it to default ref previous scoped variable
 	std::shared_ptr<Value> findVar(const std::string& name); // find var from prev scopes
-
 
 };
 

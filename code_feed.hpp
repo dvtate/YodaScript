@@ -1,3 +1,5 @@
+#include <utility>
+
 #ifndef YS2_CODE_FEED_HPP
 #define YS2_CODE_FEED_HPP
 
@@ -24,8 +26,8 @@ public:
 	//
 	CodeFeed(bool fromStdin=false):
 		offset(0), isStdin(fromStdin) {	}
-	CodeFeed(const std::string& b):
-		offset(0), isStdin(false), body(b) { }
+	CodeFeed(std::string b):
+		offset(0), isStdin(false), body(std::move(b)) { }
 
 	/// add a new line to the string
 	size_t getLine(const char* prompt = "... ")

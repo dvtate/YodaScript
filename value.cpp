@@ -46,9 +46,10 @@ void Value::erase() {
 		delete ref;
 	if (type == Value::ARR)
 		delete arr;
-	if (type == Value::NSP)
+	if (type == Value::NSP) {
+		ns->clear();
 		delete ns;
-	if (type == Value::DEF)
+	} if (type == Value::DEF)
 		delete def;
 }
 
@@ -66,6 +67,8 @@ inline Value& Value::set_noerase(const Value& v) {
 		mp_int = new mpz_class(*v.mp_int);
 	} else if (type == ARR) {
 		arr = new std::vector<Value>(*v.arr);
+	} else if (type == NSP) {
+		ns = new Namespace(*v.ns);
 	}
 	return *this;
 }
@@ -122,6 +125,25 @@ std::string Value::repr() {
 		ret[ret.length() - 2] = ')';
 
 		return ret.substr(0, ret.length() - 1);
+	} else if (type == NSP) {
+		std::string ret = "{\n";
+		for (const auto& e : *ns)
+			ret += "\t\"" + e.first + "\" " + Value(e.second).repr() + "\n";
+		ret += "} namespace";
+		return ret;
+	} else if (type == DEF) {
+		if (def->native) {
+			std::ostringstream ss;
+			ss <<def->act <<" @def";
+			return ss.str();
+		} else {
+			std::string ret;
+			ret += def->_val->repr();
+			if (def->run)
+				ret += '@';
+			ret += "def";
+			return ret;
+		}
 	}
 
 	return "idk";

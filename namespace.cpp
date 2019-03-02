@@ -11,10 +11,8 @@ Def::Def(const Value& value, const bool runnable):
 Def::Def(Exit (*action)(Frame&)):
 	native(true), act(action){}
 Def::Def(const Def& def):
-	native(def.native), run(def.run) {
-	if (def.native)
-		act = def.act;
-	else
+	native(def.native), run(def.run), act(def.act) {
+	if (!native)
 		_val = new Value(*def._val);
 }
 

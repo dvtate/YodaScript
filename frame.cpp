@@ -44,10 +44,10 @@ Frame::Exit Frame::run()
 
 	Frame::Exit ev;
 	do {
+		// defs get automatically evaluated
 		while (ev.reason == Frame::Exit::CONTINUE && stack.back().type == Value::DEF) {
-			Def d = *stack.back().def;
+			ev = runDef(*stack.back().def);
 			stack.pop_back();
-			ev = runDef(d);
 		}
 
 		// get first token once so that we dont have to find it for every operator
