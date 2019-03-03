@@ -24,8 +24,8 @@ Value::Value(const vtype t, const std::shared_ptr<Value>& ref):
 	type(t), ref(new std::shared_ptr<Value>(ref)) {}
 Value::Value(mpz_class mp_integer):
 	type(Value::INT), mp_int(new mpz_class(mp_integer)) {}
-Value::Value(const std::vector<Value>& v):
-	type(Value::ARR), arr(new std::vector<Value>(v)) {}
+Value::Value(const std::vector<std::shared_ptr<Value>>& v):
+	type(Value::ARR), arr(new std::vector<std::shared_ptr<Value>>(v)) {}
 Value::Value(const nullptr_t& null):
 	type(REF), ref(new std::shared_ptr<Value>(nullptr)) {}
 Value::Value(const Def& def):
@@ -53,7 +53,7 @@ void Value::erase() {
 		delete def;
 }
 
-inline Value& Value::set_noerase(const Value& v) {
+Value& Value::set_noerase(const Value& v) {
 	type = v.type;
 
 	if (type == DEC) {
@@ -66,7 +66,7 @@ inline Value& Value::set_noerase(const Value& v) {
 	} else if (type == INT) {
 		mp_int = new mpz_class(*v.mp_int);
 	} else if (type == ARR) {
-		arr = new std::vector<Value>(*v.arr);
+		arr = new std::vector<std::shared_ptr<Value>>(*v.arr);
 	} else if (type == NSP) {
 		ns = new Namespace(*v.ns);
 	}
@@ -120,8 +120,8 @@ std::string Value::repr() {
 		return "cyclic/null reference";
 	} else if (type == ARR) {
 		std::string ret = "(";
-		for (Value& v : *arr)
-			ret += v.repr() + ", ";
+		for (auto v : *arr)
+			ret += v->repr() + ", ";
 		ret[ret.length() - 2] = ')';
 
 		return ret.substr(0, ret.length() - 1);
@@ -169,8 +169,8 @@ std::string Value::toString() {
 		return "cyclic/null reference";
 	} else if (type == ARR) {
 		std::string ret = "(";
-		for (Value& v : *arr)
-			ret += v.repr() + ", ";
+		for (auto v : *arr)
+			ret += v->repr() + ", ";
 		ret[ret.length() - 1] = ')';
 		return ret;
 	}
@@ -219,9 +219,12 @@ Value* Value::deferMuteable(std::vector<std::shared_ptr<Value>*> pastPtrs) {
 }
 
 const char* Value::typeName() {
+	return typeName(type);
+}
+const char* Value::typeName(const Value::vtype value_type) {
 	// could be optimized to an array of strings
 	// and using type as index, but im not certain if i can keep the values in correct order
-	switch (type) {
+	switch (value_type) {
 		case EMT: return "empty";
 		case INT: return "int";
 		case DEC: return "float";
@@ -236,11 +239,10 @@ const char* Value::typeName() {
 		case DEF: return "def";
 
 		default:
-			std::cout <<"unknown type#" <<(const long)type <<std::endl;
+			std::cout <<"unknown type#" <<(const long)value_type <<std::endl;
 			return "unknown";
 	}
 }
-
 bool Value::truthy() {
 	if (type == EMT)	return false;
 	if (type == REF)	return defer();

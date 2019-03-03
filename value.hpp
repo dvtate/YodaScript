@@ -8,7 +8,10 @@
 #include <gmpxx.h>
 #include <algorithm>
 #include <memory>
+#include <cstddef>
 #include <unordered_map>
+
+typedef decltype(nullptr) nullptr_t;
 
 /*
 * - could contain any reperesentable value
@@ -78,7 +81,7 @@ public:
 		//Value* ref;
 
 		std::shared_ptr<Value>* ref;
-		std::vector<Value>* arr;
+		std::vector<std::shared_ptr<Value>>* arr;
 		// obj
 		// lambda
 
@@ -96,7 +99,7 @@ public:
 	Value(std::shared_ptr<Value>);
 	Value(const vtype t, const std::shared_ptr<Value>&);
 	Value(mpz_class);
-	Value(const std::vector<Value>&);
+	Value(const std::vector<std::shared_ptr<Value>>&);
 	Value(const nullptr_t&);
 	Value(const Def&);
 	Value(const std::unordered_map<std::string, Def>&);
@@ -119,8 +122,10 @@ public:
 	Value& set_noerase(const Value& v);
 
 	// copy
-	Value(const Value& v)
-		{ set_noerase(v); std::cout <<"copy\n";}
+	Value(const Value& v) {
+		set_noerase(v);
+		//std::cout <<"copy\n";
+	}
 	Value& operator=(const Value& v)
 		{ set(v); return *this;}
 
@@ -135,6 +140,7 @@ public:
 	Value* deferMuteable(std::vector<std::shared_ptr<Value>*> pastPtrs = {});
 
 	const char* typeName();
+	static const char* typeName(const vtype value_type);
 	bool truthy();
 	bool operator==(Value& v);
 };

@@ -24,37 +24,13 @@ namespace op_namespace {
 		if (f.stack.empty() || f.stack.back().type != Value::MAC)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "namespace expected a macro containing elements", f.feed.lineNumber());
 
-		Frame ns_elems = f.scope(CodeFeed(*f.stack.back().str), false);
-		Frame::Exit e = ns_elems.run();
+		Frame ns_body = f.scope(CodeFeed(*f.stack.back().str), false);
+		Frame::Exit e = ns_body.run();
 		if (e.reason == Frame::Exit::ERROR)
 			return Frame::Exit(Frame::Exit::ERROR, "in namespace", DEBUG_FLI, f.feed.lineNumber(), e);
-		if (ns_elems.stack.size() % 2 != 0)
-			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI "Namespace expects one key for every value", f.feed.lineNumber());
 
-		Namespace ns;
-		while (!ns_elems.stack.empty()) {
-			// get value inside macro
-			const Value v = ns_elems.stack.back();
-			ns_elems.stack.pop_back();
-
-			// get label
-			if (ns_elems.stack.back().type != Value::STR)
-				return Frame::Exit(Frame::Exit::ERROR, "in namespace", DEBUG_FLI " expected string label", f.feed.lineNumber());
-
-			const bool runnable = ns_elems.stack.back().str->at(0) == '@';
-			const std::string label = runnable ?
-									  ns_elems.stack.back().str->c_str() + 1
-											   : *ns_elems.stack.back().str;
-
-			ns_elems.stack.pop_back();
-
-			ns.emplace(label, Def(v, runnable));
-		}
-
-		std::cout <<Value(ns).repr() << ns.size() <<std::endl;
-		f.stack.back().set(ns);
+		f.stack.back().set(ns_body.defs);
 		return Frame::Exit();
-
 
 	}
 }
@@ -80,5 +56,42 @@ namespace op_ns_member_req {
 
 		return Frame::Exit();
 
+	}
+}
+
+namespace op_colon_op {
+
+}
+namespace op_def {
+	const char* name = "def";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += f.feed.tok.length();
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " def expected a string label and value", f.feed.lineNumber());
+
+		Value v = f.stack.back();
+		f.stack.pop_back();
+		if (f.stack.back().type != Value::STR)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " def expected a string label and value", f.feed.lineNumber());
+
+		// performance for normal users hurt for the benefit of inexperienced ones
+		for (const char& c : *f.stack.back().str)
+			if (c == ' ')
+				return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI " def labels cannot have spaces", f.feed.lineNumber());
+
+		// empty string label
+		if (f.stack.back().str->empty())
+			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI " def label cannot be empty", f.feed.lineNumber());
+
+		bool runnable = f.stack.back().str->at(0) == '@';
+		std::string label = runnable ? f.stack.back().str->c_str() + 1 : *f.stack.back().str;
+		f.stack.pop_back();
+
+		f.defs.emplace(label, Def(v, runnable));
+
+		return Frame::Exit();
 	}
 }

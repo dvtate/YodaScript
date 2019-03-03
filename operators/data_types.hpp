@@ -12,5 +12,6 @@ OP_NS(op_lambda);
 OP_NS(op_object);
 OP_NS(op_colon_op);
 OP_NS(op_ns_member_req);
+OP_NS(op_def);
 
 #endif //YS2_DATA_TYPES_HPP

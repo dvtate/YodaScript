@@ -46,6 +46,7 @@ Frame::Exit Frame::run()
 	do {
 		// defs get automatically evaluated
 		while (ev.reason == Frame::Exit::CONTINUE && stack.back().type == Value::DEF) {
+			std::cout <<"def pop\n";
 			ev = runDef(*stack.back().def);
 			stack.pop_back();
 		}

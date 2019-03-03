@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
 			frame.feed.reset();
 
 			// get next line
-			if (!frame.feed.getLine("> "))
+			if (!frame.feed.getLine("--> "))
 				return 0;
 
 

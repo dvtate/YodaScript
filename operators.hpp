@@ -3,7 +3,7 @@
 #define YS2_TOKENS_HPP
 
 #include <vector>
-
+#include <cstddef>
 #include "namespace.hpp"
 #include "frame.hpp"
 #include "code_feed.hpp"
@@ -31,6 +31,11 @@ namespace NAME {\
 #else
 	#define DEBUG_FLI ""
 #endif
+
+#define DEFER_TOP(FRAME) {\
+	const Value* _tmp_v = FRAME.stack.back().defer();\
+	FRAME.stack.back().set(_tmp_v ? *_tmp_v : Value(nullptr));\
+}
 
 typedef struct Token {
 

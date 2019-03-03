@@ -13,6 +13,7 @@ OP_NS(op_multiline_comment);
 OP_NS(op_repeat_loop);
 OP_NS(op_exec);
 OP_NS(op_cond);
+OP_NS(op_while);
 
 Frame::Exit runMacro(Frame& f, const std::string& macro, const bool merge_stack);
 

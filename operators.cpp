@@ -7,15 +7,19 @@
 #include "namespace.hpp"
 
 #include "operators.hpp"
-#include "operators/literals.hpp"
+
+#include "operators/basic_math.hpp"
+#include "operators/boolean_ops.hpp"
+#include "operators/const.hpp"
 #include "operators/ctl_flow.hpp"
+#include "operators/data_types.hpp"
+#include "operators/generic_operators.hpp"
+#include "operators/io.hpp"
+#include "operators/list_stuff.hpp"
+#include "operators/literals.hpp"
+#include "operators/ref_ops.hpp"
 #include "operators/stack_ctl.hpp"
 #include "operators/types.hpp"
-#include "operators/ref_ops.hpp"
-#include "operators/io.hpp"
-#include "operators/boolean_ops.hpp"
-#include "operators/data_types.hpp"
-#include "operators/const.hpp"
 
 namespace operators {
 	int findToken(Frame &f) {
@@ -82,6 +86,8 @@ namespace operators {
 
 		auto d = ns.find(f.feed.tok);
 		if (d != ns.end()) {
+			f.feed.offset += f.feed.tok.length();
+
 			if (d->second.native) {
 				exit = d->second.act(f);
 				return true;
@@ -120,35 +126,49 @@ namespace operators {
 
 	inline static Namespace genOperators() {
 		return Namespace({
-			OP_NS_TO_PAIR(op_const_true),
-			OP_NS_TO_PAIR(op_equals_to),
-			OP_NS_TO_PAIR(op_exec),
-			OP_NS_TO_PAIR(op_var_op),
-			OP_NS_TO_PAIR(op_equals), // change the value of a variable
-			OP_NS_TO_PAIR(op_set),     // give a variable a new value
-			OP_NS_TO_PAIR(op_copy_value),
-			OP_NS_TO_PAIR(op_vars),
-			OP_NS_TO_PAIR(op_const),
-			OP_NS_TO_PAIR(op_stk_clear),
-			OP_NS_TO_PAIR(op_stk_dup),
-			OP_NS_TO_PAIR(op_stk_swap),
-			OP_NS_TO_PAIR(op_stk_pop),
-			OP_NS_TO_PAIR(op_stk_size),
-			OP_NS_TO_PAIR(op_repeat_loop),
+
+			{ "==", op_equals_to::act },    // same value?
+			{ "?=", op_equals_to::act },    // ^
+			OP_NS_TO_PAIR(op_ne),           // !=
+			OP_NS_TO_PAIR(op_gt),           // >
+			OP_NS_TO_PAIR(op_exec),         // @ runs macro/lambda
+			OP_NS_TO_PAIR(op_var_op),       // converts str to ref
+			OP_NS_TO_PAIR(op_equals),       // change the depest value of reference
+			OP_NS_TO_PAIR(op_set),          // give a variable a new value
+			OP_NS_TO_PAIR(op_copy_value),   // get depest value and put on stack
+			OP_NS_TO_PAIR(op_vars),         // debug variables
+			OP_NS_TO_PAIR(op_const),        // converts ref to IMR
+			OP_NS_TO_PAIR(op_stk_clear),    // clears stack
+			OP_NS_TO_PAIR(op_stk_dup),      // dups element
+			OP_NS_TO_PAIR(op_stk_swap),     // swaps top 2 elems
+			OP_NS_TO_PAIR(op_stk_pop),      // pops top elem
+			OP_NS_TO_PAIR(op_stk_size),     // how many elems on stack
+
+			OP_NS_TO_PAIR(op_repeat_loop),  // run given number of times
+			OP_NS_TO_PAIR(op_cond),         // if-elif-else statement
+
 			// const values
-			OP_NS_TO_PAIR(op_const_empty),
-			OP_NS_TO_PAIR(op_const_null),
-			OP_NS_TO_PAIR(op_const_true),
-			OP_NS_TO_PAIR(op_const_false),
+			OP_NS_TO_PAIR(op_const_empty),  // empty value
+			OP_NS_TO_PAIR(op_const_null),   // null reference
+			OP_NS_TO_PAIR(op_const_true),   // 1
+			OP_NS_TO_PAIR(op_const_false),  // 0
+
+			OP_NS_TO_PAIR(op_not),          // !
+
 			// cio
-			OP_NS_TO_PAIR(op_println),
-			OP_NS_TO_PAIR(op_print),
-			OP_NS_TO_PAIR(op_input),
+			OP_NS_TO_PAIR(op_println),      // prints value + std::endl
+			OP_NS_TO_PAIR(op_print),        // prints value
+			OP_NS_TO_PAIR(op_input),        // gets value
 
 			// type conversion
-			OP_NS_TO_PAIR(op_str),
-			OP_NS_TO_PAIR(op_typeof),
-			OP_NS_TO_PAIR(op_namespace),
+			OP_NS_TO_PAIR(op_str),          // toString
+			OP_NS_TO_PAIR(op_typeof),       // .type
+
+
+			OP_NS_TO_PAIR(op_namespace),    // namespace
+			OP_NS_TO_PAIR(op_def),          // define
+			OP_NS_TO_PAIR(op_index),
+			OP_NS_TO_PAIR(op_while),
 		});
 	}
 

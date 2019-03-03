@@ -194,18 +194,15 @@ bool find_list (CodeFeed& feed, std::string& ret) {
 		}
 	}
 
-	feed.offset -= 3;
+	// push trimmed macro onto the stack
+	ret = feed.body.substr(start, feed.offset - start - 1);
 
-	// send trimmed list inside
-	ret = feed.body.substr(start, feed.offset);
-
-	feed.offset += 3;
 	return true;
 
 }
 
 bool find_macro (CodeFeed& feed, std::string& ret) {
-	size_t start = ++feed.offset;
+	size_t start = feed.offset;
 
 	// starting at indentation level 1
 	int indLvl = 1;
@@ -216,7 +213,7 @@ bool find_macro (CodeFeed& feed, std::string& ret) {
 				return false;
 
 		char c = feed.body[feed.offset++];
-
+		//std::cout <<"c = " <<c <<std::endl;
 		if (c == '{') {
 			indLvl++;
 		} else if (c == '}') {
@@ -261,14 +258,10 @@ bool find_macro (CodeFeed& feed, std::string& ret) {
 		}
 	}
 
-
-	feed.offset -= 3;
-
 	// push trimmed macro onto the stack
-	ret = feed.body.substr(start, feed.offset);
+	ret = feed.body.substr(start, feed.offset - start - 1);
 
 
-	feed.offset += 3;
 	return true;
 
 }
@@ -281,7 +274,7 @@ namespace op_const_macro {
 	}
 
 	Frame::Exit act(Frame& f) {
-
+		f.feed.offset++;
 		std::string mac;
 		if (!find_macro(f.feed, mac))
 			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI "EOF while scanning for brace enclosed macro");
@@ -369,7 +362,7 @@ namespace op_const_list {
 		return f.feed.tok[0] == '(';
 	}
 	Frame::Exit act(Frame& f) {
-		std::vector<Value> ret;
+		std::vector<std::shared_ptr<Value>> ret;
 		std::string l_body;
 		if (!find_list(f.feed, l_body))
 			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI "EOF while scanning for list");
@@ -384,7 +377,7 @@ namespace op_const_list {
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "Syntax Error", DEBUG_FLI "Error while processing elem " + std::to_string(i) + " in list literal.", f.feed.lineNumber());
 
-			ret.emplace_back(elem_proc.stack.empty() ? Value() : elem_proc.stack.back());
+			ret.emplace_back(std::make_shared<Value>(elem_proc.stack.empty() ? Value() : elem_proc.stack.back()));
 			elem_proc.stack.clear();
 		}
 		f.stack.emplace_back(ret);
