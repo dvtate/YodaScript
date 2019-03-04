@@ -335,3 +335,61 @@ namespace op_pow {
 
 	}
 }
+
+// TODO: maybe use this as string format operator? (copy python?)
+namespace op_remainder {
+	const char* name = "%";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+
+		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "% expected 2 numbers", f.feed.lineNumber());
+
+		DEFER_TOP(f);
+		Value v2 = f.stack.back();
+		f.stack.pop_back();
+		DEFER_TOP(f);
+		Value& v1 = f.stack.back();
+
+		if ((v1.type != Value::INT && v1.type != Value::DEC) && (v2.type != Value::INT && v2.type != Value::DEC))
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " % expected 2 numbers, received "
+				+ std::string(v1.typeName()) + " & "+ v2.typeName(), f.feed.lineNumber());
+
+		if (v1.type == Value::INT && v2.type == Value::INT)
+			f.stack.back().set(mpz_class(*v1.mp_int % *v2.mp_int));
+		else
+			f.stack.back().set(std::fmod(
+					(v1.type == Value::INT ?
+						v1.mp_int->get_d() : v1.dec),
+					(v2.type == Value::INT ?
+						v2.mp_int->get_d() : v2.dec)));
+
+		return Frame::Exit();
+	}
+}
+
+namespace op_abs {
+	const char* name = "abs";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += strlen(name);
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " abs expected a number to take the absolute value of");
+		DEFER_TOP(f);
+		if (f.stack.back().type != Value::INT && f.stack.back().type != Value::DEC)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " abs expected a number to take the absolute value of");
+
+		if (f.stack.back().type == Value::INT)
+			abs(*f.stack.back().mp_int);
+		else
+			f.stack.back().set(std::abs(f.stack.back().dec));
+
+		return Frame::Exit();
+	}
+
+}

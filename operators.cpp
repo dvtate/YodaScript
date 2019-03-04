@@ -127,23 +127,31 @@ namespace operators {
 	inline static Namespace genOperators() {
 		return Namespace({
 
+			// cmp
 			{ "==", op_equals_to::act },    // same value?
-			{ "?=", op_equals_to::act },    // ^
+			{ "=?", op_equals_to::act },    // ^
 			OP_NS_TO_PAIR(op_ne),           // !=
 			OP_NS_TO_PAIR(op_gt),           // >
+
+			// lam + macro stuff
 			OP_NS_TO_PAIR(op_exec),         // @ runs macro/lambda
+
+			// references
 			OP_NS_TO_PAIR(op_var_op),       // converts str to ref
 			OP_NS_TO_PAIR(op_equals),       // change the depest value of reference
 			OP_NS_TO_PAIR(op_set),          // give a variable a new value
 			OP_NS_TO_PAIR(op_copy_value),   // get depest value and put on stack
 			OP_NS_TO_PAIR(op_vars),         // debug variables
 			OP_NS_TO_PAIR(op_const),        // converts ref to IMR
+
+			// stack
 			OP_NS_TO_PAIR(op_stk_clear),    // clears stack
 			OP_NS_TO_PAIR(op_stk_dup),      // dups element
 			OP_NS_TO_PAIR(op_stk_swap),     // swaps top 2 elems
 			OP_NS_TO_PAIR(op_stk_pop),      // pops top elem
 			OP_NS_TO_PAIR(op_stk_size),     // how many elems on stack
 
+			// structured programming
 			OP_NS_TO_PAIR(op_repeat_loop),  // run given number of times
 			OP_NS_TO_PAIR(op_cond),         // if-elif-else statement
 
@@ -176,6 +184,8 @@ namespace operators {
 			OP_NS_TO_PAIR(op_divide),
 			OP_NS_TO_PAIR(op_int_divide),
 			OP_NS_TO_PAIR(op_pow),
+			OP_NS_TO_PAIR(op_remainder),
+			OP_NS_TO_PAIR(op_abs),
 		});
 	}
 

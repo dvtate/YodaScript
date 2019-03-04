@@ -83,16 +83,16 @@ namespace op_gt {
 		f.stack.pop_back();
 
 		DEFER_TOP(f);
-		auto TypeError = [](const Value::vtype t1, const Value::vtype t2, const size_t lineNumber){
+		auto TypeError = [&](const Value::vtype t1, const Value::vtype t2){
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
-					std::string(name) + ": invalid argument types: " + Value::typeName(t1) + " & " + Value::typeName(t2) + "\n", lineNumber);
+					std::string(name) + ": invalid argument types: " + Value::typeName(t1) + " & " + Value::typeName(t2) + "\n", f.feed.lineNumber());
 		};
 
 
 		switch (v1.type) {
 			case Value::STR:
 				if (f.stack.back().type != Value::STR)
-					return TypeError(f.stack.back().type, v1.type, f.feed.lineNumber());
+					return TypeError(f.stack.back().type, v1.type);
 				f.stack.back().set(mpz_class(*f.stack.back().str > *v1.str));
 				break;
 			case Value::INT:
@@ -101,7 +101,7 @@ namespace op_gt {
 				else if (f.stack.back().type == Value::DEC)
 					f.stack.back().set(f.stack.back().dec > *v1.mp_int);
 				else
-					return TypeError(f.stack.back().type, v1.type, f.feed.lineNumber());
+					return TypeError(f.stack.back().type, v1.type);
 				break;
 			case Value::DEC:
 				if (f.stack.back().type == Value::DEC)
@@ -109,10 +109,10 @@ namespace op_gt {
 				else if (f.stack.back().type == Value::INT)
 					f.stack.back().set(*f.stack.back().mp_int > v1.dec);
 				else
-					return TypeError(f.stack.back().type, v1.type, f.feed.lineNumber());
+					return TypeError(f.stack.back().type, v1.type);
 				break;
 			default:
-				return TypeError(f.stack.back().type, v1.type, f.feed.lineNumber());
+				return TypeError(f.stack.back().type, v1.type);
 		}
 
 		return Frame::Exit();

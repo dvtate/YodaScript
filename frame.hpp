@@ -107,6 +107,4 @@ public:
 };
 
 
-class Frame_Exit;
-
 #endif //YS2_FRAME_HPP

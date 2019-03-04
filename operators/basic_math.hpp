@@ -15,6 +15,7 @@ OP_NS(op_divide);
 OP_NS(op_int_divide);
 OP_NS(op_pow);
 OP_NS(op_remainder);
+OP_NS(op_abs);
 OP_NS(op_shift_left);
 OP_NS(op_shift_right);
 OP_NS(op_logical_and);

@@ -38,8 +38,7 @@ inline bool check_def(Frame& f, Frame::Exit& ev) {
 
 	return false;
 }
-Frame::Exit Frame::run()
-{
+Frame::Exit Frame::run() {
 	//std::cout <<"running line: " <<feed.body <<std::endl;
 
 	Frame::Exit ev;
