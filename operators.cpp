@@ -169,6 +169,13 @@ namespace operators {
 			OP_NS_TO_PAIR(op_def),          // define
 			OP_NS_TO_PAIR(op_index),
 			OP_NS_TO_PAIR(op_while),
+
+			OP_NS_TO_PAIR(op_add),
+			OP_NS_TO_PAIR(op_minus),
+			OP_NS_TO_PAIR(op_multiply),
+			OP_NS_TO_PAIR(op_divide),
+			OP_NS_TO_PAIR(op_int_divide),
+			OP_NS_TO_PAIR(op_pow),
 		});
 	}
 

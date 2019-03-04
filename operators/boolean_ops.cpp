@@ -78,13 +78,11 @@ namespace op_gt {
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected 2 values to compare", f.feed.lineNumber());
 
+		DEFER_TOP(f);
 		Value v1 = f.stack.back();
 		f.stack.pop_back();
-		if (!cmpType(v1.type))
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " doesnt accept " + v1.typeName() + " yet", f.feed.lineNumber());
-		if (!cmpType(f.stack.back().type))
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " doesnt accept " + f.stack.back().typeName() + " yet", f.feed.lineNumber());
 
+		DEFER_TOP(f);
 		auto TypeError = [](const Value::vtype t1, const Value::vtype t2, const size_t lineNumber){
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
 					std::string(name) + ": invalid argument types: " + Value::typeName(t1) + " & " + Value::typeName(t2) + "\n", lineNumber);

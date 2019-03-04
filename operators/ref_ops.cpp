@@ -53,7 +53,6 @@ namespace op_equals {
 		if (ref.type != Value::REF)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " = requires a reference to assign", f.feed.lineNumber());
 
-
 		ref.deferMuteable()->set(v);
 
 		return Frame::Exit();
@@ -78,7 +77,6 @@ namespace op_set {
 
 		if (ref.type != Value::REF)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " set requires a reference to assign", f.feed.lineNumber());
-
 
 		// if its a ref point to it,
 		// else copy data into var data
