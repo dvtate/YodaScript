@@ -16,11 +16,13 @@ OP_NS(op_int_divide);
 OP_NS(op_pow);
 OP_NS(op_remainder);
 OP_NS(op_abs);
+
+// int only
 OP_NS(op_shift_left);
 OP_NS(op_shift_right);
-OP_NS(op_logical_and);
-OP_NS(op_logical_or);
-OP_NS(op_logical_xor);
+OP_NS(op_bw_and);
+OP_NS(op_bw_or);
+OP_NS(op_bw_xor);
 
 
 #endif //YS2_BASIC_MATH_HPP

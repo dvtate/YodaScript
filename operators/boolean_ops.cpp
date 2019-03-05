@@ -65,9 +65,6 @@ namespace op_ne {
 }
 
 // TODO: make support Objects via overloading
-static inline bool cmpType(const Value::vtype& v) {
-	return v == Value::DEC || v == Value::INT || v == Value::STR;
-}
 namespace op_gt {
 	const char* name = ">";
 	bool condition(Frame& f) {
@@ -76,44 +73,152 @@ namespace op_gt {
 	Frame::Exit act(Frame& f) {
 		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected 2 values to compare", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected 2 values to compare",
+							   f.feed.lineNumber());
 
 		DEFER_TOP(f);
-		Value v1 = f.stack.back();
+		Value v2 = f.stack.back();
 		f.stack.pop_back();
 
 		DEFER_TOP(f);
-		auto TypeError = [&](const Value::vtype t1, const Value::vtype t2){
+		auto TypeError = [&](const Value::vtype t1, const Value::vtype t2) {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
-					std::string(name) + ": invalid argument types: " + Value::typeName(t1) + " & " + Value::typeName(t2) + "\n", f.feed.lineNumber());
+							   std::string(name) + ": invalid argument types: " + Value::typeName(t1) + " & " +
+							   Value::typeName(t2) + "\n", f.feed.lineNumber());
 		};
 
-
-		switch (v1.type) {
+		switch (v2.type) {
 			case Value::STR:
 				if (f.stack.back().type != Value::STR)
-					return TypeError(f.stack.back().type, v1.type);
-				f.stack.back().set(mpz_class(*f.stack.back().str > *v1.str));
+					return TypeError(f.stack.back().type, v2.type);
+				f.stack.back().set(mpz_class(*f.stack.back().str > *v2.str));
 				break;
 			case Value::INT:
 				if (f.stack.back().type == Value::INT)
-					f.stack.back().set(*f.stack.back().mp_int > *v1.mp_int);
+					f.stack.back().set(*f.stack.back().mp_int > *v2.mp_int);
 				else if (f.stack.back().type == Value::DEC)
-					f.stack.back().set(f.stack.back().dec > *v1.mp_int);
+					f.stack.back().set(f.stack.back().dec > *v2.mp_int);
 				else
-					return TypeError(f.stack.back().type, v1.type);
+					return TypeError(f.stack.back().type, v2.type);
 				break;
 			case Value::DEC:
 				if (f.stack.back().type == Value::DEC)
-					f.stack.back().set(f.stack.back().dec > v1.dec);
+					f.stack.back().set(f.stack.back().dec > v2.dec);
 				else if (f.stack.back().type == Value::INT)
-					f.stack.back().set(*f.stack.back().mp_int > v1.dec);
+					f.stack.back().set(*f.stack.back().mp_int > v2.dec);
 				else
-					return TypeError(f.stack.back().type, v1.type);
+					return TypeError(f.stack.back().type, v2.type);
 				break;
 			default:
-				return TypeError(f.stack.back().type, v1.type);
+				return TypeError(f.stack.back().type, v2.type);
 		}
+
+		return Frame::Exit();
+	}
+}
+
+
+namespace op_lt {
+	const char *name = "<";
+
+	bool condition(Frame &f) {
+		return f.feed.tok == name;
+	}
+
+	Frame::Exit act(Frame &f) {
+		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected 2 values to compare",
+							   f.feed.lineNumber());
+
+		DEFER_TOP(f);
+		Value v2 = f.stack.back();
+		f.stack.pop_back();
+
+		DEFER_TOP(f);
+		auto TypeError = [&](const Value::vtype t1, const Value::vtype t2) {
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
+							   std::string(name) + ": invalid argument types: " + Value::typeName(t1) + " & " +
+							   Value::typeName(t2) + "\n", f.feed.lineNumber());
+		};
+
+		switch (f.stack.back().type) {
+			case Value::STR:
+				switch (v2.type) {
+					case Value::STR:
+						f.stack.back().set(*f.stack.back().str < *v2.str);
+						break;
+					default:
+						return TypeError(f.stack.back().type, v2.type);
+				}
+				break;
+			case Value::INT:
+				switch (v2.type) {
+					case Value::INT:
+						f.stack.back().set(*f.stack.back().mp_int < *v2.mp_int);
+						break;
+					case Value::DEC:
+						f.stack.back().set(f.stack.back().mp_int->get_d() < v2.dec);
+						break;
+					default:
+						return TypeError(f.stack.back().type, v2.type);
+				}
+				break;
+			case Value::DEC:
+				switch (v2.type) {
+					case Value::DEC:
+						f.stack.back().set(f.stack.back().dec < v2.dec);
+						break;
+					case Value::INT:
+						f.stack.back().set(f.stack.back().dec < v2.mp_int->get_d());
+						break;
+					default:
+						return TypeError(f.stack.back().type, v2.type);
+				}
+
+			default:
+				return TypeError(f.stack.back().type, v2.type);
+
+		}
+
+		return Frame::Exit();
+	}
+}
+
+
+namespace op_and {
+	const char* name = "&&";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "&& expected to conditionals");
+
+		// technically short-circuit logic is in reverse order but expressions already get evaluated anyway
+		bool v1 = f.stack.back().truthy();
+		f.stack.pop_back();
+		f.stack.back().set(v1 && f.stack.back().truthy());
+
+		return Frame::Exit();
+	}
+}
+
+namespace op_or {
+	const char* name = "||";
+	bool condition(Frame& f)
+		{ return f.feed.tok == name; }
+
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "|| expected 2 conditionals", f.feed.lineNumber());
+
+		// technically short-circuit logic is in reverse order but expressions already get evaluated anyway
+		bool v1 = f.stack.back().truthy();
+		f.stack.pop_back();
+		f.stack.back().set(v1 || f.stack.back().truthy());
 
 		return Frame::Exit();
 	}

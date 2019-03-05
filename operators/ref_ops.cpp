@@ -123,14 +123,14 @@ namespace op_vars {
 		std::cout <<"\tname\taddress\tvalue\n";
 		for (auto& v : f.vars)
 			if ((*v.second.ref)->type != Value::EMT)
-				std::cout <<"\t$" <<v.first <<'\t' <<*v.second.ref <<'\t' <<(*v.second.ref)->typeName() <<'\t' <<v.second.repr() <<std::endl;
+				std::cout <<"\t$" <<v.first <<'\t' <<*v.second.ref <<'\t' <<(*v.second.ref)->typeName() <<'\t' <<v.second.depict() <<std::endl;
 
 		unsigned short bt = 1;
 		for (Frame* pf : f.prev) {
 			std::cout << "Previous scope " << bt++ << ":\n";
 			for (auto &v : pf->vars)
 				if ((*v.second.ref)->type != Value::EMT)
-					std::cout << "\t$" << v.first   <<'\t' <<*v.second.ref <<'\t' <<(*v.second.ref)->typeName() <<'\t' <<v.second.repr() <<std::endl;
+					std::cout << "\t$" << v.first   <<'\t' <<*v.second.ref <<'\t' <<(*v.second.ref)->typeName() <<'\t' <<v.second.depict() <<std::endl;
 		}
 
 		return Frame::Exit();
@@ -138,13 +138,13 @@ namespace op_vars {
 }
 
 namespace op_const {
-	const char* name = "const";
+	const char* name = "weak";
 	bool condition(Frame& f) {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
 		if (f.stack.empty())
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "const expected a reference to make immutable", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "weak expected a reference to weaken", f.feed.lineNumber());
 
 
 		std::shared_ptr<Value> v = std::make_shared<Value>(f.stack.back());

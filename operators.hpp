@@ -8,6 +8,7 @@
 #include "frame.hpp"
 #include "code_feed.hpp"
 
+#define DEBUG 1
 
 // convert a token namespace to a Token obj
 #define OP_NS_TO_TOK(NS) Token({ NS::name, NS::condition, NS::act })
@@ -24,10 +25,12 @@ namespace NAME {\
 #define OP_NS_TO_PAIR(ns) { ns::name, ns::act }
 
 
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
 // this should be included in your error messages so that
 //  we where to look if there's a false positive
 #ifdef DEBUG
-	#define DEBUG_FLI "(" __FILENAME__ "#" __LINE__ ")"
+	#define DEBUG_FLI "(" + std::string(__FILENAME__) + "#" + std::to_string(__LINE__) + ")"
 #else
 	#define DEBUG_FLI ""
 #endif
@@ -64,8 +67,8 @@ namespace operators {
 	// tokens.find
 	int findToken(Frame& f);
 
-	// callByName(f, "@", ev)
-	bool callByName(Frame& f, const std::string &name, Frame::Exit &exit);
+
+	bool callByName(Frame& f, const std::string &name, Frame::Exit &exit); // ie - callByName(f, "@", ev)
 	bool callOperator(Frame& f, Frame::Exit& exit, const Namespace& ns);
 	bool callOperator(Frame& f, Frame::Exit& exit);
 	bool callToken(Frame& f, Frame::Exit& exit);

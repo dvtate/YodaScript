@@ -104,7 +104,7 @@ namespace operators {
 		}
 		return false;
 	}
-	inline static std::vector<struct Token> genTokens() {
+	inline std::vector<struct Token> genTokens() {
 		// loads all operators from operators/
 		return std::vector<struct Token>({
 				OP_NS_TO_TOK(op_var_literal),
@@ -124,14 +124,15 @@ namespace operators {
 		});
 	}
 
-	inline static Namespace genOperators() {
+	inline Namespace genOperators() {
 		return Namespace({
 
 			// cmp
-			{ "==", op_equals_to::act },    // same value?
+			{ op_equals_to::name, op_equals_to::act },    // same value?
 			{ "=?", op_equals_to::act },    // ^
 			OP_NS_TO_PAIR(op_ne),           // !=
 			OP_NS_TO_PAIR(op_gt),           // >
+			OP_NS_TO_PAIR(op_lt),
 
 			// lam + macro stuff
 			OP_NS_TO_PAIR(op_exec),         // @ runs macro/lambda
@@ -145,6 +146,7 @@ namespace operators {
 			OP_NS_TO_PAIR(op_const),        // converts ref to IMR
 
 			// stack
+			OP_NS_TO_PAIR(op_stack),
 			OP_NS_TO_PAIR(op_stk_clear),    // clears stack
 			OP_NS_TO_PAIR(op_stk_dup),      // dups element
 			OP_NS_TO_PAIR(op_stk_swap),     // swaps top 2 elems
@@ -161,7 +163,10 @@ namespace operators {
 			OP_NS_TO_PAIR(op_const_true),   // 1
 			OP_NS_TO_PAIR(op_const_false),  // 0
 
+			// boolean
 			OP_NS_TO_PAIR(op_not),          // !
+			OP_NS_TO_PAIR(op_and),
+			OP_NS_TO_PAIR(op_or),
 
 			// cio
 			OP_NS_TO_PAIR(op_println),      // prints value + std::endl
@@ -186,6 +191,13 @@ namespace operators {
 			OP_NS_TO_PAIR(op_pow),
 			OP_NS_TO_PAIR(op_remainder),
 			OP_NS_TO_PAIR(op_abs),
+
+			OP_NS_TO_PAIR(op_shift_left),
+			OP_NS_TO_PAIR(op_shift_right),
+			OP_NS_TO_PAIR(op_bw_and),
+			OP_NS_TO_PAIR(op_bw_xor),
+			OP_NS_TO_PAIR(op_bw_or),
+
 		});
 	}
 

@@ -76,7 +76,7 @@ public:
 	std::string findLine(const size_t lineNum) {
 		int line = 0;
 		size_t start = 0;
-		for (; start < body.length() && line < lineNum; start++)
+		for (; start + 1 < body.length() && line < lineNum; start++)
 			if (body.at(start) == '\n')
 				line++;
 
@@ -85,11 +85,13 @@ public:
 			return "";
 
 		size_t end = start;
-		while (end < body.length()) {
+		while (end + 1< body.length()) {
+			end++;
 			if (body.at(end) == '\n')
 				break;
-			end++;
+
 		}
+		//std::cout <<"start: " <<start <<"   end: " <<end <<std::endl;
 
 		return body.substr(start, end - start);
 

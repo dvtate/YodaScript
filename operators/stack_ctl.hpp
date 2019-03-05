@@ -13,5 +13,6 @@ OP_NS(op_stk_dup);
 OP_NS(op_stk_swap);
 OP_NS(op_stk_pop);
 OP_NS(op_stk_size);
+OP_NS(op_stack);
 
 #endif //YS2_STACK_CTL_HPP

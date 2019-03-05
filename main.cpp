@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
 				std::cout <<e.backtrace();
 
 			else if (!frame.stack.empty())
-				std::cout <<frame.stack.back().repr();
+				std::cout << frame.stack.back().depict();
 
 			std::cout <<std::endl;
 

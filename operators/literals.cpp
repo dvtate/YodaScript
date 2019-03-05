@@ -78,6 +78,8 @@ namespace op_const_string {
 namespace op_const_int {
 	const char* name = "*int";
 	bool condition(Frame& f) {
+		// maybe could look at their source code to optimize this...
+		// feels like shit useing try-catch :/
 		try {
 			mpz_class(f.feed.tok);
 		} catch (const std::invalid_argument&) {
@@ -94,7 +96,7 @@ namespace op_const_int {
 }
 
 namespace op_const_number {
-	const char* name = "*num";
+	const char* name = "*dec";
 	bool condition(Frame& frame) {
 		// this is temporary i guess
 		// exceptions are kinda slow

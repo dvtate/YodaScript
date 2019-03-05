@@ -21,7 +21,7 @@ typedef decltype(nullptr) nullptr_t;
 */
 
 #include "namespace.hpp"
-
+#include "object.hpp"
 
 class Value {
 public:
@@ -129,7 +129,7 @@ public:
 	Value& operator=(const Value& v)
 		{ set(v); return *this;}
 
-	std::string repr();		// represent value
+	std::string depict();		// represent value
 	std::string toString();	// stringify value
 
 	// get the value that a reference points to

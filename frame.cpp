@@ -44,10 +44,11 @@ Frame::Exit Frame::run() {
 	Frame::Exit ev;
 	do {
 		// defs get automatically evaluated
-		while (ev.reason == Frame::Exit::CONTINUE && stack.back().type == Value::DEF) {
-			std::cout <<"def pop\n";
-			ev = runDef(*stack.back().def);
+		while (!stack.empty() && ev.reason == Frame::Exit::CONTINUE && stack.back().type == Value::DEF) {
+			Def d = *stack.back().def;
+			//std::cout <<Value(d).depict() <<std::endl;
 			stack.pop_back();
+			ev = runDef(d);
 		}
 
 		// get first token once so that we dont have to find it for every operator

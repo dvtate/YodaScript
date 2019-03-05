@@ -379,10 +379,10 @@ namespace op_abs {
 	Frame::Exit act(Frame& f) {
 		f.feed.offset += strlen(name);
 		if (f.stack.empty())
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " abs expected a number to take the absolute value of");
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " abs expected a number to take the absolute value of", f.feed.lineNumber());
 		DEFER_TOP(f);
 		if (f.stack.back().type != Value::INT && f.stack.back().type != Value::DEC)
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " abs expected a number to take the absolute value of");
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " abs expected a number to take the absolute value of", f.feed.lineNumber());
 
 		if (f.stack.back().type == Value::INT)
 			abs(*f.stack.back().mp_int);
@@ -393,3 +393,188 @@ namespace op_abs {
 	}
 
 }
+
+namespace op_shift_left {
+	const char* name = "<<";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " << expected 2 ints.", f.feed.lineNumber());
+
+		auto TypeError = [&](Value::vtype t) {
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
+							   DEBUG_FLI " << expected int, received " + std::string(Value::typeName(t)), f.feed.lineNumber());
+		};
+		DEFER_TOP(f);
+
+
+		if (f.stack.back().type != Value::INT)
+			return TypeError(f.stack.back().type);
+
+		mpz_class v = *f.stack.back().mp_int;
+		f.stack.pop_back();
+
+		if (v < 0)
+			return Frame::Exit(Frame::Exit::ERROR, "ValueError", DEBUG_FLI " negative shift");
+
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::INT)
+			return TypeError(f.stack.back().type);
+
+		mpz_mul_2exp(f.stack.back().mp_int->get_mpz_t(), f.stack.back().mp_int->get_mpz_t(), v.get_si());
+
+		return Frame::Exit();
+	}
+}
+
+
+namespace op_shift_right {
+	const char* name = ">>";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " >> expected 2 ints.", f.feed.lineNumber());
+
+		auto TypeError = [&](Value::vtype t) {
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
+							   DEBUG_FLI " << expected int, received " + std::string(Value::typeName(t)), f.feed.lineNumber());
+		};
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::INT)
+			return TypeError(f.stack.back().type);
+
+		mpz_class v = *f.stack.back().mp_int;
+		f.stack.pop_back();
+
+		if (v < 0)
+			return Frame::Exit(Frame::Exit::ERROR, "ValueError", DEBUG_FLI " negative shift");
+
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::INT)
+			return TypeError(f.stack.back().type);
+
+		mpz_div_2exp(f.stack.back().mp_int->get_mpz_t(), f.stack.back().mp_int->get_mpz_t(), v.get_ui());
+
+		return Frame::Exit();
+	}
+}
+
+
+
+namespace op_bw_and {
+	const char* name = "&";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "& expected 2 ints");
+
+		auto TypeError = [&](Value::vtype t) {
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
+							   DEBUG_FLI " << expected int, received " + std::string(Value::typeName(t)), f.feed.lineNumber());
+		};
+
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::INT)
+			return TypeError(f.stack.back().type);
+
+		mpz_class v = *f.stack.back().mp_int;
+		f.stack.pop_back();
+
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::INT)
+			return TypeError(f.stack.back().type);
+
+		mpz_and(f.stack.back().mp_int->get_mpz_t(), f.stack.back().mp_int->get_mpz_t(), v.get_mpz_t());
+
+		return Frame::Exit();
+	}
+}
+
+
+// or
+
+namespace op_bw_xor {
+	const char* name = "^";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "* expected 2 ints");
+
+		auto TypeError = [&](Value::vtype t) {
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
+							   DEBUG_FLI " << expected int, received " + std::string(Value::typeName(t)), f.feed.lineNumber());
+		};
+
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::INT)
+			return TypeError(f.stack.back().type);
+
+		mpz_class v = *f.stack.back().mp_int;
+		f.stack.pop_back();
+
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::INT)
+			return TypeError(f.stack.back().type);
+
+		mpz_xor(f.stack.back().mp_int->get_mpz_t(), f.stack.back().mp_int->get_mpz_t(), v.get_mpz_t());
+
+		return Frame::Exit();
+	}
+}
+
+namespace op_bw_or {
+	const char* name = "|";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+
+	Frame::Exit act(Frame& f) {
+		f.feed.offset += strlen(name);
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "| expected 2 ints");
+
+		auto TypeError = [&](Value::vtype t) {
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
+							   DEBUG_FLI " << expected int, received " + std::string(Value::typeName(t)), f.feed.lineNumber());
+		};
+
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::INT)
+			return TypeError(f.stack.back().type);
+
+		mpz_class v = *f.stack.back().mp_int;
+		f.stack.pop_back();
+
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::INT)
+			return TypeError(f.stack.back().type);
+
+		mpz_ior(f.stack.back().mp_int->get_mpz_t(), f.stack.back().mp_int->get_mpz_t(), v.get_mpz_t());
+
+		return Frame::Exit();
+	}
+}
+

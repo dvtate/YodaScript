@@ -69,6 +69,8 @@ Value& Value::set_noerase(const Value& v) {
 		arr = new std::vector<std::shared_ptr<Value>>(*v.arr);
 	} else if (type == NSP) {
 		ns = new Namespace(*v.ns);
+	} else if (type == DEF) {
+		def = new Def(*v.def);
 	}
 	return *this;
 }
@@ -82,7 +84,7 @@ inline static size_t countLines(const std::string& s)
 	return lc;
 }
 
-std::string Value::repr() {
+std::string Value::depict() {
 	if (type == DEC) {
 		// add .0 for whole numbers
 		std::ostringstream ss;
@@ -116,29 +118,30 @@ std::string Value::repr() {
 	} else if (type == REF || type == IMR) {
 		Value* v = (Value*) defer();
 		if (v)
-			return v->repr();
+			return v->depict();
 		return "cyclic/null reference";
 	} else if (type == ARR) {
 		std::string ret = "(";
 		for (auto v : *arr)
-			ret += v->repr() + ", ";
+			ret += v->depict() + ", ";
 		ret[ret.length() - 2] = ')';
 
 		return ret.substr(0, ret.length() - 1);
 	} else if (type == NSP) {
 		std::string ret = "{\n";
 		for (const auto& e : *ns)
-			ret += "\t\"" + e.first + "\" " + Value(e.second).repr() + "\n";
+			ret += "\t\"" + e.first + "\"\t" + Value(e.second).depict() + "\n";
 		ret += "} namespace";
 		return ret;
 	} else if (type == DEF) {
 		if (def->native) {
 			std::ostringstream ss;
-			ss <<def->act <<" @def";
+			ss <<(void*) def->act <<" @def";
 			return ss.str();
 		} else {
+			std::cout <<"ys def";
 			std::string ret;
-			ret += def->_val->repr();
+			ret += def->_val->depict();
 			if (def->run)
 				ret += '@';
 			ret += "def";
@@ -170,7 +173,7 @@ std::string Value::toString() {
 	} else if (type == ARR) {
 		std::string ret = "(";
 		for (auto v : *arr)
-			ret += v->repr() + ", ";
+			ret += v->depict() + ", ";
 		ret[ret.length() - 1] = ')';
 		return ret;
 	}
@@ -244,14 +247,19 @@ const char* Value::typeName(const Value::vtype value_type) {
 	}
 }
 bool Value::truthy() {
-	if (type == EMT)	return false;
-	if (type == REF)	return defer();
+	if (type == REF) {
+		Value* v = (Value*) defer();
+		return v && v->truthy();
+	}
 	if (type == INT)	return *mp_int != 0;
 	if (type == DEC)	return dec != 0;
+	if (type == EMT)	return false;
 	if (type == STR)	return (bool) str->length();
 	if (type == ARR)	return !arr->empty();
 	if (type == OBJ || type == MAC || type == LAM)
 		return true;
+
+
 
 	std::cout <<"invalid type in Value.truthy()\n";
 	// glitch

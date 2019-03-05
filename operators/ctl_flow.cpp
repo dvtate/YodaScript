@@ -130,6 +130,7 @@ namespace op_exec {
 		if (!ref)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " null/cyclic reference passed to @ operator", f.feed.lineNumber());
 		Value v = *ref; // copy in case of race condition
+
 		f.stack.pop_back();
 		if (v.type == Value::MAC || v.type == Value::STR) {
 			const Frame::Exit ev = runMacro(f, *v.str, true);
@@ -137,8 +138,10 @@ namespace op_exec {
 				return Frame::Exit(Frame::Exit::ERROR,
 						DEBUG_FLI "In " + std::string(v.typeName()) + " @ ", "", f.feed.lineNumber(), ev);
 
+		} else if (v.type == Value::DEF) {
+			return f.runDef(*v.def);
 		} else if (v.type == Value::LAM) {
-			std::cout <<"lambda exec not implemented\n";
+				std::cout <<"lambda exec not implemented\n";
 		} else {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "non-exectuteable type (" + std::string(v.typeName()) + ") passed to @ operator", f.feed.lineNumber());
 		}
@@ -254,6 +257,7 @@ namespace op_while {
 		const std::string b_mac = *f.stack.back().str;
 		f.stack.pop_back();
 		Frame body = f.scope(b_mac, true);
+
 		// run condition
 		bool condition;
 		Frame::Exit ev = cond.run();

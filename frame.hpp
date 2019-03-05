@@ -55,8 +55,10 @@ public:
 
 	std::string msg{""};
 	void genMsg(CodeFeed& feed) {
+		feed.offset -= feed.tok.length();
 		msg += "\nLocal Line: " + std::to_string(line + 1);
 		msg += "\n" + title + ": " + desc + "\nnear: " + feed.findLine(line) + '\n';
+		feed.offset += feed.tok.length();
 	}
 
 	std::string backtrace() {
