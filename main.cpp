@@ -36,8 +36,10 @@ int main(int argc, char** argv) {
 			Frame main;
 			main.feed.loadFile(argv[1]);
 			Frame::Exit e = main.run();
-			if (e.reason == Frame::Exit::ERROR)
+			if (e.reason == Frame::Exit::ERROR) {
+				std::cout <<"Entry Point: Global Line " <<e.line + 1 <<std::endl;
 				std::cout <<e.backtrace();
+			}
 		}
 
 	}

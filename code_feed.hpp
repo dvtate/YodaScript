@@ -30,7 +30,7 @@ public:
 		offset(0), isStdin(false), body(std::move(b)) { }
 
 	/// add a new line to the string
-	size_t getLine(const char* prompt = "... ")
+	size_t getLine(const char* prompt = ". ")
 	{
 
 		if (!isStdin)
@@ -93,7 +93,7 @@ public:
 		}
 		//std::cout <<"start: " <<start <<"   end: " <<end <<std::endl;
 
-		return body.substr(start, end - start);
+		return body.substr(start, 1 + end - start);
 
 	}
 

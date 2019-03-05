@@ -8,14 +8,12 @@
 #include <vector>
 #include <string>
 #include "namespace.hpp"
-class Lambda {
-public:
+
+// should i use a struct?
+typedef struct Lambda {
 	Namespace defs;
 	std::vector<std::string> args;
 	std::string body;
+} Lambda;
 
-	Lambda(const std::vector<std::string>&& args, const std::string&& body, const Namespace&& defs):
-		defs(defs), args(args), body(body) {}
-
-};
 #endif //YS2_LAMBDA_HPP

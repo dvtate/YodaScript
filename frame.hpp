@@ -12,7 +12,7 @@
 #include "code_feed.hpp"
 
 // type returned upon evaluation of a Frame
-	// should be nested within frame but C++ is retarded and won't let you forward declare nested classes
+// should be nested within Frame but C++ is retarded and won't let you forward declare nested classes
 class Exit {
 public:
 	enum Reason {
@@ -24,7 +24,7 @@ public:
 		ESCAPE,
 	} reason;
 
-	/*
+	/* TODO: catch expressions
 	 * if error: keep going up frames until one has a handler
 	 * if escape(n): subtract one from line and go up, if
 	 */
@@ -56,15 +56,16 @@ public:
 	std::string msg{""};
 	void genMsg(CodeFeed& feed) {
 		feed.offset -= feed.tok.length();
-		msg += "\nLocal Line: " + std::to_string(line + 1);
-		msg += "\n" + title + ": " + desc + "\nnear: " + feed.findLine(line) + '\n';
+		msg += "Local Line: " + std::to_string(line + 1); // yellow
+		msg += "\n" + title + ": " + desc // red
+				+ "\nnear: " + feed.findLine(line) + '\n'; // green
 		feed.offset += feed.tok.length();
 	}
 
 	std::string backtrace() {
 		std::string ret = msg;
 		for (Exit e : trace)
-			ret += "\n" + e.msg;
+			ret += e.msg;
 		return ret;
 	}
 };
@@ -107,6 +108,5 @@ public:
 	std::shared_ptr<Value> findVar(const std::string& name); // find var from prev scopes
 
 };
-
 
 #endif //YS2_FRAME_HPP

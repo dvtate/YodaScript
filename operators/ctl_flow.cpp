@@ -45,7 +45,7 @@ namespace op_multiline_comment {
 			goto find_ending;
 		}
 
-		f.feed.offset += end + 1;
+		f.feed.offset += end - 1;
 
 		return Frame::Exit();
 	}
@@ -136,7 +136,7 @@ namespace op_exec {
 			const Frame::Exit ev = runMacro(f, *v.str, true);
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR,
-						DEBUG_FLI "In " + std::string(v.typeName()) + " @ ", "", f.feed.lineNumber(), ev);
+						DEBUG_FLI "In " + std::string(v.typeName()) + " @ ", DEBUG_FLI, f.feed.lineNumber(), ev);
 
 		} else if (v.type == Value::DEF) {
 			return f.runDef(*v.def);

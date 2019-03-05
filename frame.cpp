@@ -38,6 +38,7 @@ inline bool check_def(Frame& f, Frame::Exit& ev) {
 
 	return false;
 }
+
 Frame::Exit Frame::run() {
 	//std::cout <<"running line: " <<feed.body <<std::endl;
 
@@ -58,12 +59,14 @@ Frame::Exit Frame::run() {
 
 		//std::cout <<"tok" <<feed.tok<<std::endl;
 
+		// user-level definitions & imports > interpreter level operators > interpreter level tokens
 		if (!check_def(*this, ev) && !operators::callOperator(*this, ev) && !operators::callToken(*this, ev)) {
 			ev = Frame::Exit(Frame::Exit::ERROR, "SyntaxError",
 							 "unknown token near `" + feed.tok + "`\n", feed.lineNumber());
 			break;
 		}
 	} while (ev.reason == Frame::Exit::CONTINUE);
+
 
 
 	if (ev.reason == Frame::Exit::ERROR)
