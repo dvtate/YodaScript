@@ -1,6 +1,6 @@
 
 #include <ctype.h>
-#include "namespace.hpp"
+#include "namespace_def.hpp"
 #include "operators.hpp"
 #include "frame.hpp"
 
@@ -56,14 +56,17 @@ Frame::Exit Frame::run() {
 		// stored in feed.tok
 		if (!feed.setTok())
 			return Frame::Exit(Frame::Exit::FEED_END);
-
+		feed.offset += feed.tok.length();
 		//std::cout <<"tok" <<feed.tok<<std::endl;
 
 		// user-level definitions & imports > interpreter level operators > interpreter level tokens
-		if (!check_def(*this, ev) && !operators::callOperator(*this, ev) && !operators::callToken(*this, ev)) {
-			ev = Frame::Exit(Frame::Exit::ERROR, "SyntaxError",
-							 "unknown token near `" + feed.tok + "`\n", feed.lineNumber());
-			break;
+		if (!check_def(*this, ev) && !operators::callOperator(*this, ev)) {
+			feed.offset -= feed.tok.length();
+			if (!operators::callToken(*this, ev)) {
+				ev = Frame::Exit(Frame::Exit::ERROR, "SyntaxError",
+								 "unknown token near `" + feed.tok + "`\n", feed.lineNumber());
+				break;
+			}
 		}
 	} while (ev.reason == Frame::Exit::CONTINUE);
 
@@ -89,7 +92,7 @@ std::shared_ptr<Value> Frame::getVar(const std::string& name) {
 }
 
 
-std::shared_ptr<Value> Frame::findVar(const std::string &name) {
+std::shared_ptr<Value> Frame::findVar(const std::string& name) {
 	auto v = vars.find(name);
 	if (v != vars.end())
 		return *v->second.ref;
@@ -107,6 +110,18 @@ std::shared_ptr<Value> Frame::findVar(const std::string &name) {
 	}
 	return nullptr;
 
+}
+
+// set var in current scope
+std::shared_ptr<Value> Frame::setVar(const std::string& name, const std::shared_ptr<Value>& val) {
+
+	auto v = vars.find(name);
+	if (v != vars.end())
+		return *v->second.ref = val;
+
+	vars.emplace(name, val);
+	v = vars.find(name);
+	return *v->second.ref;
 }
 
 Frame Frame::scope(const CodeFeed& feed, bool copy_stack) {

@@ -20,7 +20,6 @@ namespace op_namespace {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.empty() || f.stack.back().type != Value::MAC)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "namespace expected a macro containing elements", f.feed.lineNumber());
 
@@ -68,7 +67,6 @@ namespace op_def {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += f.feed.tok.length();
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " def expected a string label and value", f.feed.lineNumber());
 
@@ -94,4 +92,20 @@ namespace op_def {
 
 		return Frame::Exit();
 	}
+}
+
+
+
+namespace op_lambda {
+	const char* name = "lambda";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " lambda expected a macro body and a list of parameters", f.feed.lineNumber());
+
+	}
+
 }

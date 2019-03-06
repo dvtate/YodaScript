@@ -7,13 +7,23 @@
 
 #include <vector>
 #include <string>
-#include "namespace.hpp"
+#include <memory>
+#include "namespace_def.hpp"
+
+class Frame;
+class Exit;
 
 // should i use a struct?
 typedef struct Lambda {
-	Namespace defs;
-	std::vector<std::string> args;
+	// if it's a member of something
+	std::shared_ptr<Value> self;
+
+	std::vector<std::string> params;
 	std::string body;
+
+
+	Exit call(Frame&);
+
 } Lambda;
 
 #endif //YS2_LAMBDA_HPP

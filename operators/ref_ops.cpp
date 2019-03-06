@@ -11,10 +11,8 @@ namespace op_var_literal {
 	}
 	Frame::Exit act(Frame& f) {
 		// push corresponding reference onto stack
-		std::shared_ptr<Value> ref = f.getVar(f.feed.tok.substr(1, f.feed.tok.length() - 1));
-		f.stack.emplace_back(ref);
+		f.stack.emplace_back(f.getVar(f.feed.tok.substr(1, f.feed.tok.length() - 1)));
 		f.feed.offset += f.feed.tok.length();
-
 		return Frame::Exit();
 	}
 }
@@ -29,7 +27,7 @@ namespace op_var_op {
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " $ operator expected a string variable name", f.feed.lineNumber());
 
 		f.stack.back() = Value(f.getVar(*f.stack.back().str));
-		f.feed.offset++;
+
 		return Frame::Exit();
 	}
 }
@@ -40,7 +38,6 @@ namespace op_equals {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset++;
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " = expected a reference and a value to assign", f.feed.lineNumber());
 
@@ -66,7 +63,6 @@ namespace op_set {
 	}
 
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " set expected a reference and a value to assign", f.feed.lineNumber());
 
@@ -92,7 +88,6 @@ namespace op_copy_value {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset++;
 		if (!f.stack.size())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " ~ expected a reference to defer", f.feed.lineNumber());
 
@@ -118,7 +113,6 @@ namespace op_vars {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		std::cout <<"Current Scope:\n";
 		std::cout <<"\tname\taddress\tvalue\n";
 		for (auto& v : f.vars)
@@ -151,7 +145,6 @@ namespace op_const {
 
 		f.stack.back() = Value(Value::IMR, v);
 
-		f.feed.offset += strlen(name);
 		return Frame::Exit();
 	}
 }

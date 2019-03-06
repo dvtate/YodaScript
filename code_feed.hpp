@@ -103,6 +103,8 @@ public:
 		return body.substr(offset, body.length());
 	}
 
+	// TODO: make this tokenize out member accessors
+	// ie - `stack:size` --> "stack" ":size"
 	bool setTok() {
 
 
@@ -116,14 +118,13 @@ public:
 			return false;
 
 		size_t i = offset;
-		char c = body.at(offset);
-		//std::cout <<"pulling initial token...\n";
+		char c; = body.at(offset);
 
-		while (i < body.length() && !isspace(c)) {
+		do {
 			c = body.at(i);
 			//std::cout <<i - offset << "-" << c <<"\n";
 			i++;
-		}
+		} while (i < body.length() && !isspace(c));
 
 		if (i > body.length())
 			return false;

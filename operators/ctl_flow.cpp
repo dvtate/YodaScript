@@ -32,7 +32,6 @@ namespace op_multiline_comment {
 
 	Frame::Exit act(Frame& f) {
 		size_t start = f.feed.offset;
-		f.feed.offset += strlen(name);
 
 	find_ending:
 		//std::cout <<"searching for end\n";
@@ -61,7 +60,6 @@ namespace op_repeat_loop {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 
 		const Frame::Exit bad_exit = Frame::Exit(Frame::Exit::ERROR,
 				"ArgError", DEBUG_FLI + std::string(name) + " expected a macro and a number of times to run it",
@@ -121,7 +119,6 @@ namespace op_exec {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " @ operator expected something to run", f.feed.lineNumber());
 
@@ -172,7 +169,6 @@ namespace op_cond {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act (Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI, f.feed.lineNumber());
 		if (f.stack.back().type != Value::MAC)
@@ -243,7 +239,6 @@ namespace op_while {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "while loop expected a body and condition", f.feed.lineNumber());
 
@@ -278,6 +273,7 @@ namespace op_while {
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "in while loop condition", DEBUG_FLI, f.feed.lineNumber(), ev);
 			condition = cond.stack.back().truthy();
+			cond.stack.clear(); // if i dont clear then stack will continue to grow and cause problems later on
 		}
 
 		// merge stacks

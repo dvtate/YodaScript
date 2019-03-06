@@ -5,7 +5,7 @@
 #include "object.hpp"
 
 
-std::shared_ptr<Value> Object::getMember(const std::string &name) {
+std::shared_ptr<Value>& Object::getMember(const std::string& name) {
 	auto m = members.find(name);
 	if (m == members.end()) {
 		members.emplace(name, std::make_shared<Value>());

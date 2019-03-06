@@ -106,7 +106,7 @@ public:
 	// if var found return it's data reference
 	std::shared_ptr<Value> getVar(const std::string&); // if var is in previous scope, set it to default ref previous scoped variable
 	std::shared_ptr<Value> findVar(const std::string& name); // find var from prev scopes
-
+	std::shared_ptr<Value> setVar(const std::string& name, const std::shared_ptr<Value>& val);
 };
 
 #endif //YS2_FRAME_HPP

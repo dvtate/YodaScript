@@ -21,7 +21,6 @@ namespace op_not {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset++;
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", " ! operator requires a condition to negate.", f.feed.lineNumber());
 
@@ -35,7 +34,6 @@ namespace op_equals_to {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected 2 values to compare", f.feed.lineNumber());
 
@@ -52,7 +50,6 @@ namespace op_ne {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected 2 values to compare", f.feed.lineNumber());
 
@@ -71,7 +68,6 @@ namespace op_gt {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected 2 values to compare",
 							   f.feed.lineNumber());
@@ -126,7 +122,6 @@ namespace op_lt {
 	}
 
 	Frame::Exit act(Frame &f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", std::string(name) + " expected 2 values to compare",
 							   f.feed.lineNumber());
@@ -192,7 +187,6 @@ namespace op_and {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "&& expected to conditionals");
 
@@ -211,7 +205,6 @@ namespace op_or {
 		{ return f.feed.tok == name; }
 
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "|| expected 2 conditionals", f.feed.lineNumber());
 

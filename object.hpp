@@ -10,14 +10,14 @@
 #include <unordered_map>
 
 
-#include "namespace.hpp"
+#include "namespace_def.hpp"
 
 class Value;
 
 class Object {
 public:
 	std::unordered_map<std::string, std::shared_ptr<Value>> members;
-	std::shared_ptr<Value> getMember(const std::string& name);
+	std::shared_ptr<Value>& getMember(const std::string& name);
 };
 
 

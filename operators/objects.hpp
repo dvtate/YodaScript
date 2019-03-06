@@ -1,0 +1,17 @@
+//
+// Created by tate on 06-03-19.
+//
+
+#ifndef YS2_OBJECTS_HPP
+#define YS2_OBJECTS_HPP
+
+#include "../operators.hpp"
+
+
+OP_NS(op_object);
+OP_NS(op_obj_mem_acc);
+OP_NS(op_obj_mem_acc_op);
+
+
+#endif //YS2_OBJECTS_HPP
+

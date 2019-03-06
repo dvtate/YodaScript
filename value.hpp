@@ -20,8 +20,9 @@ typedef decltype(nullptr) nullptr_t;
 *
 */
 
-#include "namespace.hpp"
+#include "namespace_def.hpp"
 #include "object.hpp"
+#include "lambda.hpp"
 
 class Value {
 public:
@@ -82,10 +83,11 @@ public:
 
 		std::shared_ptr<Value>* ref;
 		std::vector<std::shared_ptr<Value>>* arr;
-		// obj
-		// lambda
 
-		std::unordered_map<std::string, Def>* ns;
+		Object* obj;
+		Lambda* lam;
+
+		Namespace* ns;
 		Def* def;
 	};
 
@@ -102,7 +104,9 @@ public:
 	Value(const std::vector<std::shared_ptr<Value>>&);
 	Value(const nullptr_t&);
 	Value(const Def&);
-	Value(const std::unordered_map<std::string, Def>&);
+	Value(const Namespace&);
+	Value(const Lambda& lam);
+	Value(const Object& obj);
 
 
 	// prevent memory leaks when changing the value

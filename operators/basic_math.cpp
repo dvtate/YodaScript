@@ -12,7 +12,6 @@ namespace op_add {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "+ expected 2 values", f.feed.lineNumber());
 
@@ -93,7 +92,6 @@ namespace op_minus {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "- expected 2 values", f.feed.lineNumber());
 
@@ -147,7 +145,6 @@ namespace op_multiply {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "* expected 2 values", f.feed.lineNumber());
 
@@ -246,7 +243,6 @@ namespace op_divide {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "/ expected 2 numbers", f.feed.lineNumber());
 
@@ -276,7 +272,6 @@ namespace op_int_divide {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "// expected 2 numbers", f.feed.lineNumber());
 
@@ -306,7 +301,6 @@ namespace op_pow {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "** expected 2 numbers", f.feed.lineNumber());
 
@@ -344,7 +338,6 @@ namespace op_remainder {
 	}
 	Frame::Exit act(Frame& f) {
 
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "% expected 2 numbers", f.feed.lineNumber());
 
@@ -377,7 +370,6 @@ namespace op_abs {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " abs expected a number to take the absolute value of", f.feed.lineNumber());
 		DEFER_TOP(f);
@@ -400,7 +392,6 @@ namespace op_shift_left {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " << expected 2 ints.", f.feed.lineNumber());
 
@@ -438,7 +429,6 @@ namespace op_shift_right {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " >> expected 2 ints.", f.feed.lineNumber());
 
@@ -477,7 +467,6 @@ namespace op_bw_and {
 	}
 
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "& expected 2 ints");
 
@@ -515,7 +504,6 @@ namespace op_bw_xor {
 	}
 
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "* expected 2 ints");
 
@@ -550,7 +538,6 @@ namespace op_bw_or {
 	}
 
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "| expected 2 ints");
 

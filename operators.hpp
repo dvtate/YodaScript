@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <cstddef>
-#include "namespace.hpp"
+#include "namespace_def.hpp"
 #include "frame.hpp"
 #include "code_feed.hpp"
 

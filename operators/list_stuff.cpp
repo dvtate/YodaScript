@@ -26,7 +26,6 @@ namespace op_index {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", " ] index lacks number or list", f.feed.lineNumber());
 		DEFER_TOP(f);

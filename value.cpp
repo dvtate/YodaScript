@@ -3,59 +3,73 @@
 #include <string>
 
 #include "value.hpp"
-#include "namespace.hpp"
+#include "namespace_def.hpp"
 
 // constructors
 Value::Value():
 	type(Value::EMT) {}
 Value::Value(const vtype t):
-	type(t) {}
+	type(t)		{}
 Value::Value(const vtype t, const std::string v):
-	type(t), str(new std::string(v)) {}
+	type(t),	str(new std::string(v)) {}
 Value::Value(const char* v):
-	type(Value::STR), str(new std::string(v)) {}
+	type(STR),	str(new std::string(v)) {}
 Value::Value(const std::string& v):
-	type(Value::STR), str(new std::string(v)) {}
+	type(STR),	str(new std::string(v)) {}
 Value::Value(const double v):
-	type(Value::DEC), dec(v) {}
+	type(DEC),	dec(v) {}
 Value::Value(std::shared_ptr<Value> ref):
-	type(Value::REF), ref(new std::shared_ptr<Value>(ref)) {}
+	type(REF),	ref(new std::shared_ptr<Value>(ref)) {}
 Value::Value(const vtype t, const std::shared_ptr<Value>& ref):
-	type(t), ref(new std::shared_ptr<Value>(ref)) {}
+	type(t),	ref(new std::shared_ptr<Value>(ref)) {}
 Value::Value(mpz_class mp_integer):
-	type(Value::INT), mp_int(new mpz_class(mp_integer)) {}
+	type(INT),	mp_int(new mpz_class(mp_integer)) {}
 Value::Value(const std::vector<std::shared_ptr<Value>>& v):
-	type(Value::ARR), arr(new std::vector<std::shared_ptr<Value>>(v)) {}
+	type(ARR),	arr(new std::vector<std::shared_ptr<Value>>(v)) {}
 Value::Value(const nullptr_t& null):
-	type(REF), ref(new std::shared_ptr<Value>(nullptr)) {}
+	type(REF),	ref(new std::shared_ptr<Value>(nullptr)) {}
 Value::Value(const Def& def):
-	type(DEF), def(new Def(def)) {}
+	type(DEF),	def(new Def(def)) {}
 Value::Value(const Namespace& ns):
-	type(NSP), ns(new Namespace(ns)) {}
+	type(NSP),	ns(new Namespace(ns)) {}
+Value::Value(const Lambda& lam):
+	type(LAM),	lam(new Lambda(lam)) {}
+Value::Value(const Object& obj):
+	type(OBJ),	obj(new Object(obj)) {}
 
 
 void Value::erase() {
-	// only data on heap needs to be deleted
-	if (type < Value::STR)
-		return;
-	if (type == Value::STR || type == Value::MAC)
-		delete str;
-	if (type == Value::INT)
-		delete mp_int;
-	if (type == REF || type == IMR)
-		delete ref;
-	if (type == Value::ARR)
-		delete arr;
-	if (type == Value::NSP) {
-		ns->clear();
-		delete ns;
-	} if (type == Value::DEF)
-		delete def;
+	// dealloc relevant data
+	switch (type) {
+		case DEC: case EMT:
+			return;
+		case STR: case MAC:
+			delete str; return;
+		case INT:
+			delete mp_int; return;
+		case REF: case IMR:
+			delete ref;	return;
+		case ARR:
+			delete arr; return;
+		case NSP:
+			ns->clear();
+			delete ns;
+			return;
+		case DEF:
+			delete def; return;
+		case OBJ:
+			delete obj; return;
+		case LAM:
+			delete lam; return;
+		default:
+			return;
+	}
 }
 
 Value& Value::set_noerase(const Value& v) {
 	type = v.type;
 
+	// switch?
 	if (type == DEC) {
 		dec = v.dec;
 	} else if (type == REF || type == IMR) {
@@ -71,12 +85,15 @@ Value& Value::set_noerase(const Value& v) {
 		ns = new Namespace(*v.ns);
 	} else if (type == DEF) {
 		def = new Def(*v.def);
+	} else if (type == OBJ) {
+		obj = new Object(*v.obj);
+	} else if (type == LAM) {
+		lam = new Lambda(*v.lam);
 	}
 	return *this;
 }
 
-inline static size_t countLines(const std::string& s)
-{
+inline static size_t countLines(const std::string& s) {
 	size_t lc = 0;
 	for (const char c : s)
 		if (c == '\n')
@@ -114,7 +131,8 @@ std::string Value::depict() {
 	} else if (type == EMT) {
 		return "empty";
 	} else if (type == MAC) {
-		return "{" + *str + "}";
+		const size_t lines = countLines(*str);
+		return "{" + (lines > 1 ? std::to_string(lines) + std::string(" lines"): *str) + " }";
 	} else if (type == REF || type == IMR) {
 		Value* v = (Value*) defer();
 		if (v)
@@ -122,7 +140,7 @@ std::string Value::depict() {
 		return "cyclic/null reference";
 	} else if (type == ARR) {
 		std::string ret = "(";
-		for (auto v : *arr)
+		for (auto& v : *arr)
 			ret += v->depict() + ", ";
 		ret[ret.length() - 2] = ')';
 
@@ -135,9 +153,7 @@ std::string Value::depict() {
 		return ret;
 	} else if (type == DEF) {
 		if (def->native) {
-			std::ostringstream ss;
-			ss <<(void*) def->act <<" @def";
-			return ss.str();
+			return "<native> @def";
 		} else {
 			std::cout <<"ys def";
 			std::string ret;
@@ -147,6 +163,9 @@ std::string Value::depict() {
 			ret += "def";
 			return ret;
 		}
+	} else if (type == OBJ) {
+		std::string ret = "{\n";
+		ret += "} obj";
 	}
 
 	return "idk";
@@ -205,12 +224,12 @@ const Value* Value::defer(std::vector<std::shared_ptr<Value>*> pastPtrs) {
 // stops at immuteable references
 Value* Value::deferMuteable(std::vector<std::shared_ptr<Value>*> pastPtrs) {
 	// end of ref recursion
-	if (type != REF) // will return IMR
+	if (type != REF) // will return on IMR
 		return this;
 	if (!ref)
 		return nullptr;
 
-	// if it's been seen before it should be cyclic reference
+	// if it's been seen before it should be a cyclic reference
 	if (std::find(pastPtrs.begin(), pastPtrs.end(), ref) != pastPtrs.end())
 		return nullptr;
 
@@ -239,8 +258,7 @@ const char* Value::typeName(const Value::vtype value_type) {
 		case OBJ: return "object";
 		case LAM: return "lambda";
 		case NSP: return "namespace";
-		case DEF: return "def";
-
+		case DEF: return "def"; // how did they do this?
 		default:
 			std::cout <<"unknown type#" <<(const long)value_type <<std::endl;
 			return "unknown";
@@ -281,9 +299,12 @@ bool Value::operator==(Value& v) {
 
 	// returns if they reference same data,
 	// use copy operator if u wanna compare by value
-	// TODO: move this to an `is` operator
+	// move this to an `is` operator ? prolly nah
 	if (type == REF)
 		return v.defer() == defer();
+
+	if (type == OBJ)
+		return obj->members == v.obj->members;
 
 	// for now at least
 	//if (type == LAM || type == OBJ)

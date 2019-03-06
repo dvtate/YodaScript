@@ -9,7 +9,6 @@ namespace op_stk_clear {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		f.stack.clear();
 		return Frame::Exit();
 	}
@@ -26,7 +25,6 @@ namespace op_stk_dup {
 					f.feed.lineNumber());
 
 		f.stack.push_back(f.stack.back());
-		f.feed.offset += strlen(name);
 		return Frame::Exit();
 	}
 }
@@ -36,7 +34,6 @@ namespace op_stk_swap {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError",
 							   DEBUG_FLI + std::string(name) + " expected an 2 items to swap",
@@ -55,7 +52,6 @@ namespace op_stk_pop {
 	Frame::Exit act(Frame& f) {
 		if (!f.stack.empty())
 			f.stack.pop_back();
-		f.feed.offset += strlen(name);
 		return Frame::Exit();
 	}
 }
@@ -67,7 +63,6 @@ namespace op_stk_size {
 	}
 	Frame::Exit act(Frame& f) {
 		f.stack.emplace_back(mpz_class(f.stack.size()));
-		f.feed.offset += strlen(name);
 		return Frame::Exit();
 	}
 }
@@ -131,7 +126,6 @@ namespace op_stack {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
-		f.feed.offset += strlen(name);
 		f.stack.emplace_back(stack_ns);
 		return Frame::Exit();
 	}
