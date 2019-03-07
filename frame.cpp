@@ -57,10 +57,10 @@ Frame::Exit Frame::run() {
 		if (!feed.setTok())
 			return Frame::Exit(Frame::Exit::FEED_END);
 		feed.offset += feed.tok.length();
-		//std::cout <<"tok" <<feed.tok<<std::endl;
 
 		// user-level definitions & imports > interpreter level operators > interpreter level tokens
 		if (!check_def(*this, ev) && !operators::callOperator(*this, ev)) {
+			// wasn't an operator so it's prolly a token
 			feed.offset -= feed.tok.length();
 			if (!operators::callToken(*this, ev)) {
 				ev = Frame::Exit(Frame::Exit::ERROR, "SyntaxError",

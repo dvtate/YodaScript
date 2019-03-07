@@ -8,6 +8,8 @@
 #include "frame.hpp"
 #include "code_feed.hpp"
 
+
+// comment this out if we wanna look professional
 #define DEBUG 1
 
 // convert a token namespace to a Token obj

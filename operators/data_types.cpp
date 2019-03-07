@@ -10,10 +10,9 @@
 {
  	"label" value
  	"@label" executeable
-} namespace
+} `namespace`
 
  */
-
 namespace op_namespace {
 	const char* name = "namespace";
 	bool condition(Frame& f) {
@@ -34,6 +33,7 @@ namespace op_namespace {
 	}
 }
 
+// $nsp `:member`
 namespace op_ns_member_req {
 	const char* name = ":*";
 	bool condition(Frame& f) {
@@ -48,9 +48,10 @@ namespace op_ns_member_req {
 		if (v->type != Value::NSP)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " namespace member accessor requires a namespace to act on (received " + std::string(((Value*)v)->typeName()), f.feed.lineNumber());
 
-		const std::string name = f.feed.tok.substr(1, f.feed.tok.length());
-		auto d = v->ns->find(name);
+		// lookup key
+		auto d = v->ns->find(std::move(f.feed.tok.substr(1, f.feed.tok.length())));
 
+		// if found, replace top w/ it, else replace top w/ empty
 		f.stack.back().set(d == v->ns->end() ? Value() : Value(d->second));
 
 		return Frame::Exit();
@@ -58,8 +59,39 @@ namespace op_ns_member_req {
 	}
 }
 
-namespace op_colon_op {
 
+// $nsp "member" `:`
+namespace op_ns_member_req_op {
+	const char* name = ":";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " : operator expected a namespace and string",
+							   f.feed.lineNumber());
+
+		Value* v = (Value*) f.stack.back().defer();
+		std::string key;
+		if (v->type == Value::NSP) { // they're requesting val at emptystring key
+			key = "";
+		} else if (v->type != Value::STR) { // $namespace (1,2,3) :  (not a string)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " : operator expected a string key");
+		} else { // normative
+			key = *v->str;
+			f.stack.pop_back();
+			v = (Value*) f.stack.back().defer();
+			if (v->type != Value::NSP)
+				return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " : operator expected a namespace to act on");
+		}
+
+		// lookup
+		auto d = v->ns->find(key);
+		// put on stack
+		f.stack.back().set(d == v->ns->end() ? Value() : Value(d->second));
+
+		return Frame::Exit();
+	}
 }
 namespace op_def {
 	const char* name = "def";
@@ -94,8 +126,22 @@ namespace op_def {
 	}
 }
 
+/*
 
+# original syntax
+$add {
+	5 return
+} ($key, $value) lambda =
 
+# temporary syntax
+$add {
+	5 return
+} ('key', 'value') lambda =
+
+* lists of references will not be able to remember the variable
+* names so i gotta either change the way lists get parsed, or come up
+* with a different syntax
+*/
 namespace op_lambda {
 	const char* name = "lambda";
 	bool condition(Frame& f) {
@@ -105,6 +151,13 @@ namespace op_lambda {
 
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " lambda expected a macro body and a list of parameters", f.feed.lineNumber());
+
+		if (f.stack.back().type != Value::ARR)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " expected a parameters list", f.feed.lineNumber());
+
+		Lambda v;
+
+//		v.params = ;
 
 	}
 

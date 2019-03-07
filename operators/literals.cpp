@@ -63,7 +63,7 @@ namespace op_const_string {
 				}
 
 			} else if (c == quoteType && f.feed.body[f.feed.offset - 2] != '\\') {
-				f.feed.offset++;
+				//f.feed.offset++;
 				f.stack.emplace_back(s);
 				return Frame::Exit();
 			} else {

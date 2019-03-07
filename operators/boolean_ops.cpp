@@ -28,6 +28,9 @@ namespace op_not {
 		return Frame::Exit();
 	}
 }
+
+
+// compare; if you eant to compare references by value you have to use copy (~) operator
 namespace op_equals_to {
 	const char* name = "==";
 	bool condition(Frame& f) {
@@ -44,6 +47,7 @@ namespace op_equals_to {
 		return Frame::Exit();
 	}
 }
+
 namespace op_ne {
 	const char* name = "!=";
 	bool condition(Frame& f) {

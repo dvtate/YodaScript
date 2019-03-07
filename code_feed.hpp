@@ -110,6 +110,7 @@ public:
 
 		//std::cout <<"stok::body[offset]: \'" <<fromOffset() <<"\'\n";
 		// skip preceding space
+
 		while (offset + 1 <= body.length() && isspace(body.at(offset)))
 			offset++;
 		//std::cout <<"stok::body[offset]: \'" <<fromOffset() <<"\'\n";
@@ -118,7 +119,7 @@ public:
 			return false;
 
 		size_t i = offset;
-		char c; = body.at(offset);
+		char c;
 
 		do {
 			c = body.at(i);
@@ -126,17 +127,42 @@ public:
 			i++;
 		} while (i < body.length() && !isspace(c));
 
+		//
 		if (i > body.length())
 			return false;
 
+		// trim end
 		if (isspace(body[i - 1]))
 			i--;
-		tok = body.substr(offset, i - offset);
 
+		tok = fix_accessors(body.substr(offset, i - offset));
+
+		//std::cout <<"tok: `" <<tok <<"`\n";
 		return true;
 
 	}
 
+private:
+
+	// some people are lazy and like to say $a.b.c or $c:b:a instead of $a .b .c
+	inline static std::string fix_accessors(std::string&& s) {
+		// empty string oof
+		if (s.length() == 0)
+			return s;
+
+		// chained requests $x `:a:b:c`
+		size_t i = (s.at(0) == ':') || (s.at(0) == '.') ? 1 : 0;
+
+		// find start of next req `:a`
+		while (i + 1 < s.length() && s.at(i) != ':' && s.at(i) != '.')
+			i++;
+
+		// if str is different then we return new substr
+		if (i > s.length() && (s.at(i) == ':' || s.at(i) == '.'))
+			return s.substr(0, i);
+		else
+			return s;
+	}
 };
 
 

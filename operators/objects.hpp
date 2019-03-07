@@ -7,11 +7,9 @@
 
 #include "../operators.hpp"
 
-
 OP_NS(op_object);
 OP_NS(op_obj_mem_acc);
 OP_NS(op_obj_mem_acc_op);
-
 
 #endif //YS2_OBJECTS_HPP
 
