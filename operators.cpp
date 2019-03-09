@@ -20,6 +20,7 @@
 #include "operators/ref_ops.hpp"
 #include "operators/stack_ctl.hpp"
 #include "operators/types.hpp"
+#include "operators/objects.hpp"
 
 namespace operators {
 	int findToken(Frame &f) {
@@ -107,20 +108,24 @@ namespace operators {
 	inline std::vector<struct Token> genTokens() {
 		// loads all operators from operators/
 		return std::vector<struct Token>({
+				// fast literals
 				OP_NS_TO_TOK(op_var_literal),
+				OP_NS_TO_TOK(op_ns_member_req),
 
-				// literals
-				OP_NS_TO_TOK(op_const_macro),
-				OP_NS_TO_TOK(op_const_list),
-				OP_NS_TO_TOK(op_const_string),
 				// comments
 				OP_NS_TO_TOK(op_line_comment),
 				OP_NS_TO_TOK(op_multiline_comment),
 
+				// literals
+				OP_NS_TO_TOK(op_const_string),
+				OP_NS_TO_TOK(op_const_macro),
+				OP_NS_TO_TOK(op_const_list),
+
 				// more literals (slower execution time
 				OP_NS_TO_TOK(op_const_int),
 				OP_NS_TO_TOK(op_const_number),
-				OP_NS_TO_TOK(op_ns_member_req),
+
+				OP_NS_TO_TOK(op_obj_mem_acc),
 		});
 	}
 
@@ -147,11 +152,10 @@ namespace operators {
 
 			// stack
 			OP_NS_TO_PAIR(op_stack),
-			OP_NS_TO_PAIR(op_stk_clear),    // clears stack
-			OP_NS_TO_PAIR(op_stk_dup),      // dups element
-			OP_NS_TO_PAIR(op_stk_swap),     // swaps top 2 elems
+			//OP_NS_TO_PAIR(op_stk_clear),    // clears stack
+			//OP_NS_TO_PAIR(op_stk_dup),      // dups element
+			//OP_NS_TO_PAIR(op_stk_swap),     // swaps top 2 elems
 			OP_NS_TO_PAIR(op_stk_pop),      // pops top elem
-			OP_NS_TO_PAIR(op_stk_size),     // how many elems on stack
 
 			// structured programming
 			OP_NS_TO_PAIR(op_repeat_loop),  // run given number of times
@@ -175,10 +179,12 @@ namespace operators {
 
 			// type conversion
 			OP_NS_TO_PAIR(op_str),          // toString
-			OP_NS_TO_PAIR(op_typeof),       // .type
+			OP_NS_TO_PAIR(op_depict),       // raw-data depiction
+			OP_NS_TO_PAIR(op_typeof),       // datatype
 
 
 			OP_NS_TO_PAIR(op_namespace),    // namespace
+			OP_NS_TO_PAIR(op_ns_mem_req_op), // : operator
 			OP_NS_TO_PAIR(op_def),          // define
 			OP_NS_TO_PAIR(op_index),
 			OP_NS_TO_PAIR(op_while),
@@ -197,7 +203,7 @@ namespace operators {
 			OP_NS_TO_PAIR(op_bw_and),
 			OP_NS_TO_PAIR(op_bw_xor),
 			OP_NS_TO_PAIR(op_bw_or),
-
+			OP_NS_TO_PAIR(op_object),
 		});
 	}
 

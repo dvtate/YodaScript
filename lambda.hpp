@@ -17,7 +17,6 @@ class Exit;
 typedef struct Lambda {
 	// if it's a member of something
 	std::shared_ptr<Value> self;
-
 	std::vector<std::string> params;
 	std::string body;
 

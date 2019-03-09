@@ -91,7 +91,7 @@ std::shared_ptr<Value> Frame::getVar(const std::string& name) {
 	return v;
 }
 
-
+// searches for var, if its found in previous scope, make a reference to it in current scope
 std::shared_ptr<Value> Frame::findVar(const std::string& name) {
 	auto v = vars.find(name);
 	if (v != vars.end())

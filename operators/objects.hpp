@@ -10,6 +10,8 @@
 OP_NS(op_object);
 OP_NS(op_obj_mem_acc);
 OP_NS(op_obj_mem_acc_op);
+OP_NS(op_obj_inherit);
+
 
 #endif //YS2_OBJECTS_HPP
 

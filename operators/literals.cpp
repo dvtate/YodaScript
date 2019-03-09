@@ -101,7 +101,7 @@ namespace op_const_number {
 		// this is temporary i guess
 		// exceptions are kinda slow
 		try {
-			stold(frame.feed.tok);
+			std::stod(frame.feed.tok);
 		} catch (const std::invalid_argument&) {
 			return false;
 		}

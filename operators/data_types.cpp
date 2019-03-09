@@ -61,7 +61,7 @@ namespace op_ns_member_req {
 
 
 // $nsp "member" `:`
-namespace op_ns_member_req_op {
+namespace op_ns_mem_req_op {
 	const char* name = ":";
 	bool condition(Frame& f) {
 		return f.feed.tok == name;
@@ -94,27 +94,27 @@ namespace op_ns_member_req_op {
 	}
 }
 namespace op_def {
-	const char* name = "def";
+	const char* name = "define";
 	bool condition(Frame& f) {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
 		if (f.stack.size() < 2)
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " def expected a string label and value", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " define expected a string label and value", f.feed.lineNumber());
 
 		Value v = f.stack.back();
 		f.stack.pop_back();
 		if (f.stack.back().type != Value::STR)
-			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " def expected a string label and value", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " define expected a string label and value", f.feed.lineNumber());
 
 		// performance for normal users hurt for the benefit of inexperienced ones
 		for (const char& c : *f.stack.back().str)
 			if (c == ' ')
-				return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI " def labels cannot have spaces", f.feed.lineNumber());
+				return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI " define labels cannot have spaces", f.feed.lineNumber());
 
 		// empty string label
 		if (f.stack.back().str->empty())
-			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI " def label cannot be empty", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI " define label cannot be empty", f.feed.lineNumber());
 
 		bool runnable = f.stack.back().str->at(0) == '@';
 		std::string label = runnable ? f.stack.back().str->c_str() + 1 : *f.stack.back().str;
@@ -143,6 +143,7 @@ $add {
 * with a different syntax
 */
 namespace op_lambda {
+
 	const char* name = "lambda";
 	bool condition(Frame& f) {
 		return f.feed.tok == name;

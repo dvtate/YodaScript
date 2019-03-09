@@ -92,11 +92,9 @@ namespace op_copy_value {
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " ~ expected a reference to defer", f.feed.lineNumber());
 
 
-		const Value* v = f.stack.back().defer();
-		if (v)
-			f.stack.back().set(Value(*v));
-		else
-			f.stack.back().set("nullptr/cyclic reference");
+		const bool isNull = !f.stack.back().deferValue(f.stack.back());
+		if (isNull)
+			f.stack.back().set(nullptr);
 
 		// deep copy array elems because they're references to originals
 		if (f.stack.back().type == Value::ARR)

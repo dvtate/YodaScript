@@ -14,7 +14,7 @@ OP_NS(op_float);
 OP_NS(op_num);
 OP_NS(op_typeof);
 OP_NS(op_str);
-OP_NS(op_repr);
+OP_NS(op_depict);
 //  TODO: these are important!
 
 

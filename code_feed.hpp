@@ -146,8 +146,9 @@ private:
 
 	// some people are lazy and like to say $a.b.c or $c:b:a instead of $a .b .c
 	inline static std::string fix_accessors(std::string&& s) {
+
 		// empty string oof
-		if (s.length() == 0)
+		if (s.length() <= 1)
 			return s;
 
 		// chained requests $x `:a:b:c`
@@ -158,7 +159,7 @@ private:
 			i++;
 
 		// if str is different then we return new substr
-		if (i > s.length() && (s.at(i) == ':' || s.at(i) == '.'))
+		if (i < s.length() && (s.at(i) == ':' || s.at(i) == '.'))
 			return s.substr(0, i);
 		else
 			return s;

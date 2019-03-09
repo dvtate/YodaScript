@@ -19,9 +19,9 @@ Value::Value(const std::string& v):
 Value::Value(const double v):
 	type(DEC),	dec(v) {}
 Value::Value(std::shared_ptr<Value> ref):
-	type(REF),	ref(new std::shared_ptr<Value>(ref)) {}
+	type(REF),	ref(new std::shared_ptr<Value>(ref)), related() {}
 Value::Value(const vtype t, const std::shared_ptr<Value>& ref):
-	type(t),	ref(new std::shared_ptr<Value>(ref)) {}
+	type(t),	ref(new std::shared_ptr<Value>(ref)), related() {}
 Value::Value(mpz_class mp_integer):
 	type(INT),	mp_int(new mpz_class(mp_integer)) {}
 Value::Value(const std::vector<std::shared_ptr<Value>>& v):
@@ -36,7 +36,8 @@ Value::Value(const Lambda& lam):
 	type(LAM),	lam(new Lambda(lam)) {}
 Value::Value(const Object& obj):
 	type(OBJ),	obj(new Object(obj)) {}
-
+Value::Value(const std::shared_ptr<Value>& ref, const std::shared_ptr<Value>& related):
+	type(REF), ref(new std::shared_ptr<Value>(ref)), related(new std::shared_ptr<Value>(related)) {}
 
 void Value::erase() {
 	// dealloc relevant data
@@ -47,7 +48,9 @@ void Value::erase() {
 			delete str; return;
 		case INT:
 			delete mp_int; return;
-		case REF: case IMR:
+		case REF:
+			delete related;
+		case IMR:
 			delete ref;	return;
 		case ARR:
 			delete arr; return;
@@ -72,9 +75,11 @@ Value& Value::set_noerase(const Value& v) {
 	// switch?
 	if (type == DEC) {
 		dec = v.dec;
-	} else if (type == REF || type == IMR) {
-		ref = new std::shared_ptr<Value>();
-		*ref = *v.ref;
+	} else if (type == IMR) {
+		ref = new std::shared_ptr<Value>(*v.ref);
+	} else if (type == REF) {
+		ref = new std::shared_ptr<Value>(*v.ref);
+		related = v.related ? new std::shared_ptr<Value>(*v.related) : nullptr;
 	} else if (type == STR || type == MAC) {
 		str = new std::string(*v.str);
 	} else if (type == INT) {
@@ -153,19 +158,22 @@ std::string Value::depict() {
 		return ret;
 	} else if (type == DEF) {
 		if (def->native) {
-			return "<native> @def";
+			return "<native> @define";
 		} else {
-			std::cout <<"ys def";
 			std::string ret;
 			ret += def->_val->depict();
 			if (def->run)
 				ret += '@';
-			ret += "def";
+			ret += "define";
 			return ret;
 		}
 	} else if (type == OBJ) {
-		std::string ret = "{\n";
-		ret += "} obj";
+		std::string ret = "{";
+		for (const auto& v : obj->members)
+			ret += "\n\tself." + v.first + " " + v.second->depict();
+		if (!obj->members.empty())
+			ret += '\n';
+		return ret + "} obj";
 	}
 
 	return "idk";
@@ -195,7 +203,32 @@ std::string Value::toString() {
 			ret += v->depict() + ", ";
 		ret[ret.length() - 1] = ')';
 		return ret;
+	} else if (type == NSP) {
+		std::string ret = "{\n";
+		for (const auto& e : *ns)
+			ret += "\t\"" + e.first + "\"\t" + Value(e.second).depict() + "\n";
+		ret += "} namespace";
+		return ret;
+	} else if (type == DEF) {
+		if (def->native) {
+			return "<native> @define";
+		} else {
+			std::string ret;
+			ret += def->_val->depict();
+			if (def->run)
+				ret += '@';
+			ret += "define";
+			return ret;
+		}
+	} else if (type == OBJ) {
+		std::string ret = "{";
+		for (const auto& v : obj->members)
+			ret += "\n\tself." + v.first + " " + v.second->depict();
+		if (obj->members.size())
+			ret += '\n';
+		return ret + "} obj";
 	}
+
 
 	return "idk";
 }
@@ -220,13 +253,40 @@ const Value* Value::defer(std::vector<std::shared_ptr<Value>*> pastPtrs) {
 	return (*ref)->defer(pastPtrs);
 }
 
+// get the value that a reference points to
+bool Value::deferValue(Value& ret, std::vector<std::shared_ptr<Value>*> pastPtrs) {
+	// end of ref recursion
+	if (type != REF && type != IMR) {
+		ret = *this;
+		return true;
+	}
+	if (!ref || !*ref)
+		return false;
+
+	// if it's been seen before it should be cyclic reference
+	if (std::find(pastPtrs.begin(), pastPtrs.end(), ref) != pastPtrs.end())
+		return false;
+
+	// follow reference tree
+	pastPtrs.emplace_back(ref);
+	if (!ref || !*ref)
+		return false;
+
+	// trace down refs
+
+	const bool&& found = (*ref)->deferValue(ret, pastPtrs);
+	if (found && ret.type == LAM && *related)
+		ret.lam->self = *related;
+	return found;
+}
+
 // get muteable value
 // stops at immuteable references
 Value* Value::deferMuteable(std::vector<std::shared_ptr<Value>*> pastPtrs) {
 	// end of ref recursion
 	if (type != REF) // will return on IMR
 		return this;
-	if (!ref)
+	if (!ref || !*ref)
 		return nullptr;
 
 	// if it's been seen before it should be a cyclic reference
@@ -238,6 +298,25 @@ Value* Value::deferMuteable(std::vector<std::shared_ptr<Value>*> pastPtrs) {
 	if (!ref || !*ref)
 		return nullptr;
 	return (*ref)->deferMuteable(pastPtrs);
+}
+
+std::shared_ptr<Value> Value::lastRef(std::vector<std::shared_ptr<Value>*> pastPtrs) {
+	// end of ref recursion
+	if (type != REF && type != IMR)
+		return pastPtrs.empty() ? std::make_shared<Value>(*this) : *pastPtrs.back();
+	if (!ref || !*ref)
+		return nullptr;
+
+	// if it's been seen before it should be cyclic reference
+	if (std::find(pastPtrs.begin(), pastPtrs.end(), ref) != pastPtrs.end())
+		return nullptr;
+
+	// follow reference tree
+	pastPtrs.emplace_back(ref);
+	if (!ref || !*ref)
+		return nullptr;
+
+	return (*ref)->lastRef(pastPtrs);
 }
 
 const char* Value::typeName() {

@@ -28,9 +28,22 @@ namespace op_str {
 	}
 
 	Frame::Exit act(Frame& frame) {
-		if (!frame.stack.size())
+		if (frame.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI + std::string(name) + " expected a value to stringify", frame.feed.lineNumber());
-		frame.stack.back() = frame.stack.back().toString();
+		frame.stack.back().set(frame.stack.back().toString());
+		return Frame::Exit();
+	}
+}
+
+namespace op_depict {
+	const char* name = "depict";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI + std::string(name) + " expected a value to depict", f.feed.lineNumber());
+		f.stack.back().set(f.stack.back().depict());
 		return Frame::Exit();
 	}
 }

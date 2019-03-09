@@ -29,6 +29,7 @@ public:
 
 	// what kind of data is contained
 	enum vtype {
+
 		EMT = 0, // empty    - value of nothing
 				// no value, equivalent to undefined
 
@@ -43,6 +44,7 @@ public:
 
 		IMR, // immuteable reference - reference to memory that isn't allowed to be changed (change this object)
 			// identical to REF in every other way
+
 		MAC, // macro        - framed block of code
 			// string
 
@@ -58,14 +60,15 @@ public:
 		LAM, // lambda       - fancy function
 			// will receive dedicated class eventually
 
-		DEF, // defined term
-		//
+		DEF, // defined term - gets evaluated as soon as it's put onto stack
+			// def ptr
 
-		NSP, // namespace
+		NSP, // namespace collection of labeled def's
+			// typedef in namespace_def.hpp
 
 		/* could be added in future:
-		 DEF ? definition		- contains struct Def { function pointer || shared_ptr<Macro> } which gets run as soon as it is created
-		 NSP ? namespace		- see dvtate/planning/yoda/namespaces
+		 DRF ? double ref - reference with a related value to prevent it from getting gc'd
+
 		 CHR ? character		- prolly not bc international == confusion
 		 BLN ? boolean			- prolly not, truthy values are fine
 		 RXP ? reg exp			- prolly not, could be added through lang extension
@@ -79,9 +82,6 @@ public:
 		mpz_class* mp_int;
 		std::string* str;
 
-		//Value* ref;
-
-		std::shared_ptr<Value>* ref;
 		std::vector<std::shared_ptr<Value>>* arr;
 
 		Object* obj;
@@ -89,6 +89,11 @@ public:
 
 		Namespace* ns;
 		Def* def;
+
+		struct {
+			std::shared_ptr<Value>* ref;
+			std::shared_ptr<Value>* related;
+		};
 	};
 
 
@@ -108,6 +113,8 @@ public:
 	Value(const Lambda& lam);
 	Value(const Object& obj);
 
+	// double ref
+	Value(const std::shared_ptr<Value>& ref, const std::shared_ptr<Value>& related);
 
 	// prevent memory leaks when changing the value
 	void erase();
@@ -115,7 +122,6 @@ public:
 		erase();
 	}
 
-		
 	// set self to given value
 	Value& set(const Value& v) {
 		erase();
@@ -136,6 +142,9 @@ public:
 	std::string depict();		// represent value
 	std::string toString();	// stringify value
 
+	// gets a value from a ref, if it's a lambda then it adds an if
+	bool deferValue(Value& ret, std::vector<std::shared_ptr<Value>*> pastPtrs = {});
+
 	// get the value that a reference points to
 	const Value* defer(std::vector<std::shared_ptr<Value>*> pastPtrs = {});
 
@@ -143,8 +152,10 @@ public:
 	// stops at immuteable references
 	Value* deferMuteable(std::vector<std::shared_ptr<Value>*> pastPtrs = {});
 
+	std::shared_ptr<Value> lastRef(std::vector<std::shared_ptr<Value>*> pastPtrs = {});
+
 	const char* typeName();
-	static const char* typeName(const vtype value_type);
+	static const char* typeName(vtype value_type);
 	bool truthy();
 	bool operator==(Value& v);
 };
