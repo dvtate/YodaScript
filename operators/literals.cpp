@@ -178,22 +178,25 @@ bool find_list (CodeFeed& feed, std::string& ret) {
 		} else if (c == '\"') {
 			do {
 				if (!ignore_until_c(feed, "\"")) {
-					std::cerr <<"Unterminated string(\") in list\n";
+					std::cerr <<"Unterminated string in macro\n";
 					return false;
 				}
 			} while (feed.body[feed.offset - 1] == '\\');
+			feed.offset++;
 
 
 			// also strings?
 		} else if (c == '\'') {
 			do {
 				if (!ignore_until_c(feed, "\'")) {
-					std::cerr <<"Unterminated string(') in list\n";
+					std::cerr <<"Unterminated string(') in macro\n";
 					return false;
 				}
 			} while (feed.body[feed.offset - 1] == '\\');
+			feed.offset++;
 
 		}
+
 	}
 
 	// push trimmed macro onto the stack
@@ -364,6 +367,10 @@ namespace op_const_list {
 		return f.feed.tok[0] == '(';
 	}
 	Frame::Exit act(Frame& f) {
+		// TODO: change this to run in same scope as f
+		// TODO: fix zero length list literal
+
+
 		std::vector<std::shared_ptr<Value>> ret;
 		std::string l_body;
 		if (!find_list(f.feed, l_body))
@@ -382,7 +389,12 @@ namespace op_const_list {
 			ret.emplace_back(std::make_shared<Value>(elem_proc.stack.empty() ? Value() : elem_proc.stack.back()));
 			elem_proc.stack.clear();
 		}
-		f.stack.emplace_back(ret);
+
+		// if intended to be an empty list, literal must be `()` or `( )`
+		if (ret.size() == 1 && ret[0]->type == Value::EMT && elems[0].length() < 2)
+			ret.pop_back();
+
+		f.stack.emplace_back(std::move(ret));
 		return Frame::Exit();
 	}
 }

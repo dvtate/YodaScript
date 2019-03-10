@@ -18,7 +18,7 @@ namespace op_object {
 		Frame init = f.scope(*f.stack.back().str, false);
 		init.defs.emplace("self", obj);
 		f.stack.pop_back();
-		Frame::Exit ev = init.run();
+		const Frame::Exit ev = init.run();
 		if (ev.reason == Frame::Exit::ERROR)
 			return Frame::Exit(Frame::Exit::ERROR, "In object Initializer", DEBUG_FLI, f.feed.lineNumber(), ev);
 		if (init.stack.size() % 2 != 0)
@@ -49,9 +49,12 @@ namespace op_obj_mem_acc {
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "Object member accessor without object", f.feed.lineNumber());
 
-		//TODO: FIXME: this muteable/immutable refs and stuff
-		//	error messages also kinda important since u shouldnt
-		//	be able to convert anything past an immuteable ref into an object
+		/*TODO: FIXME: this muteable/immutable refs and stuff
+			error messages also kinda important since u shouldn't
+			be able to convert anything past an immuteable ref into an object
+
+		 	this is gonna actually be rly painful without lazy evaluation
+		 */
 		Value* v = (Value*) f.stack.back().defer();
 
 		// if empty, make it an object

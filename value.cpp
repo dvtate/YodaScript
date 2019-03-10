@@ -8,34 +8,49 @@
 // constructors
 Value::Value():
 	type(Value::EMT) {}
+
 Value::Value(const vtype t):
 	type(t)		{}
+
 Value::Value(const vtype t, const std::string v):
 	type(t),	str(new std::string(v)) {}
+
 Value::Value(const char* v):
 	type(STR),	str(new std::string(v)) {}
+
 Value::Value(const std::string& v):
 	type(STR),	str(new std::string(v)) {}
+
 Value::Value(const double v):
 	type(DEC),	dec(v) {}
+
 Value::Value(std::shared_ptr<Value> ref):
-	type(REF),	ref(new std::shared_ptr<Value>(ref)), related() {}
+	type(REF),ref(new std::shared_ptr<Value>(ref)), related(nullptr) {}
+
 Value::Value(const vtype t, const std::shared_ptr<Value>& ref):
-	type(t),	ref(new std::shared_ptr<Value>(ref)), related() {}
+	type(t),	ref(new std::shared_ptr<Value>(ref)), related(nullptr) {}
+
 Value::Value(mpz_class mp_integer):
 	type(INT),	mp_int(new mpz_class(mp_integer)) {}
+
 Value::Value(const std::vector<std::shared_ptr<Value>>& v):
 	type(ARR),	arr(new std::vector<std::shared_ptr<Value>>(v)) {}
+
 Value::Value(const nullptr_t& null):
 	type(REF),	ref(new std::shared_ptr<Value>(nullptr)) {}
+
 Value::Value(const Def& def):
 	type(DEF),	def(new Def(def)) {}
+
 Value::Value(const Namespace& ns):
 	type(NSP),	ns(new Namespace(ns)) {}
+
 Value::Value(const Lambda& lam):
 	type(LAM),	lam(new Lambda(lam)) {}
+
 Value::Value(const Object& obj):
 	type(OBJ),	obj(new Object(obj)) {}
+
 Value::Value(const std::shared_ptr<Value>& ref, const std::shared_ptr<Value>& related):
 	type(REF), ref(new std::shared_ptr<Value>(ref)), related(new std::shared_ptr<Value>(related)) {}
 
@@ -145,11 +160,14 @@ std::string Value::depict() {
 		return "cyclic/null reference";
 	} else if (type == ARR) {
 		std::string ret = "(";
-		for (auto& v : *arr)
+		for (auto &v : *arr)
 			ret += v->depict() + ", ";
-		ret[ret.length() - 2] = ')';
-
-		return ret.substr(0, ret.length() - 1);
+		if (arr->empty()) {
+			return ret + ')';
+		} else {
+			ret[ret.length() - 2] = ')';
+			return ret.substr(0, ret.length() - 1); // trim trailing space
+		}
 	} else if (type == NSP) {
 		std::string ret = "{\n";
 		for (const auto& e : *ns)
@@ -170,10 +188,18 @@ std::string Value::depict() {
 	} else if (type == OBJ) {
 		std::string ret = "{";
 		for (const auto& v : obj->members)
-			ret += "\n\tself." + v.first + " " + v.second->depict();
+			ret += "\n\tself." + v.first + "\t" + v.second->depict();
 		if (!obj->members.empty())
 			ret += '\n';
-		return ret + "} obj";
+		return ret + "} object";
+	} else if (type == LAM) {
+		std::string ret =  "{...} (";
+		if (lam->params.empty())
+			ret += ' ';
+		for (const std::string& param : lam->params)
+			ret += "\"" + param + "\",";
+		ret.at(ret.length() - 1) = ')';
+		return ret + " lambda";
 	}
 
 	return "idk";
@@ -197,12 +223,16 @@ std::string Value::toString() {
 		if (v)
 			return v->toString();
 		return "cyclic/null reference";
-	} else if (type == ARR) {
+	}  else if (type == ARR) {
 		std::string ret = "(";
-		for (auto v : *arr)
+		for (auto &v : *arr)
 			ret += v->depict() + ", ";
-		ret[ret.length() - 1] = ')';
-		return ret;
+		if (arr->empty()) {
+			return ret + ')';
+		} else {
+			ret[ret.length() - 2] = ')';
+			return ret.substr(0, ret.length() - 1); // trim trailing space
+		}
 	} else if (type == NSP) {
 		std::string ret = "{\n";
 		for (const auto& e : *ns)
@@ -223,10 +253,18 @@ std::string Value::toString() {
 	} else if (type == OBJ) {
 		std::string ret = "{";
 		for (const auto& v : obj->members)
-			ret += "\n\tself." + v.first + " " + v.second->depict();
+			ret += "\n\tself." + v.first + "\t" + v.second->depict();
 		if (obj->members.size())
 			ret += '\n';
-		return ret + "} obj";
+		return ret + "} object";
+	} else if (type == LAM) {
+		std::string ret =  "{...} (";
+		if (lam->params.empty())
+			ret += ' ';
+		for (const std::string& param : lam->params)
+			ret += "\"" + param + "\",";
+		ret.at(ret.length() - 1) = ')';
+		return ret + " lambda";
 	}
 
 
@@ -275,7 +313,7 @@ bool Value::deferValue(Value& ret, std::vector<std::shared_ptr<Value>*> pastPtrs
 	// trace down refs
 
 	const bool&& found = (*ref)->deferValue(ret, pastPtrs);
-	if (found && ret.type == LAM && *related)
+	if (found && ret.type == LAM && related)
 		ret.lam->self = *related;
 	return found;
 }

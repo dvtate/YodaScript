@@ -87,7 +87,6 @@ namespace operators {
 
 		auto d = ns.find(f.feed.tok);
 		if (d != ns.end()) {
-			f.feed.offset += f.feed.tok.length();
 
 			if (d->second.native) {
 				exit = d->second.act(f);
@@ -169,8 +168,8 @@ namespace operators {
 
 			// boolean
 			OP_NS_TO_PAIR(op_not),          // !
-			OP_NS_TO_PAIR(op_and),
-			OP_NS_TO_PAIR(op_or),
+			OP_NS_TO_PAIR(op_and),          // &&
+			OP_NS_TO_PAIR(op_or),           // ||
 
 			// cio
 			OP_NS_TO_PAIR(op_println),      // prints value + std::endl
@@ -182,12 +181,13 @@ namespace operators {
 			OP_NS_TO_PAIR(op_depict),       // raw-data depiction
 			OP_NS_TO_PAIR(op_typeof),       // datatype
 
+			OP_NS_TO_PAIR(op_size),
 
 			OP_NS_TO_PAIR(op_namespace),    // namespace
-			OP_NS_TO_PAIR(op_ns_mem_req_op), // : operator
+			OP_NS_TO_PAIR(op_ns_mem_req_op),// : operator
 			OP_NS_TO_PAIR(op_def),          // define
-			OP_NS_TO_PAIR(op_index),
-			OP_NS_TO_PAIR(op_while),
+			OP_NS_TO_PAIR(op_index),        // ]
+			OP_NS_TO_PAIR(op_while),        // {body} {condition} while
 
 			OP_NS_TO_PAIR(op_add),
 			OP_NS_TO_PAIR(op_minus),
@@ -203,7 +203,13 @@ namespace operators {
 			OP_NS_TO_PAIR(op_bw_and),
 			OP_NS_TO_PAIR(op_bw_xor),
 			OP_NS_TO_PAIR(op_bw_or),
+
 			OP_NS_TO_PAIR(op_object),
+			OP_NS_TO_PAIR(op_lambda),
+
+			OP_NS_TO_PAIR(op_return),
+			OP_NS_TO_PAIR(op_up),
+			OP_NS_TO_PAIR(op_escape),
 		});
 	}
 

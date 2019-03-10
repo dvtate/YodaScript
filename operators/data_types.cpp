@@ -158,8 +158,25 @@ namespace op_lambda {
 
 		Lambda v;
 
-//		v.params = ;
+		for (const auto& param : *f.stack.back().arr) {
+			if (!param)
+				return Frame::Exit(Frame::Exit::ERROR, "ValueError", DEBUG_FLI " lambda params list contained null value and not string variable names", f.feed.lineNumber());
+			if (param->type == Value::EMT)
+				continue;
+			if (param->type != Value::STR)
+				return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI " params list should contain strings for variable names", f.feed.lineNumber());
 
+			v.params.push_back(*param->str);
+		}
+		f.stack.pop_back();
+
+		if (f.stack.back().type != Value::MAC)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " lambda expected a macro body, " + std::string(f.stack.back().typeName()) + " received", f.feed.lineNumber());
+		v.body = *f.stack.back().str;
+
+		f.stack.back().set(v);
+
+		return Frame::Exit();
 	}
 
 }

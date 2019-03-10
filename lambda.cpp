@@ -17,21 +17,20 @@ Exit Lambda::call(Frame& f) {
 		f.stack.pop_back();
 	}
 
-
 	// scope into body
 	Frame lam(f.scope(body, false));
 
-	// assign parameter variables
-	for (size_t i = 0; i < args.size(); i++)
-		lam.setVar(params[i], args[i]);
-
-
+	// assign params
+	for (size_t i = 0; i < params.size(); i++)
+		lam.setVar(params[i], i > args.size() ? std::make_shared<Value>() : args[i]);
 
 	// add self and arguments
 	// INSIGHT: should be a variable or definition?
-	lam.defs.emplace("self", self);
-	lam.defs.emplace("arguments", std::make_shared<Value>(std::move(args)));
+	if (self)
+		lam.defs.emplace("self", self);
+
+	lam.defs.emplace("args", std::make_shared<Value>(std::move(args)));
 
 
-	return f.run();
+	return lam.run();
 }

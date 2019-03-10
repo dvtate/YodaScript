@@ -54,3 +54,9 @@ namespace op_index {
 		return Frame::Exit();
 	}
 }
+
+/* list namespace
+ * :pop
+ * :push
+ *
+ */

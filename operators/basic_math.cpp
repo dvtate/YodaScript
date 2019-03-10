@@ -27,6 +27,7 @@ namespace op_add {
 		};
 
 		switch (f.stack.back().type) {
+
 		case Value::STR:
 			switch (v2.type) {
 			case Value::STR:
@@ -74,11 +75,11 @@ namespace op_add {
 				return TypeError(f.stack.back().type, v2.type);
 			}
 			break;
+
 		case Value::ARR:
-			if (v2.type == Value::ARR)
-				f.stack.back().arr->insert(f.stack.back().arr->end(), v2.arr->begin(), v2.arr->end());
-			else
+			if (v2.type != Value::ARR)
 				return TypeError(f.stack.back().type, v2.type);
+			f.stack.back().arr->insert(f.stack.back().arr->end(), v2.arr->begin(), v2.arr->end());
 			break;
 		}
 

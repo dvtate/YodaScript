@@ -19,14 +19,14 @@ public:
 		ERROR = 0,	// ended in error
 		CONTINUE,	// finished running successfully
 		FEED_END,	// end of feed
-		RETURN,		//
-		BREAK,		//
-		ESCAPE,
+		RETURN,		// escape current lambda/macro?
+		ESCAPE,		// go up one frame
+		UP,			// go up n frames
 	} reason;
 
 	/* TODO: catch expressions
 	 * if error: keep going up frames until one has a handler
-	 * if escape(n): subtract one from line and go up, if
+	 * if up(n): subtract one from line and go up, if
 	 */
 
 	std::string title;
@@ -35,7 +35,7 @@ public:
 	// same variable
 	union { size_t line; size_t number; };
 
-	std::vector<Exit> trace{};
+	std::vector<Exit> trace;
 
 	Exit(): reason(CONTINUE) {};
 	Exit(const Exit::Reason r, const std::string& r_title = "", const std::string& r_desc = "", const size_t line_num = 0):
@@ -49,8 +49,7 @@ public:
 			trace.emplace_back(ev);
 	}
 
-	Exit(const Exit& e):
-			reason(e.reason), title(e.title), desc(e.desc), number(e.number), trace(e.trace), msg(e.msg) {}
+	Exit(const Exit& e) = default;
 
 
 	std::string msg{""};
@@ -86,6 +85,7 @@ public:
 	CodeFeed feed;
 
 	// previous frames (for getting vars and defs from previous scopes
+	// TODO: convert to use std::shared_ptr!
 	std::vector<Frame*> prev;
 
 	// values defined by and for specific operators

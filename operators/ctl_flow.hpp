@@ -15,6 +15,10 @@ OP_NS(op_exec);
 OP_NS(op_cond);
 OP_NS(op_while);
 
+OP_NS(op_return);
+OP_NS(op_escape);
+OP_NS(op_up);
+
 Frame::Exit runMacro(Frame& f, const std::string& macro, const bool merge_stack);
 
 #endif //YS2_CTL_FLOW_HPP

@@ -43,6 +43,8 @@ Frame::Exit Frame::run() {
 	//std::cout <<"running line: " <<feed.body <<std::endl;
 
 	Frame::Exit ev;
+
+run_frame:
 	do {
 		// defs get automatically evaluated
 		while (!stack.empty() && ev.reason == Frame::Exit::CONTINUE && stack.back().type == Value::DEF) {
@@ -68,9 +70,15 @@ Frame::Exit Frame::run() {
 				break;
 			}
 		}
+
+
 	} while (ev.reason == Frame::Exit::CONTINUE);
 
-
+	if (ev.reason == Frame::Exit::UP) {
+		if (ev.number == 0)
+			goto run_frame;
+		ev.number--;
+	}
 
 	if (ev.reason == Frame::Exit::ERROR)
 		ev.genMsg(feed);
@@ -109,7 +117,6 @@ std::shared_ptr<Value> Frame::findVar(const std::string& name) {
 		}
 	}
 	return nullptr;
-
 }
 
 // set var in current scope

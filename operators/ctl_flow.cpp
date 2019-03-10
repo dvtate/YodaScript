@@ -113,6 +113,7 @@ Frame::Exit runLambda(Frame& f, const Value& lam, const bool merge_stack = true)
 	return Frame::Exit();
 }
 
+
 namespace op_exec {
 	const char* name = "@";
 	bool condition(Frame& f) {
@@ -122,23 +123,25 @@ namespace op_exec {
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " @ operator expected something to run", f.feed.lineNumber());
 
+		Value v;
+		const bool ref = f.stack.back().deferValue(v);
 		// get top
-		const Value* ref = f.stack.back().defer();
 		if (!ref)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " null/cyclic reference passed to @ operator", f.feed.lineNumber());
-		Value v = *ref; // copy in case of race condition
-
 		f.stack.pop_back();
+
 		if (v.type == Value::MAC || v.type == Value::STR) {
 			const Frame::Exit ev = runMacro(f, *v.str, true);
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR,
-						DEBUG_FLI "In " + std::string(v.typeName()) + " @ ", DEBUG_FLI, f.feed.lineNumber(), ev);
+						"In " + std::string(v.typeName()) + " @ ", DEBUG_FLI, f.feed.lineNumber(), ev);
 
 		} else if (v.type == Value::DEF) {
 			return f.runDef(*v.def);
 		} else if (v.type == Value::LAM) {
-				std::cout <<"lambda exec not implemented\n";
+			Frame::Exit ev = v.lam->call(f);
+			if (ev.reason == Frame::Exit::ERROR)
+				return Frame::Exit(Frame::Exit::ERROR, "In lambda @", DEBUG_FLI, f.feed.lineNumber(), ev);
 		} else {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "non-exectuteable type (" + std::string(v.typeName()) + ") passed to @ operator", f.feed.lineNumber());
 		}
@@ -282,3 +285,49 @@ namespace op_while {
 		return Frame::Exit();
 	}
 }
+
+namespace op_return {
+	const char* name = "return";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		return Frame::Exit(Frame::Exit::RETURN);
+	}
+}
+
+
+namespace op_escape {
+	const char* name = "escape";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		return Frame::Exit(Frame::Exit::ESCAPE);
+	}
+}
+
+
+namespace op_up {
+	const char* name = "up";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", "up operator expected a number of frames to escape from", f.feed.lineNumber());
+		if (f.stack.back().type != Value::INT)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", "up operator expected a integer number of frames to escape from", f.feed.lineNumber());
+
+		Frame::Exit ev(Frame::Exit::UP);
+		ev.number = f.stack.back().mp_int->get_ui();
+		f.stack.pop_back();
+		return  ev;
+	}
+}
+
+/*
+OP_NS(op_return);
+OP_NS(op_break);
+OP_NS(op_up);
+*/
