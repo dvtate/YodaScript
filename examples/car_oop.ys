@@ -1,0 +1,53 @@
+$car { # simple car object 
+
+	# starting with an empty, 10g tank
+	self.fuel 0
+	self.Tank 10 
+
+	# brand new car
+	self.mileage 0 
+
+	self.Rate 14 # 14 miles per gallon?
+
+	self.drive { # drive given distance
+		# drive dist		
+		self.mileage self.mileage $dist + =
+		# burn fuel
+		$consumed $dist self.Rate / =
+		self.fuel self.fuel $consumed - =
+
+		"drove " $dist + "miles, consuming " + $consumed + "galons of fuel." + println
+	} ('dist') lambda
+
+	self.refuel { # add fuel
+		self.fuel self.fuel $quantity + =
+		$balance self.fuel self.Tank / 100 * =
+
+		"Added " $quantity + "gallons of fuel. Tank " + $balance + "% full" + println
+	} ('quantity') lambda
+
+} object =
+
+# you can add properties later too
+$car.make "Ford" =
+$car.model "Model T" =
+
+# describe the car
+"my new car: " print
+$car depict println
+
+# assume the tank had some fuel from the dealership
+$car.fuel 1 = 
+
+
+"\nDriveing to gas station..." println
+# drive to gas station
+(5) $car.drive @
+"We have " $car.fuel + " gallons of fuel left.\n" + println
+
+"Filling up the tank..." println
+($car.Tank $car.fuel -) $car.refuel @
+
+
+"\nmy used car: " print
+$car depict println
