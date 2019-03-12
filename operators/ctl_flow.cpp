@@ -59,6 +59,29 @@ namespace op_repeat_loop {
 	bool condition(Frame& f) {
 		return f.feed.tok == name;
 	}
+
+	Frame::Exit infLoop(Frame& f) {
+		f.stack.pop_back();
+		if (f.stack.back().type != Value::MAC)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " repeat expected a macro and a number of times to run it", f.feed.lineNumber());
+
+		const std::string body = *f.stack.back().str;
+		f.stack.pop_back();
+
+		Frame loop = f.scope(CodeFeed(body));
+		Frame::Exit ev;
+		do {
+			loop.feed.offset = 0;
+			ev = loop.run();
+		} while (ev.reason == Frame::Exit::CONTINUE || ev.reason == Frame::Exit::FEED_END);
+
+		if (ev.reason == Frame::Exit::ERROR)
+			return Frame::Exit(Frame::Exit::ERROR, "In infinite repeat loop", DEBUG_FLI, f.feed.lineNumber(), ev);
+
+		f.stack = loop.stack;
+		return ev;
+	}
+
 	Frame::Exit act(Frame& f) {
 
 		const Frame::Exit bad_exit = Frame::Exit(Frame::Exit::ERROR,
@@ -72,8 +95,13 @@ namespace op_repeat_loop {
 		mpz_class times;
 		if (f.stack.back().type == Value::INT)
 			times = *f.stack.back().mp_int;
+		else if (f.stack.back().type == Value::DEC) {
+			if (f.stack.back().dec == INFINITY) {
+				return infLoop(f);
+			}
+		}
 		else if (f.stack.back().type == Value::DEC)
-			times = f.stack.back().dec;
+			times = (long int) f.stack.back().dec;
 		else
 			return bad_exit;
 
@@ -86,18 +114,21 @@ namespace op_repeat_loop {
 		f.stack.pop_back();
 		Frame loop = f.scope(CodeFeed(body));
 
+		Frame::Exit ev;
 		for (size_t i = times.get_ui(); i > 0; i--) {
 			loop.feed.offset = 0; // feed bodys are now immutable :)
-			const Frame::Exit ev = loop.run();
+			ev = loop.run();
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "In Repeat Loop", DEBUG_FLI, f.feed.lineNumber(), ev);
+			else if (ev.reason != Frame::Exit::CONTINUE)
+				return ev;
+
 		}
 
 		// merge stacks
 		f.stack = loop.stack;
 
-		return Frame::Exit();
-
+		return ev;
 	}
 }
 
@@ -135,13 +166,14 @@ namespace op_exec {
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR,
 						"In " + std::string(v.typeName()) + " @ ", DEBUG_FLI, f.feed.lineNumber(), ev);
-
+			return ev;
 		} else if (v.type == Value::DEF) {
 			return f.runDef(*v.def);
 		} else if (v.type == Value::LAM) {
 			Frame::Exit ev = v.lam->call(f);
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "In lambda @", DEBUG_FLI, f.feed.lineNumber(), ev);
+			return ev;
 		} else {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "non-exectuteable type (" + std::string(v.typeName()) + ") passed to @ operator", f.feed.lineNumber());
 		}
@@ -188,7 +220,7 @@ namespace op_cond {
 		// if top == cond
 			// goto 1
 
-		Frame cond = f.scope(*f.stack.back().str, false);
+		Frame cond = f.scope(*f.stack.back().str);
 		cond.feed.body = *f.stack.back().str;
 		f.stack.pop_back();
 
@@ -218,13 +250,13 @@ namespace op_cond {
 			const Value* v = cond.stack.back().defer();
 			if (v && v->type == Value::MAC) {
 
-				Frame action = f.scope(*v->str);
+				Frame action = cond.scope(*v->str, false);
 				const Frame::Exit ev = action.run();
 				if (ev.reason == Frame::Exit::ERROR)
 					return Frame::Exit(Frame::Exit::ERROR, "In Cond", DEBUG_FLI, f.feed.lineNumber(), ev);
 				// merge stack
-				f.stack.insert(f.stack.end(), cond.stack.begin(), cond.stack.end());
-
+				f.stack.insert(f.stack.end(), action.stack.begin(), action.stack.end());
+				return ev;
 			} else {
 				f.stack.emplace_back(cond.stack.back());
 			}
@@ -269,12 +301,17 @@ namespace op_while {
 			ev = body.run();
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "in while loop body", DEBUG_FLI, f.feed.lineNumber(), ev);
+			else if (ev.reason != Frame::Exit::Reason::CONTINUE)
+				return ev;
 
 			// run condition
 			cond.feed.offset = 0;
 			ev = cond.run();
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "in while loop condition", DEBUG_FLI, f.feed.lineNumber(), ev);
+			else if (ev.reason != Frame::Exit::Reason::CONTINUE)
+				return ev;
+
 			condition = cond.stack.back().truthy();
 			cond.stack.clear(); // if i dont clear then stack will continue to grow and cause problems later on
 		}

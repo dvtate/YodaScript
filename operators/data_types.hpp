@@ -1,6 +1,3 @@
-//
-// Created by tate on 01-03-19.
-//
 
 #ifndef YS2_DATA_TYPES_HPP
 #define YS2_DATA_TYPES_HPP

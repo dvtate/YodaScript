@@ -1,9 +1,10 @@
 #include <iostream>
 #include <csignal>
+#include <cstring>
 
 #include "frame.hpp"
 
-Frame main_entry_frame;
+Frame main_entry_frame{};
 
 
 void sigintHandle(int sig_num) {
@@ -16,11 +17,34 @@ void sigintHandle(int sig_num) {
 	exit(sig_num);
 }
 
+// trace on
+// print out every single token
+bool enable_token_trace = false;
+
+extern const char* ys_help_info;
+extern const char* ys_version_info;
+
+
 int main(int argc, char** argv) {
 
 	signal(SIGINT, sigintHandle);
 
-	if (argc == 1) {
+	bool from_file = false;
+	for (int i = 1; i < argc; i++)
+		if (argv[i][0] != '-') {
+			from_file = true;
+		} else if (!strcmp(argv[i], "--tron") || !strcmp(argv[i], "-t")) {
+			enable_token_trace = true;
+		} else if (!strcmp(argv[i], "--version") || !strcmp(argv[i], "-V")) {
+			std::cout <<ys_version_info <<std::endl;
+			return 0;
+		} else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) {
+			std::cout <<ys_help_info <<std::endl;
+			return 0;
+		}
+
+
+	if (!from_file) {
 
 		main_entry_frame.feed.isStdin = true;
 
@@ -33,7 +57,6 @@ int main(int argc, char** argv) {
 			if (!main_entry_frame.feed.getLine("> "))
 				return 0;
 
-
 			Frame::Exit e = main_entry_frame.run();
 
 			if (e.reason == Frame::Exit::ERROR)
@@ -44,8 +67,13 @@ int main(int argc, char** argv) {
 
 			std::cout <<std::endl;
 		}
-	} else if (argc == 2) {
-		if (**(argv + 1) != '-') {
+	}
+
+	// else -> run file
+
+	// run program
+	for (int i = 1; i < argc; i++)
+		if (**(argv + i) != '-') {
 			main_entry_frame.feed.loadFile(argv[1]);
 			Frame::Exit e = main_entry_frame.run();
 			if (e.reason == Frame::Exit::ERROR) {
@@ -56,5 +84,17 @@ int main(int argc, char** argv) {
 #endif
 			}
 		}
-	}
+
 }
+
+const char* ys_version_info = "2.0.1 - compiled: " __DATE__ " " __TIME__;
+
+const char* ys_help_info =
+"usage: Usage: yoda [ option | file ] ...\n"
+"Options:\n"
+"   -h,\t--help\t: display's this help message\n"
+"   -V,\t--version\t: display's version information \n"
+"   -t,\t--tron\t: prints every token as it's interpreted\n"
+"\n"
+"If this is your first time using this language, you should check the README on this project's github page.\n"
+"<https://github.com/dvtate/ys-alpha>\n";

@@ -42,12 +42,13 @@ namespace NAME {\
 	FRAME.stack.back().set(_tmp_v ? *_tmp_v : Value(nullptr));\
 }
 
+// for handling things which aren't simple space delimited operators
 typedef struct Token {
 
-	// if i want to call this from another token
+	// if i want to call this from another token/operator
 	const char* name;
 
-	// condition for parser
+	// condition for parsing
 	bool (*condition)(Frame&);
 
 	// run if condition true or if called externally
@@ -57,18 +58,11 @@ typedef struct Token {
 
 namespace operators {
 
-	// tokens.find is O(N)
-	extern std::vector<Token> tokens;
-
 	// operators.find is O(1)
 	extern Namespace operators;
 
-	// operators.find
-	Def findOperator(Frame& f);
-
-	// tokens.find
-	int findToken(Frame& f);
-
+	// tokens.find is O(N)
+	extern std::vector<Token> tokens;
 
 	bool callByName(Frame& f, const std::string &name, Frame::Exit &exit); // ie - callByName(f, "@", ev)
 	bool callOperator(Frame& f, Frame::Exit& exit, const Namespace& ns);

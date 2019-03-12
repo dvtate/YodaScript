@@ -24,8 +24,11 @@ namespace op_not {
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", " ! operator requires a condition to negate.", f.feed.lineNumber());
 
-		f.stack.back().set(f.stack.back().truthy());
-		return Frame::Exit();
+		const Value* v = f.stack.back().defer();
+		Frame::Exit ev{};
+		if (!v || v->type != Value::OBJ || !v->obj->callMember(f, "__operator!", ev))
+			f.stack.back().set(!f.stack.back().truthy());
+		return ev;
 	}
 }
 

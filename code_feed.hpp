@@ -10,6 +10,9 @@
 #include <fstream>
 #include <sstream>
 
+
+extern bool enable_token_trace;
+
 // basically a string wrappper
 class CodeFeed {
 public:
@@ -137,7 +140,9 @@ public:
 
 		tok = fix_accessors(body.substr(offset, i - offset));
 
-		//std::cout <<"tok: `" <<tok <<"`\n";
+		if (enable_token_trace)
+			std::cout <<"parseing token: `" <<tok <<"`\n";
+
 		return true;
 
 	}
@@ -149,6 +154,10 @@ private:
 
 		// empty string oof
 		if (s.length() <= 1)
+			return s;
+
+		// dont split numbers
+		if (s[0] == '-' ||isdigit(s[0]))
 			return s;
 
 		// chained requests $x `:a:b:c`

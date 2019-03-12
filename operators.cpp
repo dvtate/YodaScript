@@ -23,54 +23,27 @@
 #include "operators/objects.hpp"
 
 namespace operators {
-	int findToken(Frame &f) {
-
-		// check condition for each operator
-		for (size_t i = 0; i < tokens.size(); i++) // O(N) oof
-			if (tokens[i].condition(f))
-				return i;
-
-		return -1;
-	}
 
 	bool callToken(Frame& f, Frame::Exit& exit) {
 
-		//std::cout <<"toklookup(" <<tokens.size() <<") ";
 		for (Token t : tokens)
 			if (t.condition(f)) {
 				exit = t.act(f);
-				//std::cout <<"= true\n";
 				return true;
 			}
-		//std::cout <<"= false\n";
 		return false;
 	}
-	Def findOperator(Frame &f) {
 
-
-		auto d = operators.find(f.feed.tok);
-		if (d != operators.end())
-			return d->second;
-
-		Def ret(nullptr);
-		ret.run = true;
-		return ret;
-
-	}
 
 	bool callOperator(Frame& f, Frame::Exit& exit) {
 
-		//std::cout <<"oplookup(" <<operators.size() <<")";
-
 		auto d = operators.find(f.feed.tok);
 		if (d != operators.end()) {
-			//std::cout <<" = true\n";
 			if (d->second.native) {
-				//std::cout <<"found: " <<d->first <<'\n';
 				exit = d->second.act(f);
 				return true;
-			} else if (d->second.run) {
 
+			} else if (d->second.run) {
 				f.stack.emplace_back(*d->second._val);
 				f.feed.offset--;
 				return callByName(f, "@", exit);
@@ -80,7 +53,6 @@ namespace operators {
 				return true;
 			}
 		}
-		//std::cout <<" = false\n";
 		return false;
 	}
 	bool callOperator(Frame& f, Frame::Exit& exit, const Namespace& ns) {
@@ -105,7 +77,7 @@ namespace operators {
 		return false;
 	}
 	inline std::vector<struct Token> genTokens() {
-		// loads all operators from operators/
+		// loads relevant tokens from operators/*
 		return std::vector<struct Token>({
 				// fast literals
 				OP_NS_TO_TOK(op_var_literal),
@@ -150,15 +122,12 @@ namespace operators {
 			OP_NS_TO_PAIR(op_const),        // converts ref to IMR
 
 			// stack
-			OP_NS_TO_PAIR(op_stack),
-			//OP_NS_TO_PAIR(op_stk_clear),    // clears stack
-			//OP_NS_TO_PAIR(op_stk_dup),      // dups element
-			//OP_NS_TO_PAIR(op_stk_swap),     // swaps top 2 elems
+			OP_NS_TO_PAIR(op_stack),        // stack:clear, stack:pop, stack:dup, stack:reverse, stack:swap, stack:...
 			OP_NS_TO_PAIR(op_stk_pop),      // pops top elem
 
 			// structured programming
 			OP_NS_TO_PAIR(op_repeat_loop),  // run given number of times
-			OP_NS_TO_PAIR(op_cond),         // if-elif-else statement
+			OP_NS_TO_PAIR(op_cond),         // unlabled elseelseifif statements
 
 			// const values
 			OP_NS_TO_PAIR(op_const_empty),  // empty value
@@ -219,9 +188,8 @@ namespace operators {
 
 	bool callByName(Frame &f, const std::string &name, Frame::Exit &exit) {
 
-
 		auto d = operators.find(name);
-		if (d != operators.end()) {
+		if (d != operators.end()) { // found
 			if (d->second.native) {
 				exit = d->second.act(f);
 				return true;
@@ -229,7 +197,6 @@ namespace operators {
 				f.stack.emplace_back(*d->second._val);
 				f.feed.offset--;
 				return callByName(f, "@", exit);
-
 			} else {
 				f.stack.emplace_back(*d->second._val);
 				return true;

@@ -143,16 +143,30 @@ public:
 	std::string toString();	// stringify value
 
 	// gets a value from a ref, if it's a lambda then it adds an if
-	bool deferValue(Value& ret, std::vector<std::shared_ptr<Value>*> pastPtrs = {});
-
+	bool deferValue(Value& ret, std::vector<std::shared_ptr<Value>*>& pastPtrs);
+	bool deferValue(Value& ret) {
+		std::vector<std::shared_ptr<Value>*> ptrs; // recycle vector to save memory
+		return deferValue(ret, ptrs);
+	}
 	// get the value that a reference points to
-	const Value* defer(std::vector<std::shared_ptr<Value>*> pastPtrs = {});
-
+	const Value* defer(std::vector<std::shared_ptr<Value>*>& pastPtrs);
+	const Value* defer(){
+		std::vector<std::shared_ptr<Value>*> ptrs;
+		return defer(ptrs);
+	}
 	// get muteable value
 	// stops at immuteable references
-	Value* deferMuteable(std::vector<std::shared_ptr<Value>*> pastPtrs = {});
+	Value* deferMuteable(std::vector<std::shared_ptr<Value>*>& pastPtrs);
+	Value* deferMuteable() { // this is to make it so we can use references to prevent copies
+		std::vector<std::shared_ptr<Value>*> ptrs;
+		return deferMuteable(ptrs);
+	}
 
-	std::shared_ptr<Value> lastRef(std::vector<std::shared_ptr<Value>*> pastPtrs = {});
+	std::shared_ptr<Value> lastRef(std::vector<std::shared_ptr<Value>*>& pastPtrs);
+	std::shared_ptr<Value> lastRef() {
+		std::vector<std::shared_ptr<Value>*> ptrs;
+		return lastRef(ptrs);
+	}
 
 	const char* typeName();
 	static const char* typeName(vtype value_type);

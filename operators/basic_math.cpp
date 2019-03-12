@@ -18,67 +18,71 @@ namespace op_add {
 		DEFER_TOP(f);
 		Value v2 = f.stack.back();
 		f.stack.pop_back();
-		DEFER_TOP(f);
 
+		const Value* v1 = f.stack.back().defer();
+		if (!v1)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "null/cyclic reference passed to + operator", f.feed.lineNumber());
 
 		auto TypeError = [&](Value::vtype t1, Value::vtype t2) {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "invalid addition of "
 				+ std::string(Value::typeName(t1)) + " & " + Value::typeName(t2), f.feed.lineNumber());
 		};
 
-		switch (f.stack.back().type) {
+		switch (v1->type) {
 
 		case Value::STR:
 			switch (v2.type) {
 			case Value::STR:
-				f.stack.back().set(*f.stack.back().str + *v2.str);
+				f.stack.back().set(*v1->str + *v2.str);
 				break;
 			case Value::INT:
-				f.stack.back().set(*f.stack.back().str + v2.mp_int->get_str(10));
+				f.stack.back().set(*v1->str + v2.mp_int->get_str(10));
 				break;
 			case Value::DEC:
-				f.stack.back().set(*f.stack.back().str + std::to_string(v2.dec)); // maybe change this ...
+				f.stack.back().set(*v1->str + std::to_string(v2.dec)); // maybe change this ...
 				break;
 			default: // oop operator overloading coming soon...
-				return TypeError(f.stack.back().type, v2.type);
+				return TypeError(v1->type, v2.type);
 			}
 			break;
 
 		case Value::INT:
 			switch (v2.type) {
 			case Value::STR:
-				f.stack.back().set(f.stack.back().mp_int->get_str(10) + *v2.str);
+				f.stack.back().set(v1->mp_int->get_str(10) + *v2.str);
 				break;
 			case Value::DEC:
-				f.stack.back().set(f.stack.back().mp_int->get_d() + v2.dec);
+				f.stack.back().set(v1->mp_int->get_d() + v2.dec);
 				break;
 			case Value::INT:
-				f.stack.back().set(mpz_class(*f.stack.back().mp_int + *v2.mp_int));
+				f.stack.back().set(mpz_class(*v1->mp_int + *v2.mp_int));
 				break;
 			default:
-				return TypeError(f.stack.back().type, v2.type);
+				return TypeError(v1->type, v2.type);
 			}
 			break;
 
 		case Value::DEC:
 			switch (v2.type) {
 			case Value::STR:
-				f.stack.back().set(std::to_string(f.stack.back().dec) + *v2.str);
+				f.stack.back().set(std::to_string(v1->dec) + *v2.str);
 				break;
 			case Value::INT:
-				f.stack.back().set(f.stack.back().dec + v2.mp_int->get_d());
+				f.stack.back().set(v1->dec + v2.mp_int->get_d());
 				break;
 			case Value::DEC:
-				f.stack.back().set(f.stack.back().dec + v2.dec);
+				f.stack.back().set(v1->dec + v2.dec);
 				break;
 			default:
-				return TypeError(f.stack.back().type, v2.type);
+				return TypeError(v1->type, v2.type);
 			}
 			break;
 
 		case Value::ARR:
 			if (v2.type != Value::ARR)
-				return TypeError(f.stack.back().type, v2.type);
+				return TypeError(v1->type, v2.type);
+
+			f.stack.back() = *v1; // cp
 			f.stack.back().arr->insert(f.stack.back().arr->end(), v2.arr->begin(), v2.arr->end());
 			break;
 		}

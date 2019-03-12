@@ -13,14 +13,18 @@
 #include "namespace_def.hpp"
 
 class Value;
+class Frame;
+class Exit;
 
+// internal implementation of the object datatype
 class Object {
 public:
-	std::unordered_map<std::string, std::shared_ptr<Value>> members;
 
+	std::unordered_map<std::string, std::shared_ptr<Value>> members;
 
 	std::shared_ptr<Value>& getMember(const std::string& name);
 
+	bool callMember(Frame& f, const std::string& name, Exit& ev);
 };
 
 

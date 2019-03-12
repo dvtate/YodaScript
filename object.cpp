@@ -1,7 +1,9 @@
 //
 // Created by tate on 04-03-19.
 //
+
 #include "value.hpp"
+#include "operators.hpp"
 #include "object.hpp"
 
 
@@ -12,4 +14,18 @@ std::shared_ptr<Value>& Object::getMember(const std::string& name) {
 		m = members.find(name);
 	}
 	return m->second;
+}
+
+bool Object::callMember(Frame& f, const std::string& name, Exit& ev) {
+	auto m = members.find(name);
+	if (m == members.end())
+		return false;
+
+	if (m->second->type != Value::LAM)
+		return false;
+
+	Value lam = m->second;
+
+	ev = m->second->lam->call(f);
+	return true;
 }

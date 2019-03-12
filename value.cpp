@@ -57,70 +57,68 @@ Value::Value(const std::shared_ptr<Value>& ref, const std::shared_ptr<Value>& re
 void Value::erase() {
 	// dealloc relevant data
 	switch (type) {
-		case DEC: case EMT:
-			return;
-		case STR: case MAC:
-			delete str; return;
-		case INT:
-			delete mp_int; return;
-		case REF:
-			delete related;
-		case IMR:
-			delete ref;	return;
-		case ARR:
-			delete arr; return;
-		case NSP:
-			ns->clear();
-			delete ns;
-			return;
-		case DEF:
-			delete def; return;
-		case OBJ:
-			delete obj; return;
-		case LAM:
-			delete lam; return;
-		default:
-			return;
+		case DEC: case EMT:							return;
+		case STR: case MAC:		delete str;			return;
+		case INT:				delete mp_int;		return;
+		case REF:				delete related;
+		case IMR:				delete ref;			return;
+		case ARR:				delete arr;			return;
+		case NSP:			ns->clear(); delete ns;	return;
+		case DEF:				delete def;			return;
+		case OBJ:				delete obj;			return;
+		case LAM:				delete lam;			return;
+		default:									return;
 	}
 }
 
 Value& Value::set_noerase(const Value& v) {
 	type = v.type;
 
-	// switch?
-	if (type == DEC) {
-		dec = v.dec;
-	} else if (type == IMR) {
-		ref = new std::shared_ptr<Value>(*v.ref);
-	} else if (type == REF) {
-		ref = new std::shared_ptr<Value>(*v.ref);
-		related = v.related ? new std::shared_ptr<Value>(*v.related) : nullptr;
-	} else if (type == STR || type == MAC) {
-		str = new std::string(*v.str);
-	} else if (type == INT) {
-		mp_int = new mpz_class(*v.mp_int);
-	} else if (type == ARR) {
-		arr = new std::vector<std::shared_ptr<Value>>(*v.arr);
-	} else if (type == NSP) {
-		ns = new Namespace(*v.ns);
-	} else if (type == DEF) {
-		def = new Def(*v.def);
-	} else if (type == OBJ) {
-		obj = new Object(*v.obj);
-	} else if (type == LAM) {
-		lam = new Lambda(*v.lam);
+	switch (type) {
+		case DEC:
+			dec = v.dec;
+			break;
+		case REF:
+			related = v.related ? new std::shared_ptr<Value>(*v.related) : nullptr;
+		case IMR:
+			ref = new std::shared_ptr<Value>(*v.ref);
+			break;
+		case STR: case MAC:
+			str = new std::string(*v.str);
+			break;
+		case INT:
+			mp_int = new mpz_class(*v.mp_int);
+			break;
+		case ARR:
+			arr = new std::vector<std::shared_ptr<Value>>(*v.arr);
+			break;
+		case NSP:
+			ns = new Namespace(*v.ns);
+			break;
+		case DEF:
+			def = new Def(*v.def);
+			break;
+		case OBJ:
+			obj = new Object(*v.obj);
+			break;
+		case LAM:
+			lam = new Lambda(*v.lam);
+			break;
 	}
+
 	return *this;
 }
 
-inline static size_t countLines(const std::string& s) {
+inline static size_t countLines(const std::string& s)
+{
 	size_t lc = 0;
-	for (const char c : s)
+	for (char c : s)
 		if (c == '\n')
 			lc++;
 	return lc;
 }
 
+// equivalent to python repr()
 std::string Value::depict() {
 	if (type == DEC) {
 		// add .0 for whole numbers
@@ -152,7 +150,10 @@ std::string Value::depict() {
 		return "empty";
 	} else if (type == MAC) {
 		const size_t lines = countLines(*str);
-		return "{" + (lines > 1 ? std::to_string(lines) + std::string(" lines"): *str) + " }";
+		return "{" + (lines > 1 ?
+			std::to_string(lines) + std::string(" lines")
+			: *str) + " }";
+
 	} else if (type == REF || type == IMR) {
 		Value* v = (Value*) defer();
 		if (v)
@@ -205,6 +206,7 @@ std::string Value::depict() {
 	return "idk";
 }
 
+// equivalent to python `str()`
 std::string Value::toString() {
 	if (type == DEC) {
 		std::ostringstream ss;
@@ -254,7 +256,7 @@ std::string Value::toString() {
 		std::string ret = "{";
 		for (const auto& v : obj->members)
 			ret += "\n\tself." + v.first + "\t" + v.second->depict();
-		if (obj->members.size())
+		if (!obj->members.empty())
 			ret += '\n';
 		return ret + "} object";
 	} else if (type == LAM) {
@@ -267,13 +269,12 @@ std::string Value::toString() {
 		return ret + " lambda";
 	}
 
-
 	return "idk";
 }
 
 
-// get the value that a reference points to
-const Value* Value::defer(std::vector<std::shared_ptr<Value>*> pastPtrs) {
+// get ptr to value that a reference points to
+const Value* Value::defer(std::vector<std::shared_ptr<Value>*>& pastPtrs) {
 	// end of ref recursion
 	if (type != REF && type != IMR)
 		return this;
@@ -291,8 +292,8 @@ const Value* Value::defer(std::vector<std::shared_ptr<Value>*> pastPtrs) {
 	return (*ref)->defer(pastPtrs);
 }
 
-// get the value that a reference points to
-bool Value::deferValue(Value& ret, std::vector<std::shared_ptr<Value>*> pastPtrs) {
+// get (copy) the value that a reference points to
+bool Value::deferValue(Value& ret, std::vector<std::shared_ptr<Value>*>& pastPtrs) {
 	// end of ref recursion
 	if (type != REF && type != IMR) {
 		ret = *this;
@@ -320,7 +321,8 @@ bool Value::deferValue(Value& ret, std::vector<std::shared_ptr<Value>*> pastPtrs
 
 // get muteable value
 // stops at immuteable references
-Value* Value::deferMuteable(std::vector<std::shared_ptr<Value>*> pastPtrs) {
+// use this instead of defer if we want to change the value
+Value* Value::deferMuteable(std::vector<std::shared_ptr<Value>*>& pastPtrs) {
 	// end of ref recursion
 	if (type != REF) // will return on IMR
 		return this;
@@ -338,7 +340,8 @@ Value* Value::deferMuteable(std::vector<std::shared_ptr<Value>*> pastPtrs) {
 	return (*ref)->deferMuteable(pastPtrs);
 }
 
-std::shared_ptr<Value> Value::lastRef(std::vector<std::shared_ptr<Value>*> pastPtrs) {
+// last reference before non-reference type
+std::shared_ptr<Value> Value::lastRef(std::vector<std::shared_ptr<Value>*>& pastPtrs) {
 	// end of ref recursion
 	if (type != REF && type != IMR)
 		return pastPtrs.empty() ? std::make_shared<Value>(*this) : *pastPtrs.back();
@@ -357,6 +360,7 @@ std::shared_ptr<Value> Value::lastRef(std::vector<std::shared_ptr<Value>*> pastP
 	return (*ref)->lastRef(pastPtrs);
 }
 
+// name for type
 const char* Value::typeName() {
 	return typeName(type);
 }
@@ -381,6 +385,8 @@ const char* Value::typeName(const Value::vtype value_type) {
 			return "unknown";
 	}
 }
+
+
 bool Value::truthy() {
 	if (type == REF) {
 		Value* v = (Value*) defer();
@@ -393,8 +399,6 @@ bool Value::truthy() {
 	if (type == ARR)	return !arr->empty();
 	if (type == OBJ || type == MAC || type == LAM)
 		return true;
-
-
 
 	std::cout <<"invalid type in Value.truthy()\n";
 	// glitch
@@ -416,14 +420,21 @@ bool Value::operator==(Value& v) {
 
 	// returns if they reference same data,
 	// use copy operator if u wanna compare by value
-	// move this to an `is` operator ? prolly nah
+	// move this to an `is` operator ? not inclined
 	if (type == REF)
 		return v.defer() == defer();
 
 	if (type == OBJ)
 		return obj->members == v.obj->members;
 
+	if (type == LAM)
+		return lam->params == v.lam->params && lam->body == v.lam->body;
+
+
+	// obj.__operator== not called here
+	if (type == OBJ)
+		return obj->members == v.obj->members;
+
 	// for now at least
-	//if (type == LAM || type == OBJ)
 	return false;
 }

@@ -19,7 +19,6 @@ Frame::Exit Frame::runDef(const Def& def) {
 	} else if (def.run) {
 
 		stack.emplace_back(*def._val);
-		feed.offset--;
 		Frame::Exit exit;
 		operators::callByName(*this, "@", exit);
 		return exit;
@@ -44,6 +43,14 @@ Frame::Exit Frame::run() {
 
 	Frame::Exit ev;
 
+
+	if (prev.size() > 2000) {
+		std::cerr <<"Maximum scope depth reached!!! generating backtrace... (you may run out of ram, probably best to kill w/ ctl+c)" <<std::endl;
+		Frame::Exit ev = Frame::Exit(Frame::Exit::Reason::ERROR, "ScopeError", "Maximum recursion depth reached", feed.lineNumber());
+		ev.genMsg(feed, this);
+		std::cerr <<"Error(" <<prev.size() <<"): " <<ev.msg;
+		return Frame::Exit(Frame::Exit::Reason::ERROR, "ScopeError", "Maximum recursion depth reached", feed.lineNumber());
+	}
 run_frame:
 	do {
 		// defs get automatically evaluated
@@ -57,7 +64,7 @@ run_frame:
 		// get first token once so that we dont have to find it for every operator
 		// stored in feed.tok
 		if (!feed.setTok())
-			return Frame::Exit(Frame::Exit::FEED_END);
+			return Frame::Exit(Frame::Exit::CONTINUE);
 		feed.offset += feed.tok.length();
 
 		// user-level definitions & imports > interpreter level operators > interpreter level tokens
@@ -81,7 +88,7 @@ run_frame:
 	}
 
 	if (ev.reason == Frame::Exit::ERROR)
-		ev.genMsg(feed);
+		ev.genMsg(feed, this);
 
 	return ev;
 

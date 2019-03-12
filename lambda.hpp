@@ -13,16 +13,19 @@
 class Frame;
 class Exit;
 
-// should i use a struct?
-typedef struct Lambda {
-	// if it's a member of something
+class Lambda {
+public:
+
+	// this shold only be set for values, if self is set for a lambda within an object then
+	// it will prevent the object and lambda from ever going out of scope as they will be self referencing
 	std::shared_ptr<Value> self;
-	std::vector<std::string> params;
-	std::string body;
+	std::vector<std::string> params; // args
+	std::string body; // macro
 
+	Lambda() = default;
 
-	Exit call(Frame&);
+	Exit call(Frame&, std::shared_ptr<Value> slf = nullptr);
 
-} Lambda;
+};
 
 #endif //YS2_LAMBDA_HPP

@@ -13,7 +13,7 @@ class Value;
 class Frame;
 class Exit;
 
-// definition
+// definition - gets run as soon as it's placed onto stack (in between tokens)
 class Def {
 public:
 
