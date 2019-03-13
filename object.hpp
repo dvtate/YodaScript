@@ -25,6 +25,7 @@ public:
 	std::shared_ptr<Value>& getMember(const std::string& name);
 
 	bool callMember(Frame& f, const std::string& name, Exit& ev);
+	bool callMember(Frame& f, const std::string& name, Exit& ev, const std::shared_ptr<Value>& obj, const size_t args = 0);
 };
 
 

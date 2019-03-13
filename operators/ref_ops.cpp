@@ -114,7 +114,7 @@ namespace op_vars {
 		std::cout <<"Current Scope:\n";
 		std::cout <<"\tname\taddress\tvalue\n";
 		for (auto& v : f.vars)
-			if ((*v.second.ref)->type != Value::EMT)
+			//if ((*v.second.ref)->type != Value::EMT)
 				std::cout <<"\t$" <<v.first <<'\t' <<*v.second.ref <<'\t' <<(*v.second.ref)->typeName() <<'\t' <<v.second.depict() <<std::endl;
 
 		unsigned short bt = 1;

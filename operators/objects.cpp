@@ -49,22 +49,61 @@ namespace op_obj_mem_acc {
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "Object member accessor without object", f.feed.lineNumber());
 
-		/*TODO: FIXME: this muteable/immutable refs and stuff
-			error messages also kinda important since u shouldn't
-			be able to convert anything past an immuteable ref into an object
-
-		 	this is gonna actually be rly painful without lazy evaluation
-		 */
 		Value* v = (Value*) f.stack.back().defer();
 
-		// if empty, make it an object
-		if (v->type != Value::OBJ)
-			v->set(Object());
 
+		// if empty, make it an object
+		if (!v || v->type != Value::OBJ) {
+			v = f.stack.back().deferMuteable();
+			if (!v)
+				return Frame::Exit(Frame::Exit::ERROR, "ReferenceError", DEBUG_FLI "cannot get member of object at Null/Cyclic reference", f.feed.lineNumber());
+
+			v->set(Object());
+		}
 		auto mem = v->obj->getMember(f.feed.tok.substr(1));
 		f.stack.back().set(Value(mem, f.stack.back().lastRef()));
 
 		return Frame::Exit();
 
+	}
+}
+
+
+namespace op_obj_mem_acc_op {
+	const char* name = ".";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " . operator expected a namespace and string",
+							   f.feed.lineNumber());
+
+		Value* v = (Value*) f.stack.back().defer();
+		std::string key;
+		if (v->type == Value::OBJ) { // they're requesting val at emptystring key
+			key = "";
+		} else if (v->type != Value::STR) { // $namespace (1,2,3) :  (not a string)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " . operator expected a string key");
+		} else { // normative
+			key = *v->str;
+			f.stack.pop_back();
+			v = (Value*) f.stack.back().defer();
+			//if (v->type != Value::OBJ)
+			//	return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " . operator expected an object to act on");
+		}
+
+		// if empty, make it an object
+		if (v->type != Value::OBJ) {
+			v = f.stack.back().deferMuteable();
+			v->set(Object());
+		}
+
+		auto mem = v->obj->getMember(f.feed.tok.substr(1));
+		// reference the object member with the object as a dependency
+		f.stack.back().set(Value(mem, f.stack.back().lastRef()));
+
+
+		return Frame::Exit();
 	}
 }

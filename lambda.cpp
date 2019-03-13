@@ -23,19 +23,29 @@ Exit Lambda::call(Frame& f, std::shared_ptr<Value> slf) {
 		lam.setVar(params[i], i + 1 > args.size() ?
 					std::make_shared<Value>() : args[i]);
 
+
 	// add self and arguments
-	// INSIGHT: should be a variable or definition?
+	/* INSIGHT: should be a variable or definition?
+	 * why definition?
+		- its constant, cant change it :/
+	 	-
+	*/
 	if (self)
 		lam.defs.emplace("self", self);
 	else if (slf)
-		lam.defs.emplace("self", self);
+		lam.defs.emplace("self", slf);
 	else
-		lam.defs.emplace("self", std::make_shared<Value>());
+		lam.defs.emplace("self", std::make_shared<Value>()); // empty
 
+	// set args
 	lam.defs.emplace("args", std::make_shared<Value>(std::move(args)));
 
+	// capture exit value
 	const Frame::Exit&& ev = lam.run();
+
+	// merge stacks
 	f.stack.insert(f.stack.end(), lam.stack.begin(), lam.stack.end());
 
 	return ev;
 }
+

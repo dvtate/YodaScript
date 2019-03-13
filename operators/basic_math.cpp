@@ -30,6 +30,15 @@ namespace op_add {
 
 		switch (v1->type) {
 
+		case Value::OBJ: {
+
+			Frame::Exit ev;
+			const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+			f.stack.emplace_back(std::move(v2));
+			if (!v1->obj->callMember(f, "__operator+", ev, self, 1))
+				return Frame::Exit(Frame::Exit::ERROR, "in object.__operator+", DEBUG_FLI , f.feed.lineNumber(), ev);
+			return ev;
+			} break;
 		case Value::STR:
 			switch (v2.type) {
 			case Value::STR:
@@ -103,7 +112,7 @@ namespace op_minus {
 		DEFER_TOP(f);
 		Value v2 = f.stack.back();
 		f.stack.pop_back();
-		DEFER_TOP(f);
+		Value* v1 = (Value*) f.stack.back().defer();
 
 
 		auto TypeError = [&](Value::vtype t1, Value::vtype t2) {
@@ -111,29 +120,38 @@ namespace op_minus {
 								+ std::string(Value::typeName(t1)) + " & " + Value::typeName(t2), f.feed.lineNumber());
 		};
 
-		switch (f.stack.back().type) {
+		switch (v1->type) {
+			case Value::OBJ: {
+
+				Frame::Exit ev;
+				const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+				f.stack.emplace_back(std::move(v2));
+				if (!v1->obj->callMember(f, "__operator-", ev, self, 1))
+					return Frame::Exit(Frame::Exit::ERROR, "in object.__operator-", DEBUG_FLI , f.feed.lineNumber(), ev);
+				return ev;
+			} break;
 		case Value::DEC:
 			switch (v2.type) {
 				case Value::DEC:
-					f.stack.back().set(f.stack.back().dec - v2.dec);
+					f.stack.back().set(v1->dec - v2.dec);
 					break;
 				case Value::INT:
-					f.stack.back().set(f.stack.back().dec - v2.mp_int->get_d());
+					f.stack.back().set(v1->dec - v2.mp_int->get_d());
 					break;
 				default:
-					return TypeError(f.stack.back().type, v2.type);
+					return TypeError(v1->type, v2.type);
 			}
 			break;
 		case Value::INT:
 			switch (v2.type) {
 			case Value::DEC:
-				f.stack.back().set(f.stack.back().mp_int->get_d() - v2.dec);
+				f.stack.back().set(v1->mp_int->get_d() - v2.dec);
 				break;
 			case Value::INT:
-				f.stack.back().set(mpz_class(*f.stack.back().mp_int - *v2.mp_int));
+				f.stack.back().set(mpz_class(*v1->mp_int - *v2.mp_int));
 				break;
 			default:
-				return TypeError(f.stack.back().type, v2.type);
+				return TypeError(v1->type, v2.type);
 			}
 			break;
 		}
@@ -142,6 +160,9 @@ namespace op_minus {
 	}
 }
 
+
+// TODO: make the rest of these non-retarded (don't use DEFER_TOP())
+//		 also add operator overloading
 
 
 namespace op_multiply {
@@ -165,17 +186,6 @@ namespace op_multiply {
 		};
 
 		switch (f.stack.back().type) {
-		case Value::STR:
-			if (v2.type == Value::INT) {
-				auto x = v2.mp_int->get_si();
-				std::string ret;
-				ret.reserve(f.stack.back().str->length() * (unsigned long)((x > 0) ? x : 0) );
-				for (;x > 0; x--)
-					ret += *f.stack.back().str;
-				f.stack.back().str->swap(ret);
-			} else
-				return TypeError(f.stack.back().type, v2.type);
-			break;
 		case Value::INT:
 			switch (v2.type) {
 			case Value::INT:
@@ -570,3 +580,7 @@ namespace op_bw_or {
 	}
 }
 
+
+
+
+// TODO: modified assignment operators ://////

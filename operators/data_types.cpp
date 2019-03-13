@@ -107,16 +107,11 @@ namespace op_def {
 		if (f.stack.back().type != Value::STR)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " define expected a string label and value", f.feed.lineNumber());
 
-		// performance for normal users hurt for the benefit of inexperienced ones
-		for (const char& c : *f.stack.back().str)
-			if (c == ' ')
-				return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI " define labels cannot have spaces", f.feed.lineNumber());
-
 		// empty string label
-		if (f.stack.back().str->empty())
+		/*if (f.stack.back().str->empty())
 			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI " define label cannot be empty", f.feed.lineNumber());
-
-		bool runnable = f.stack.back().str->at(0) == '@';
+		*/
+		bool runnable = !f.stack.back().str->empty() && f.stack.back().str->at(0) == '@';
 		std::string label = runnable ? f.stack.back().str->c_str() + 1 : *f.stack.back().str;
 		f.stack.pop_back();
 

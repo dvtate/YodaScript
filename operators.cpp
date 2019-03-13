@@ -179,6 +179,8 @@ namespace operators {
 			OP_NS_TO_PAIR(op_return),
 			OP_NS_TO_PAIR(op_up),
 			OP_NS_TO_PAIR(op_escape),
+
+			OP_NS_TO_PAIR(op_obj_mem_acc_op),
 		});
 	}
 
