@@ -36,7 +36,11 @@ bool Object::callMember(Frame& f, const std::string& name, Exit& ev, const std::
 	if (m == members.end())
 		return false;
 
-	if (m->second->type != Value::LAM)
+	const Value* v = m->second->defer();
+	if (v->type == Value::DEF)
+		f.runDef(*v->def);
+
+	if (v->type != Value::LAM)
 		return false;
 
 	Value lam_args{std::vector<std::shared_ptr<Value>>()};
@@ -61,7 +65,7 @@ bool Object::callMember(Frame& f, const std::string& name, Exit& ev, const std::
 	f.stack.emplace_back(std::move(lam_args));
 
 	Value lam = m->second;
-	ev = m->second->lam->call(f, obj);
+	ev = v->lam->call(f, obj);
 
 	return true;
 }

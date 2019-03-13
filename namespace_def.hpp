@@ -25,6 +25,7 @@ public:
 	Def(const Value& value, const bool runnable = false);
 	Def(Exit (*action)(Frame&));
 	Def(const Def& def);
+	Def();
 	~Def();
 };
 

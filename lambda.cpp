@@ -30,10 +30,10 @@ Exit Lambda::call(Frame& f, std::shared_ptr<Value> slf) {
 		- its constant, cant change it :/
 	 	-
 	*/
-	if (self)
-		lam.defs.emplace("self", self);
-	else if (slf)
+	if (slf)
 		lam.defs.emplace("self", slf);
+	else if (self)
+		lam.defs.emplace("self", self);
 	else
 		lam.defs.emplace("self", std::make_shared<Value>()); // empty
 

@@ -33,6 +33,23 @@ namespace op_not {
 }
 
 
+namespace op_truthy {
+	const char* name = "!!";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", " ! operator requires a condition to negate.", f.feed.lineNumber());
+
+		const Value* v = f.stack.back().defer();
+		Frame::Exit ev{};
+		if (!v || v->type != Value::OBJ || !v->obj->callMember(f, "__operator!!", ev, f.stack.back().lastRef()))
+			f.stack.back().set(f.stack.back().truthy());
+		return ev;
+	}
+}
+
 // compare; if you eant to compare references by value you have to use copy (~) operator
 namespace op_equals_to {
 	const char* name = "==";

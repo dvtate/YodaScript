@@ -115,8 +115,19 @@ namespace op_def {
 		std::string label = runnable ? f.stack.back().str->c_str() + 1 : *f.stack.back().str;
 		f.stack.pop_back();
 
+		// TODO: make it so user can redefine using same operator
 		f.defs.emplace(label, Def(v, runnable));
+		
+		/*
+		Def d(v, runnable);
 
+
+		f.defs[label] = d;
+		std::cout <<"f[l]:" <<Value(f.defs[label]).depict() <<" d" <<Value(d).depict() <<std::endl;
+
+		auto p = f.defs.find(label);
+		std::cout <<p->first <<" -> " <<Value(p->second).depict() <<std::endl;
+		*/
 		return Frame::Exit();
 	}
 }

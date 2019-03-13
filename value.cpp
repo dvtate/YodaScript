@@ -372,7 +372,7 @@ const char* Value::typeName(const Value::vtype value_type) {
 		case INT: return "int";
 		case DEC: return "float";
 		case REF: return "reference";
-		case IMR: return "const_ref";
+		case IMR: return "weak_ref";
 		case STR: return "string";
 		case MAC: return "macro";
 		case ARR: return "list";

@@ -117,6 +117,7 @@ public:
 	Value(const std::shared_ptr<Value>& ref, const std::shared_ptr<Value>& related);
 
 	// prevent memory leaks when changing the value
+	// TODO: add object destructor
 	void erase();
 	~Value(){
 		erase();
@@ -139,7 +140,7 @@ public:
 	Value& operator=(const Value& v)
 		{ set(v); return *this;}
 
-	std::string depict();		// represent value
+	std::string depict();	// represent value
 	std::string toString();	// stringify value
 
 	// gets a value from a ref, if it's a lambda then it adds an if
@@ -148,12 +149,14 @@ public:
 		std::vector<std::shared_ptr<Value>*> ptrs; // recycle vector to save memory
 		return deferValue(ret, ptrs);
 	}
+
 	// get the value that a reference points to
 	const Value* defer(std::vector<std::shared_ptr<Value>*>& pastPtrs);
 	const Value* defer(){
 		std::vector<std::shared_ptr<Value>*> ptrs;
 		return defer(ptrs);
 	}
+
 	// get muteable value
 	// stops at immuteable references
 	Value* deferMuteable(std::vector<std::shared_ptr<Value>*>& pastPtrs);
@@ -162,6 +165,7 @@ public:
 		return deferMuteable(ptrs);
 	}
 
+	//
 	std::shared_ptr<Value> lastRef(std::vector<std::shared_ptr<Value>*>& pastPtrs);
 	std::shared_ptr<Value> lastRef() {
 		std::vector<std::shared_ptr<Value>*> ptrs;

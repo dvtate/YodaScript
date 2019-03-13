@@ -15,7 +15,9 @@ Def::Def(const Def& def):
 	if (!native)
 		_val = new Value(*def._val);
 }
-
+Def::Def(): native(false) {
+	_val = new Value();
+};
 Def::~Def(){
 	if (!native)
 		delete(_val);

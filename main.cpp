@@ -4,7 +4,7 @@
 
 #include "frame.hpp"
 
-Frame main_entry_frame{};
+Frame main_entry_frame;
 
 
 void sigintHandle(int sig_num) {
@@ -28,6 +28,8 @@ extern const char* ys_version_info;
 int main(int argc, char** argv) {
 
 	signal(SIGINT, sigintHandle);
+
+	// this entire function should prolly be reworked, works for now tho so idc
 
 	bool from_file = false;
 	for (int i = 1; i < argc; i++)

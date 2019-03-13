@@ -20,13 +20,17 @@
 #include "operators/ref_ops.hpp"
 #include "operators/stack_ctl.hpp"
 #include "operators/types.hpp"
+#include "operators/threads.hpp"
 #include "operators/objects.hpp"
+
+
+
 
 namespace operators {
 
 	bool callToken(Frame& f, Frame::Exit& exit) {
 
-		for (Token t : tokens)
+		for (const Token t : tokens)
 			if (t.condition(f)) {
 				exit = t.act(f);
 				return true;
@@ -137,6 +141,7 @@ namespace operators {
 
 			// boolean
 			OP_NS_TO_PAIR(op_not),          // !
+			OP_NS_TO_PAIR(op_truthy),       // !! -- test for truthiness
 			OP_NS_TO_PAIR(op_and),          // &&
 			OP_NS_TO_PAIR(op_or),           // ||
 
@@ -180,6 +185,8 @@ namespace operators {
 			OP_NS_TO_PAIR(op_up),
 			OP_NS_TO_PAIR(op_escape),
 
+			OP_NS_TO_PAIR(op_keys),
+			OP_NS_TO_PAIR(op_quit),
 			OP_NS_TO_PAIR(op_obj_mem_acc_op),
 		});
 	}

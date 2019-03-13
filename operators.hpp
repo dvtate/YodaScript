@@ -43,6 +43,7 @@ namespace NAME {\
 }
 
 // for handling things which aren't simple space delimited operators
+// ie- adding a new literal type
 typedef struct Token {
 
 	// if i want to call this from another token/operator
