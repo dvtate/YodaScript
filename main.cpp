@@ -4,7 +4,8 @@
 
 #include "frame.hpp"
 
-Frame main_entry_frame;
+std::shared_ptr<Frame> shared_main_entry_frame = std::make_shared<Frame>();
+Frame& main_entry_frame = *shared_main_entry_frame;
 
 
 void sigintHandle(int sig_num) {
@@ -29,7 +30,7 @@ int main(int argc, char** argv) {
 
 	signal(SIGINT, sigintHandle);
 
-	// this entire function should prolly be reworked, works for now tho so idc
+	// this entire file should prolly be reworked, works for now tho so idc
 
 	bool from_file = false;
 	for (int i = 1; i < argc; i++)

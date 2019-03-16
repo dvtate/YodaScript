@@ -13,6 +13,9 @@
 
 class Exit;
 
+// TODO: make all frames std::shared_ptrs so that it's friendly to multi-threaded design in future
+//		 also adding a scope & scopes operator for accessing Frame.defs within context of a namespace
+
 class Frame {
 public:
 	typedef class Exit Exit;
@@ -35,17 +38,21 @@ public:
 	// values defined by and for specific operators
 	std::unordered_map<std::string, Value> rt_vals;
 
+	// TODO: make this a shared_ptr and allow operators from previous scopes to call it
+	//			this would allow user to call redefined/global operators
 	// locally defined operators
 	Namespace defs;
+
+
 	Frame();
-	Frame(const CodeFeed&);
+	explicit Frame(const CodeFeed&);
 
 	~Frame() = default;
 
 	// evaluate code
 	Frame::Exit run();
 	Frame::Exit runDef(const Def& def);
-	Frame scope(const CodeFeed& feed, bool copy_stack = true);
+	Frame scope(const CodeFeed&& feed, bool copy_stack = true);
 
 	// if var found return it's data reference
 	std::shared_ptr<Value> getVar(const std::string&); // if var is in previous scope, set it to default ref previous scoped variable
@@ -55,6 +62,7 @@ public:
 	// search through defined variables for the one referenced
 	std::string varName(const std::shared_ptr<Value> ref);
 };
+
 
 // type returned upon evaluation of a Frame
 // should be nested within Frame but C++ is retarded and won't let you forward declare nested classes

@@ -1,6 +1,3 @@
-//
-// Created by tate on 02-03-19.
-//
 
 #include <cmath>
 #include "basic_math.hpp"
@@ -37,6 +34,8 @@ namespace op_add {
 			f.stack.emplace_back(std::move(v2));
 			if (!v1->obj->callMember(f, "__operator+", ev, self, 1))
 				return Frame::Exit(Frame::Exit::ERROR, "in object.__operator+", DEBUG_FLI , f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
 			return ev;
 			} break;
 		case Value::STR:
@@ -128,6 +127,8 @@ namespace op_minus {
 				f.stack.emplace_back(std::move(v2));
 				if (!v1->obj->callMember(f, "__operator-", ev, self, 1))
 					return Frame::Exit(Frame::Exit::ERROR, "in object.__operator-", DEBUG_FLI , f.feed.lineNumber(), ev);
+				if (ev.reason == Frame::Exit::RETURN)
+					return Frame::Exit();
 				return ev;
 			} break;
 		case Value::DEC:
@@ -177,54 +178,52 @@ namespace op_multiply {
 		DEFER_TOP(f);
 		Value v2 = f.stack.back();
 		f.stack.pop_back();
-		DEFER_TOP(f);
+		Value* v1 = (Value*) f.stack.back().defer();
 
 
 		auto TypeError = [&](Value::vtype t1, Value::vtype t2) {
-			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "invalid multiplication of "
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "invalid operands to * of types "
 																+ std::string(Value::typeName(t1)) + " & " + Value::typeName(t2), f.feed.lineNumber());
 		};
 
-		switch (f.stack.back().type) {
-		case Value::INT:
-			switch (v2.type) {
-			case Value::INT:
-				f.stack.back().set(mpz_class(*f.stack.back().mp_int * *v2.mp_int));
-				break;
+		switch (v1->type) {
+			case Value::OBJ: {
+
+				Frame::Exit ev;
+				const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+				f.stack.emplace_back(std::move(v2));
+				if (!v1->obj->callMember(f, "__operator*", ev, self, 1))
+					return Frame::Exit(Frame::Exit::ERROR, "in .__operator*", DEBUG_FLI , f.feed.lineNumber(), ev);
+				if (ev.reason == Frame::Exit::RETURN)
+					return Frame::Exit();
+				return ev;
+			} break;
 			case Value::DEC:
-				f.stack.back().set(f.stack.back().mp_int->get_d() * v2.dec);
-				break;
-			case Value::STR:
-				{
-					auto x = f.stack.back().mp_int->get_si();
-					std::string ret;
-					ret.reserve(v2.str->length() * (unsigned long) ((x > 0) ? x : -x));
-					for (; x > 0; x--)
-						ret += *v2.str;
-					f.stack.back().set(ret);
+				switch (v2.type) {
+					case Value::DEC:
+						f.stack.back().set(v1->dec * v2.dec);
+						break;
+					case Value::INT:
+						f.stack.back().set(v1->dec * v2.mp_int->get_d());
+						break;
+					default:
+						return TypeError(v1->type, v2.type);
 				}
 				break;
-
-			default:
-				return TypeError(f.stack.back().type, v2.type);
-			}
-			break;
-		case Value::DEC:
-			switch (v2.type) {
-			case Value::DEC:
-				f.stack.back().set(f.stack.back().dec * v2.dec);
-				break;
 			case Value::INT:
-				f.stack.back().set(f.stack.back().dec * v2.mp_int->get_d());
+				switch (v2.type) {
+					case Value::DEC:
+						f.stack.back().set(v1->mp_int->get_d() * v2.dec);
+						break;
+					case Value::INT:
+						f.stack.back().set(mpz_class(*v1->mp_int * *v2.mp_int));
+						break;
+					default:
+						return TypeError(v1->type, v2.type);
+				}
 				break;
-			default:
-				return TypeError(f.stack.back().type, v2.type);
-			}
-			break;
-		default:
-			return TypeError(f.stack.back().type, v2.type);
-
 		}
+
 		return Frame::Exit();
 	}
 
@@ -264,13 +263,28 @@ namespace op_divide {
 		DEFER_TOP(f);
 		Value v2 = f.stack.back();
 		f.stack.pop_back();
-		DEFER_TOP(f);
-		Value& v1 = f.stack.back();
 
+		const Value* v = f.stack.back().defer();
+		if (v && v->type == Value::OBJ) {
+			Frame::Exit ev;
+			const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+			f.stack.emplace_back(std::move(v2));
+			if (!v->obj->callMember(f, "__operator/", ev, self, 1))
+				return Frame::Exit(Frame::Exit::ERROR, "in object.__operator/", DEBUG_FLI , f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
+			return ev;
+		}
+
+		if (!v)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "Null/cyclic reference passed to operator /", f.feed.lineNumber());
+
+		Value v1 = *v;
 		auto TypeError = [&](Value::vtype t1, Value::vtype t2) {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "invalid division of "
-																+ std::string(Value::typeName(t1)) + " & " + Value::typeName(t2), f.feed.lineNumber());
+								+ std::string(Value::typeName(t1)) + " & " + Value::typeName(t2), f.feed.lineNumber());
 		};
+
 		double d1, d2;
 		if (!to_dec(v1, d1) || !to_dec(v2, d2))
 			return TypeError(v1.type, v2.type);
@@ -293,12 +307,26 @@ namespace op_int_divide {
 		DEFER_TOP(f);
 		Value v2 = f.stack.back();
 		f.stack.pop_back();
-		DEFER_TOP(f);
-		Value& v1 = f.stack.back();
 
+		const Value* v = f.stack.back().defer();
+		if (v && v->type == Value::OBJ) {
+			Frame::Exit ev;
+			const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+			f.stack.emplace_back(std::move(v2));
+			if (!v->obj->callMember(f, "__operator//", ev, self, 1))
+				return Frame::Exit(Frame::Exit::ERROR, "in object.__operator//", DEBUG_FLI , f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
+			return ev;
+		}
+
+		if (!v)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "Null/cyclic reference passed to operator //", f.feed.lineNumber());
+
+		Value v1 = *v;
 		auto TypeError = [&](Value::vtype t1, Value::vtype t2) {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "invalid integer division of "
-																+ std::string(Value::typeName(t1)) + " & " + Value::typeName(t2), f.feed.lineNumber());
+								+ std::string(Value::typeName(t1)) + " & " + Value::typeName(t2), f.feed.lineNumber());
 		};
 		mpz_class i1, i2;
 		if (!to_int(v1, i1) || !to_int(v2, i2))
@@ -322,9 +350,23 @@ namespace op_pow {
 		DEFER_TOP(f);
 		Value v2 = f.stack.back();
 		f.stack.pop_back();
-		DEFER_TOP(f);
-		Value& v1 = f.stack.back();
 
+		const Value* v = f.stack.back().defer();
+		if (v && v->type == Value::OBJ) {
+			Frame::Exit ev;
+			const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+			f.stack.emplace_back(std::move(v2));
+			if (!v->obj->callMember(f, "__operator**", ev, self, 1))
+				return Frame::Exit(Frame::Exit::ERROR, "in object.__operator**", DEBUG_FLI , f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
+			return ev;
+		}
+
+		if (!v)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "Null/cyclic reference passed to operator **", f.feed.lineNumber());
+
+		Value v1 = *v;
 		if ((v1.type != Value::INT && v1.type != Value::DEC) && (v2.type != Value::INT && v2.type != Value::DEC))
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " ** expected 2 numbers, received "
 				+ std::string(v1.typeName()) + " & "+ v2.typeName(), f.feed.lineNumber());
@@ -345,7 +387,6 @@ namespace op_pow {
 	}
 }
 
-// TODO: maybe use this as string format operator? (copy python?)
 namespace op_remainder {
 	const char* name = "%";
 	bool condition(Frame& f) {
@@ -359,8 +400,21 @@ namespace op_remainder {
 		DEFER_TOP(f);
 		Value v2 = f.stack.back();
 		f.stack.pop_back();
-		DEFER_TOP(f);
-		Value& v1 = f.stack.back();
+
+		const Value* v = f.stack.back().defer();
+		if (v && v->type == Value::OBJ) {
+			Frame::Exit ev;
+			const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+			f.stack.emplace_back(std::move(v2));
+			if (!v->obj->callMember(f, "__operator%", ev, self, 1))
+				return Frame::Exit(Frame::Exit::ERROR, "in object.__operator%", DEBUG_FLI , f.feed.lineNumber(), ev);
+			return ev;
+		}
+
+		if (!v)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "Null/cyclic reference passed to operator %", f.feed.lineNumber());
+
+		Value v1 = *v;
 
 		if ((v1.type != Value::INT && v1.type != Value::DEC) && (v2.type != Value::INT && v2.type != Value::DEC))
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " % expected 2 numbers, received "
@@ -387,9 +441,26 @@ namespace op_abs {
 	Frame::Exit act(Frame& f) {
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " abs expected a number to take the absolute value of", f.feed.lineNumber());
-		DEFER_TOP(f);
+
+
+
+		const Value* v = f.stack.back().defer();
+		if (v && v->type == Value::OBJ) {
+			Frame::Exit ev;
+			const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+			if (!v->obj->callMember(f, "__abs", ev, self))
+				return Frame::Exit(Frame::Exit::ERROR, "in object.__abs", DEBUG_FLI , f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
+			return ev;
+		}
+
+		if (!v)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "Null/cyclic reference passed to abs", f.feed.lineNumber());
+
+		f.stack.back().set(*v);
 		if (f.stack.back().type != Value::INT && f.stack.back().type != Value::DEC)
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " abs expected a number to take the absolute value of", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " abs expected a number to take the absolute value of, received " + std::string(f.stack.back().typeName()), f.feed.lineNumber());
 
 		if (f.stack.back().type == Value::INT)
 			abs(*f.stack.back().mp_int);
@@ -414,24 +485,41 @@ namespace op_shift_left {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
 							   DEBUG_FLI " << expected int, received " + std::string(Value::typeName(t)), f.feed.lineNumber());
 		};
-		DEFER_TOP(f);
 
 
-		if (f.stack.back().type != Value::INT)
+		Value v2 = f.stack.back();
+		f.stack.pop_back();
+		Value v1 = f.stack.back();
+
+		const Value* p1 = v1.defer();
+
+		if (p1->type == Value::OBJ) {
+			Frame::Exit ev;
+			f.stack.emplace_back(std::move(v2));
+			if (!p1->obj->callMember(f, "__operator<<", ev, v1.lastRef(), 1))
+				return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "in object.__operator<<", f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
+			return ev;
+		}
+
+
+		const Value* p2 = v2.defer();
+		if (!p2 || p2->type != Value::INT)
 			return TypeError(f.stack.back().type);
 
-		mpz_class v = *f.stack.back().mp_int;
-		f.stack.pop_back();
+		mpz_class n2 = *p2->mp_int;
 
-		if (v < 0)
+		if (n2 < 0)
 			return Frame::Exit(Frame::Exit::ERROR, "ValueError", DEBUG_FLI " negative shift");
 
+
 		DEFER_TOP(f);
 
 		if (f.stack.back().type != Value::INT)
 			return TypeError(f.stack.back().type);
 
-		mpz_mul_2exp(f.stack.back().mp_int->get_mpz_t(), f.stack.back().mp_int->get_mpz_t(), v.get_si());
+		mpz_mul_2exp(f.stack.back().mp_int->get_mpz_t(), f.stack.back().mp_int->get_mpz_t(), n2.get_si());
 
 		return Frame::Exit();
 	}
@@ -451,25 +539,43 @@ namespace op_shift_right {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError",
 							   DEBUG_FLI " << expected int, received " + std::string(Value::typeName(t)), f.feed.lineNumber());
 		};
-		DEFER_TOP(f);
 
-		if (f.stack.back().type != Value::INT)
+		Value v2 = f.stack.back();
+		f.stack.pop_back();
+		Value v1 = f.stack.back();
+
+		const Value* p1 = v1.defer();
+
+		if (p1->type == Value::OBJ) {
+			Frame::Exit ev;
+			f.stack.emplace_back(std::move(v2));
+			if (!p1->obj->callMember(f, "__operator<<", ev, v1.lastRef(), 1))
+				return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "in object.__operator<<", f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
+			return ev;
+		}
+
+
+		const Value* p2 = v2.defer();
+		if (!p2 || p2->type != Value::INT)
 			return TypeError(f.stack.back().type);
 
-		mpz_class v = *f.stack.back().mp_int;
-		f.stack.pop_back();
+		mpz_class n2 = *p2->mp_int;
 
-		if (v < 0)
+		if (n2 < 0)
 			return Frame::Exit(Frame::Exit::ERROR, "ValueError", DEBUG_FLI " negative shift");
 
+
 		DEFER_TOP(f);
 
 		if (f.stack.back().type != Value::INT)
 			return TypeError(f.stack.back().type);
 
-		mpz_div_2exp(f.stack.back().mp_int->get_mpz_t(), f.stack.back().mp_int->get_mpz_t(), v.get_ui());
+		mpz_div_2exp(f.stack.back().mp_int->get_mpz_t(), f.stack.back().mp_int->get_mpz_t(), n2.get_ui());
 
 		return Frame::Exit();
+
 	}
 }
 

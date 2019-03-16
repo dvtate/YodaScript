@@ -4,7 +4,6 @@
 
 #include "data_types.hpp"
 
-
 /*
 
 {
@@ -55,7 +54,6 @@ namespace op_ns_member_req {
 		f.stack.back().set(d == v->ns->end() ? Value() : Value(d->second));
 
 		return Frame::Exit();
-
 	}
 }
 
@@ -93,6 +91,8 @@ namespace op_ns_mem_req_op {
 		return Frame::Exit();
 	}
 }
+
+// "pi" 3.14 define
 namespace op_def {
 	const char* name = "define";
 	bool condition(Frame& f) {
@@ -120,7 +120,6 @@ namespace op_def {
 		
 		/*
 		Def d(v, runnable);
-
 
 		f.defs[label] = d;
 		std::cout <<"f[l]:" <<Value(f.defs[label]).depict() <<" d" <<Value(d).depict() <<std::endl;

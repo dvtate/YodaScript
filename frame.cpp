@@ -138,10 +138,10 @@ std::shared_ptr<Value> Frame::setVar(const std::string& name, const std::shared_
 	return *v->second.ref;
 }
 
-Frame Frame::scope(const CodeFeed& feed, bool copy_stack) {
+Frame Frame::scope(const CodeFeed&& feed, bool copy_stack) {
 	Frame ret(feed);
 	ret.prev.emplace_back(this);
-	for (Frame* f : prev)
+	for (const auto& f : prev)
 		ret.prev.emplace_back(f);
 
 	if (copy_stack)
