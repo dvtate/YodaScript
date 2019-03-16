@@ -26,6 +26,8 @@ public:
 	// if we need more lines can we read from stdin?
 	bool isStdin : 1;
 
+	//std::string file_name;
+
 	//
 	CodeFeed(bool fromStdin=false):
 		offset(0), isStdin(fromStdin) {	}

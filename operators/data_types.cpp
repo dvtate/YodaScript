@@ -21,12 +21,12 @@ namespace op_namespace {
 		if (f.stack.empty() || f.stack.back().type != Value::MAC)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "namespace expected a macro containing elements", f.feed.lineNumber());
 
-		Frame ns_body = f.scope(CodeFeed(*f.stack.back().str), false);
-		Frame::Exit e = ns_body.run();
+		std::shared_ptr<Frame> ns_body = f.scope(CodeFeed(*f.stack.back().str), false);
+		Frame::Exit e = ns_body->run(ns_body);
 		if (e.reason == Frame::Exit::ERROR)
 			return Frame::Exit(Frame::Exit::ERROR, "in namespace", DEBUG_FLI, f.feed.lineNumber(), e);
 
-		f.stack.back().set(ns_body.defs);
+		f.stack.back().set(ns_body->defs);
 		return Frame::Exit();
 
 	}

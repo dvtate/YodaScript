@@ -68,17 +68,17 @@ namespace op_repeat_loop {
 		const std::string body = *f.stack.back().str;
 		f.stack.pop_back();
 
-		Frame loop = f.scope(CodeFeed(body));
+		std::shared_ptr<Frame> loop = f.scope(CodeFeed(body));
 		Frame::Exit ev;
 		do {
-			loop.feed.offset = 0;
-			ev = loop.run();
+			loop->feed.offset = 0;
+			ev = loop->run(loop);
 		} while (ev.reason == Frame::Exit::CONTINUE || ev.reason == Frame::Exit::FEED_END);
 
 		if (ev.reason == Frame::Exit::ERROR)
 			return Frame::Exit(Frame::Exit::ERROR, "In infinite repeat loop", DEBUG_FLI, f.feed.lineNumber(), ev);
 
-		f.stack = loop.stack;
+		f.stack = loop->stack;
 		return ev;
 	}
 
@@ -112,12 +112,12 @@ namespace op_repeat_loop {
 
 		const std::string body = *f.stack.back().str;
 		f.stack.pop_back();
-		Frame loop = f.scope(CodeFeed(body));
+		std::shared_ptr<Frame> loop = f.scope(CodeFeed(body));
 
 		Frame::Exit ev;
 		for (size_t i = times.get_ui(); i > 0; i--) {
-			loop.feed.offset = 0; // feed bodys are now immutable :)
-			ev = loop.run();
+			loop->feed.offset = 0; // feed bodys are now immutable :)
+			ev = loop->run(loop);
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "In Repeat Loop", DEBUG_FLI, f.feed.lineNumber(), ev);
 			else if (ev.reason != Frame::Exit::CONTINUE)
@@ -126,23 +126,12 @@ namespace op_repeat_loop {
 		}
 
 		// merge stacks
-		f.stack = loop.stack;
+		f.stack = loop->stack;
 
 		return ev;
 	}
 }
 
-Frame::Exit runMacro(Frame& f, const std::string& macro, const bool merge_stack = true) {
-	Frame block = f.scope(CodeFeed(macro), merge_stack);
-	Frame::Exit ev = block.run();
-	if (merge_stack)
-		f.stack = block.stack;
-	return ev;
-}
-
-Frame::Exit runLambda(Frame& f, const Value& lam, const bool merge_stack = true) {
-	return Frame::Exit();
-}
 
 
 namespace op_exec {
@@ -162,7 +151,9 @@ namespace op_exec {
 		f.stack.pop_back();
 
 		if (v.type == Value::MAC || v.type == Value::STR) {
-			const Frame::Exit ev = runMacro(f, *v.str, true);
+			std::shared_ptr<Frame> mac = f.scope(*v.str);
+			const Frame::Exit ev = mac->run(mac);
+			f.stack = mac->stack;
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR,
 						"In " + std::string(v.typeName()) + " @ ", DEBUG_FLI, f.feed.lineNumber(), ev);
@@ -220,46 +211,45 @@ namespace op_cond {
 		// if top == cond
 			// goto 1
 
-		Frame cond = f.scope(*f.stack.back().str);
-		cond.feed.body = *f.stack.back().str;
+		const std::string cbody = *f.stack.back().str;
 		f.stack.pop_back();
+		std::shared_ptr<Frame> cond = f.scope(cbody);
 
-		const Frame::Exit ev = cond.run();
+		const Frame::Exit ev = cond->run(cond);
 		if (ev.reason == Frame::Exit::ERROR)
 			return Frame::Exit(Frame::Exit::ERROR, "In cond", DEBUG_FLI, f.feed.lineNumber(), ev);
 
-		while (!cond.stack.empty()) {
+		while (!cond->stack.empty()) {
 
 			// if not an else clause
-			if (cond.stack.size() > 1) {
+			if (cond->stack.size() > 1) {
 
 				// is top value truthy?
-				bool truthy = cond.stack.back().truthy();
-				cond.stack.pop_back();
+				bool truthy = cond->stack.back().truthy();
+				cond->stack.pop_back();
 
 				// this isnt the one to run, skip it
 				if (!truthy) {
-					cond.stack.pop_back();
+					cond->stack.pop_back();
 					continue;
 				}
 
 				// else, procede to run it
 			}
 
-
-			const Value* v = cond.stack.back().defer();
+			const Value* v = cond->stack.back().defer();
 			if (v && v->type == Value::MAC) {
-
-				Frame action = cond.scope(*v->str, false);
-				const Frame::Exit ev = action.run();
+				std::shared_ptr<Frame> action = f.scope(*v->str, true);
+				const Frame::Exit ev = action->run(action);
 				if (ev.reason == Frame::Exit::ERROR)
 					return Frame::Exit(Frame::Exit::ERROR, "In Cond", DEBUG_FLI, f.feed.lineNumber(), ev);
 				// merge stack
-				f.stack.insert(f.stack.end(), action.stack.begin(), action.stack.end());
+				f.stack = action->stack;
 				return ev;
 			} else {
-				f.stack.emplace_back(cond.stack.back());
+				f.stack.emplace_back(cond->stack.back());
 			}
+			break;
 
 		}
 
@@ -277,48 +267,49 @@ namespace op_while {
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "while loop expected a body and condition", f.feed.lineNumber());
 
-		// get args from stack
+		// get condition
 		if (f.stack.back().type != Value::MAC)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "while loop condition must be a macro", f.feed.lineNumber());
-		Frame cond = f.scope(*f.stack.back().str, false);
+		std::shared_ptr<Frame> cond = f.scope(*f.stack.back().str, false);
 		f.stack.pop_back();
+
+		// get body
 		if (f.stack.back().type != Value::MAC)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "while loop body must be a macro", f.feed.lineNumber());
 		const std::string b_mac = *f.stack.back().str;
 		f.stack.pop_back();
-		Frame body = f.scope(b_mac, true);
+		std::shared_ptr<Frame> body = f.scope(b_mac, true);
 
 		// run condition
 		bool condition;
-		Frame::Exit ev = cond.run();
+		Frame::Exit ev = cond->run(cond);
 		if (ev.reason == Frame::Exit::ERROR)
 			return Frame::Exit(Frame::Exit::ERROR, "in while loop condition", DEBUG_FLI, f.feed.lineNumber(), ev);
-		condition = cond.stack.back().truthy();
+		condition = cond->stack.back().truthy();
 
 		while (condition) {
 			// run body
-			body.feed.offset = 0;
-			ev = body.run();
+			body->feed.offset = 0;
+			ev = body->run(body);
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "in while loop body", DEBUG_FLI, f.feed.lineNumber(), ev);
 			else if (ev.reason != Frame::Exit::Reason::CONTINUE)
 				return ev;
 
 			// run condition
-			cond.feed.offset = 0;
-			ev = cond.run();
+			cond->feed.offset = 0;
+			ev = cond->run(cond);
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "in while loop condition", DEBUG_FLI, f.feed.lineNumber(), ev);
 			else if (ev.reason != Frame::Exit::Reason::CONTINUE)
 				return ev;
 
-			condition = cond.stack.back().truthy();
-			cond.stack.clear(); // if i dont clear then stack will continue to grow and cause problems later on
+			condition = cond->stack.back().truthy();
+			cond->stack.clear(); // if i dont clear then stack will continue to grow and consume ram
 		}
 
 		// merge stacks
-		f.stack.insert(f.stack.end(), body.stack.begin(), body.stack.end());
-
+		f.stack = body->stack;
 		return Frame::Exit();
 	}
 }

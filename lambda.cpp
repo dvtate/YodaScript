@@ -16,11 +16,12 @@ Exit Lambda::call(Frame& f, std::shared_ptr<Value> slf) {
 	}
 
 	// scope into body
-	Frame lam(f.scope(body, false));
+
+	std::shared_ptr<Frame> lam = f.scope(body, false);
 
 	// assign params
 	for (size_t i = 0; i < params.size(); i++)
-		lam.setVar(params[i], i + 1 > args.size() ?
+		lam->setVar(params[i], i + 1 > args.size() ?
 					std::make_shared<Value>() : args[i]);
 
 
@@ -31,20 +32,20 @@ Exit Lambda::call(Frame& f, std::shared_ptr<Value> slf) {
 	 	-
 	*/
 	if (slf)
-		lam.defs.emplace("self", slf);
+		lam->defs.emplace("self", slf);
 	else if (self)
-		lam.defs.emplace("self", self);
+		lam->defs.emplace("self", self);
 	else
-		lam.defs.emplace("self", std::make_shared<Value>()); // empty
+		lam->defs.emplace("self", std::make_shared<Value>()); // empty
 
 	// set args
-	lam.defs.emplace("args", std::make_shared<Value>(std::move(args)));
+	lam->defs.emplace("args", std::make_shared<Value>(std::move(args)));
 
 	// capture exit value
-	const Frame::Exit&& ev = lam.run();
+	const Frame::Exit&& ev = lam->run(lam);
 
 	// merge stacks
-	f.stack.insert(f.stack.end(), lam.stack.begin(), lam.stack.end());
+	f.stack.insert(f.stack.end(), lam->stack.begin(), lam->stack.end());
 
 	return ev;
 }

@@ -49,7 +49,7 @@ namespace operators {
 
 			} else if (d->second.run) {
 				f.stack.emplace_back(*d->second._val);
-				f.feed.offset--;
+				//f.feed.offset--;
 				return callByName(f, "@", exit);
 
 			} else {
@@ -70,7 +70,7 @@ namespace operators {
 			} else if (d->second.run) {
 
 				f.stack.emplace_back(*d->second._val);
-				f.feed.offset--;
+				//f.feed.offset--;
 				return callByName(f, "@", exit);
 
 			} else {
@@ -154,6 +154,7 @@ namespace operators {
 			OP_NS_TO_PAIR(op_str),          // toString
 			OP_NS_TO_PAIR(op_depict),       // raw-data depiction
 			OP_NS_TO_PAIR(op_typeof),       // datatype
+			OP_NS_TO_PAIR(op_int),
 
 			OP_NS_TO_PAIR(op_size),
 
@@ -204,7 +205,7 @@ namespace operators {
 				return true;
 			} else if (d->second.run) {
 				f.stack.emplace_back(*d->second._val);
-				f.feed.offset--;
+				//f.feed.offset--;
 				return callByName(f, "@", exit);
 			} else {
 				f.stack.emplace_back(*d->second._val);

@@ -20,6 +20,8 @@ class Frame {
 public:
 	typedef class Exit Exit;
 
+	std::shared_ptr<Frame> self_ref{nullptr};
+
 	// functioning stack
 	std::vector<Value> stack; // should never need to be resized
 
@@ -33,7 +35,8 @@ public:
 
 	// previous frames (for getting vars and defs from previous scopes
 	// TODO: convert to use std::shared_ptr!
-	std::vector<Frame*> prev;
+	//std::vector<Frame*> prev;
+	std::vector<std::shared_ptr<Frame>> prev;
 
 	// values defined by and for specific operators
 	std::unordered_map<std::string, Value> rt_vals;
@@ -50,9 +53,9 @@ public:
 	~Frame() = default;
 
 	// evaluate code
-	Frame::Exit run();
+	Frame::Exit run(std::shared_ptr<Frame>& self);
 	Frame::Exit runDef(const Def& def);
-	Frame scope(const CodeFeed&& feed, bool copy_stack = true);
+	std::shared_ptr<Frame> scope(const CodeFeed&& feed, bool copy_stack = true);
 
 	// if var found return it's data reference
 	std::shared_ptr<Value> getVar(const std::string&); // if var is in previous scope, set it to default ref previous scoped variable

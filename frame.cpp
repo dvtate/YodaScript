@@ -31,25 +31,26 @@ Frame::Exit Frame::runDef(const Def& def) {
 inline bool check_def(Frame& f, Frame::Exit& ev) {
 	if (operators::callOperator(f, ev, f.defs))
 		return true;
-	for (Frame* fp : f.prev)
+	for (const auto& fp : f.prev)
 		if (operators::callOperator(f, ev, fp->defs))
 			return true;
 
 	return false;
 }
 
-Frame::Exit Frame::run() {
+Frame::Exit Frame::run(std::shared_ptr<Frame>& self) {
 	//std::cout <<"running line: " <<feed.body <<std::endl;
 
+	self_ref = self;
 	Frame::Exit ev;
-
 
 	if (prev.size() > 2000) {
 		std::cerr <<"Maximum scope depth reached!!! generating backtrace... (you may run out of ram, probably best to kill w/ ctl+c)" <<std::endl;
 		Frame::Exit ev = Frame::Exit(Frame::Exit::Reason::ERROR, "ScopeError", "Maximum recursion depth reached", feed.lineNumber());
 		ev.genMsg(feed, this);
 		std::cerr <<"Error(" <<prev.size() <<"): " <<ev.msg;
-		return Frame::Exit(Frame::Exit::Reason::ERROR, "ScopeError", "Maximum recursion depth reached", feed.lineNumber());
+		ev = Frame::Exit(Frame::Exit::Reason::ERROR, "ScopeError", "Maximum recursion depth reached", feed.lineNumber());
+		goto clean_exit;
 	}
 run_frame:
 	do {
@@ -90,6 +91,9 @@ run_frame:
 	if (ev.reason == Frame::Exit::ERROR)
 		ev.genMsg(feed, this);
 
+clean_exit:
+
+	self_ref = nullptr;
 	return ev;
 
 }
@@ -113,7 +117,7 @@ std::shared_ptr<Value> Frame::findVar(const std::string& name) {
 		return *v->second.ref;
 
 	// check previous scopes
-	for (Frame* scope : prev) {
+	for (const auto& scope : prev) {
 		v = scope->vars.find(name);
 		if (v != scope->vars.end()) {
 			// set it to a ref to tht var's value (double reference)
@@ -138,14 +142,14 @@ std::shared_ptr<Value> Frame::setVar(const std::string& name, const std::shared_
 	return *v->second.ref;
 }
 
-Frame Frame::scope(const CodeFeed&& feed, bool copy_stack) {
-	Frame ret(feed);
-	ret.prev.emplace_back(this);
+std::shared_ptr<Frame> Frame::scope(const CodeFeed&& feed, bool copy_stack) {
+	std::shared_ptr<Frame> ret = std::make_shared<Frame>(feed);
+	ret->prev.emplace_back(self_ref);
 	for (const auto& f : prev)
-		ret.prev.emplace_back(f);
+		ret->prev.emplace_back(f);
 
 	if (copy_stack)
-		ret.stack = stack; // copy stack
+		ret->stack = stack; // copy stack
 
 	return ret;
 }

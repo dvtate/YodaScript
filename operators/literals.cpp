@@ -377,17 +377,17 @@ namespace op_const_list {
 			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI "EOF while scanning for list");
 
 		std::vector<std::string> elems = split_list(l_body);
-		Frame elem_proc = f.scope(CodeFeed(), false);
+		std::shared_ptr<Frame> elem_proc = f.scope(CodeFeed(), false);
 		ret.reserve(elems.size());
 		for (size_t i = 0; i < elems.size(); i++) {
-			elem_proc.feed.body = elems[i];
-			elem_proc.feed.offset = 0;
-			Frame::Exit ev = elem_proc.run();
+			elem_proc->feed.body = elems[i];
+			elem_proc->feed.offset = 0;
+			Frame::Exit ev = elem_proc->run(elem_proc);
 			if (ev.reason == Frame::Exit::ERROR)
 				return Frame::Exit(Frame::Exit::ERROR, "Syntax Error", DEBUG_FLI "Error while processing elem " + std::to_string(i) + " in list literal.", f.feed.lineNumber());
 
-			ret.emplace_back(std::make_shared<Value>(elem_proc.stack.empty() ? Value() : elem_proc.stack.back()));
-			elem_proc.stack.clear();
+			ret.emplace_back(std::make_shared<Value>(elem_proc->stack.empty() ? Value() : elem_proc->stack.back()));
+			elem_proc->stack.clear();
 		}
 
 		// if intended to be an empty list, literal must be `()` or `( )`

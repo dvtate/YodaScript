@@ -15,20 +15,22 @@ namespace op_object {
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "Object expected a macro initializer", f.feed.lineNumber());
 
 		std::shared_ptr<Value> obj = std::make_shared<Value>(Object());
-		Frame init = f.scope(*f.stack.back().str, false);
-		init.defs.emplace("self", obj);
+		std::shared_ptr<Frame> init = f.scope(*f.stack.back().str, false);
+		init->defs.emplace("self", obj);
 		f.stack.pop_back();
-		const Frame::Exit ev = init.run();
+
+		const Frame::Exit ev = init->run(init);
 		if (ev.reason == Frame::Exit::ERROR)
 			return Frame::Exit(Frame::Exit::ERROR, "In object Initializer", DEBUG_FLI, f.feed.lineNumber(), ev);
-		if (init.stack.size() % 2 != 0)
+		if (init->stack.size() % 2 != 0)
 			return Frame::Exit(Frame::Exit::ERROR, "invalid object initializer", "expected pairs of members and values", f.feed.lineNumber());
 
-		for (size_t i = 0; i < init.stack.size(); i += 2) {
-			Value* p_ref = init.stack[i].deferMuteable();
+		// initiaize object
+		for (size_t i = 0; i < init->stack.size(); i += 2) {
+			Value* p_ref = init->stack[i].deferMuteable();
 			if (!p_ref)
 				return Frame::Exit(Frame::Exit::ERROR, "RefError", DEBUG_FLI " In object initializer: null or cyclic reference", f.feed.lineNumber());
-			p_ref->set(init.stack[i + 1]);
+			p_ref->set(init->stack[i + 1]);
 		}
 
 		f.stack.emplace_back(obj);

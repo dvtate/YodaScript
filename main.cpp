@@ -4,13 +4,13 @@
 
 #include "frame.hpp"
 
-std::shared_ptr<Frame> shared_main_entry_frame = std::make_shared<Frame>();
-Frame& main_entry_frame = *shared_main_entry_frame;
+std::shared_ptr<Frame> main_entry_frame = std::make_shared<Frame>();
+//Frame& main_entry_frame = *shared_main_entry_frame;
 
 
 void sigintHandle(int sig_num) {
-	Frame::Exit e(Frame::Exit::ERROR, "Interrupt", "the program has been killed.", main_entry_frame.feed.lineNumber());
-	e.genMsg(main_entry_frame.feed);
+	Frame::Exit e(Frame::Exit::ERROR, "Interrupt", "the program has been killed.", main_entry_frame->feed.lineNumber());
+	e.genMsg(main_entry_frame->feed);
 	std::cout <<e.backtrace();
 #ifdef _WIN32
 	std::cin.ignore();
@@ -49,24 +49,24 @@ int main(int argc, char** argv) {
 
 	if (!from_file) {
 
-		main_entry_frame.feed.isStdin = true;
+		main_entry_frame->feed.isStdin = true;
 
 		while (true) {
 
 			// reset feed so that errors don't recur
-			main_entry_frame.feed.reset();
+			main_entry_frame->feed.reset();
 
 			// get next line
-			if (!main_entry_frame.feed.getLine("> "))
+			if (!main_entry_frame->feed.getLine("> "))
 				return 0;
 
-			Frame::Exit e = main_entry_frame.run();
+			Frame::Exit e = main_entry_frame->run(main_entry_frame);
 
 			if (e.reason == Frame::Exit::ERROR)
 				std::cout <<e.backtrace();
 
-			else if (!main_entry_frame.stack.empty())
-				std::cout << main_entry_frame.stack.back().depict();
+			else if (!main_entry_frame->stack.empty())
+				std::cout << main_entry_frame->stack.back().depict();
 
 			std::cout <<std::endl;
 		}
@@ -77,8 +77,8 @@ int main(int argc, char** argv) {
 	// run program
 	for (int i = 1; i < argc; i++)
 		if (**(argv + i) != '-') {
-			main_entry_frame.feed.loadFile(argv[1]);
-			Frame::Exit e = main_entry_frame.run();
+			main_entry_frame->feed.loadFile(argv[1]);
+			Frame::Exit e = main_entry_frame->run(main_entry_frame);
 			if (e.reason == Frame::Exit::ERROR) {
 				std::cout <<"Entry Point: Global Line " <<e.line + 1 <<std::endl;
 				std::cout <<e.backtrace();
