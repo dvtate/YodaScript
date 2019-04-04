@@ -4,7 +4,7 @@
 
 
 
-#include "namespace_def.hpp"
+#include "extend.hpp"
 
 #include "operators.hpp"
 
@@ -22,7 +22,7 @@
 #include "operators/types.hpp"
 #include "operators/threads.hpp"
 #include "operators/objects.hpp"
-
+#include "operators/libraries.hpp"
 
 
 
@@ -189,6 +189,8 @@ namespace operators {
 			OP_NS_TO_PAIR(op_keys),
 			OP_NS_TO_PAIR(op_quit),
 			OP_NS_TO_PAIR(op_obj_mem_acc_op),
+
+			OP_NS_TO_PAIR(op_load_lib)
 		});
 	}
 

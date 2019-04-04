@@ -10,14 +10,11 @@
 #include <fstream>
 #include <sstream>
 
-
-extern bool enable_token_trace;
-
 // basically a string wrappper
 class CodeFeed {
 public:
 
-
+	static bool enable_token_trace;
 	std::string body;
 
 	// which char are we on
@@ -28,10 +25,9 @@ public:
 
 	//std::string file_name;
 
-	//
 	CodeFeed(bool fromStdin=false):
 		offset(0), isStdin(fromStdin) {	}
-	CodeFeed(std::string b):
+	CodeFeed(const std::string& b):
 		offset(0), isStdin(false), body(std::move(b)) { }
 
 	/// add a new line to the string
@@ -159,7 +155,7 @@ private:
 			return s;
 
 		// dont split numbers
-		if (s[0] == '-' ||isdigit(s[0]))
+		if (s[0] == '-' || isdigit(s[0]))
 			return s;
 
 		// chained requests $x `:a:b:c`
@@ -176,6 +172,4 @@ private:
 			return s;
 	}
 };
-
-
 #endif //YS2_CODE_FEED_HPP

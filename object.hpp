@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 
-#include "namespace_def.hpp"
+#include "extend.hpp"
 
 class Value;
 class Frame;

@@ -78,7 +78,7 @@ namespace op_obj_mem_acc_op {
 	}
 	Frame::Exit act(Frame& f) {
 		if (f.stack.empty())
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " . operator expected a namespace and string",
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " . operator expected an object and string",
 							   f.feed.lineNumber());
 
 		Value* v = (Value*) f.stack.back().defer();
@@ -108,4 +108,46 @@ namespace op_obj_mem_acc_op {
 
 		return Frame::Exit();
 	}
+}
+
+
+
+
+namespace ns_object {
+	Frame::Exit keys(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "Object:keys expected an object to key", f.feed.lineNumber());
+
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::OBJ)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "Object:keys expected an object to act on", f.feed.lineNumber());
+
+		std::vector<std::shared_ptr<Value>> ret;
+		ret.reserve(f.stack.back().obj->members.size());
+		for (auto m : f.stack.back().obj->members)
+			ret.push_back(std::make_shared<Value>(m.first));
+
+		f.stack.back().set(ret);
+
+		return Frame::Exit();
+
+	}
+
+	Frame::Exit inherit(Frame& f) {
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "Object:inherit expected an object reference and an object to copy the members of", f.feed.lineNumber());
+
+		DEFER_TOP(f);
+		if (f.stack.back().type != Value::OBJ)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "Object:inherit expectd an object to copy the members of (recieved: " + std::string(f.stack.back().typeName()) +")", f.feed.lineNumber());
+
+		Value* oref = f.stack.back().deferChange();
+
+		for (auto m : f.stack.back().obj->members)
+			;
+
+		return Frame::Exit();
+	}
+
 }

@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <cstddef>
-#include "namespace_def.hpp"
+#include "extend.hpp"
 #include "frame.hpp"
 #include "code_feed.hpp"
 
@@ -42,20 +42,6 @@ namespace NAME {\
 	FRAME.stack.back().set(_tmp_v ? *_tmp_v : Value(nullptr));\
 }
 
-// for handling things which aren't simple space delimited operators
-// ie- adding a new literal type
-typedef struct Token {
-
-	// if i want to call this from another token/operator
-	const char* name;
-
-	// condition for parsing
-	bool (*condition)(Frame&);
-
-	// run if condition true or if called externally
-	Frame::Exit (*act)(Frame&);
-
-} Token;
 
 namespace operators {
 

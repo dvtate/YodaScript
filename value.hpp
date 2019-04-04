@@ -20,7 +20,7 @@ typedef decltype(nullptr) nullptr_t;
 *
 */
 
-#include "namespace_def.hpp"
+#include "extend.hpp"
 #include "object.hpp"
 #include "lambda.hpp"
 
@@ -76,7 +76,7 @@ public:
 
 	} type { EMT };
 
-	// actual data contained
+	// actual data contained here
 	union {
 		double dec;
 		mpz_class* mp_int;
@@ -152,11 +152,15 @@ public:
 
 	// get the value that a reference points to
 	const Value* defer(std::vector<std::shared_ptr<Value>*>& pastPtrs);
+	const Value* defer(bool& imr, std::vector<std::shared_ptr<Value>*>& pastPtrs);
 	const Value* defer(){
 		std::vector<std::shared_ptr<Value>*> ptrs;
 		return defer(ptrs);
 	}
-
+	const Value* defer(bool& imr) {
+		std::vector<std::shared_ptr<Value>*> ptrs;
+		return defer(imr, ptrs);
+	}
 	// get muteable value
 	// stops at immuteable references
 	Value* deferMuteable(std::vector<std::shared_ptr<Value>*>& pastPtrs);
@@ -164,6 +168,8 @@ public:
 		std::vector<std::shared_ptr<Value>*> ptrs;
 		return deferMuteable(ptrs);
 	}
+
+	Value* deferChange();
 
 	//
 	std::shared_ptr<Value> lastRef(std::vector<std::shared_ptr<Value>*>& pastPtrs);

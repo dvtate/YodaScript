@@ -1,6 +1,6 @@
 
 #include <ctype.h>
-#include "namespace_def.hpp"
+#include "extend.hpp"
 #include "operators.hpp"
 #include "frame.hpp"
 
@@ -45,13 +45,14 @@ Frame::Exit Frame::run(std::shared_ptr<Frame>& self) {
 	Frame::Exit ev;
 
 	if (prev.size() > 2000) {
-		std::cerr <<"Maximum scope depth reached!!! generating backtrace... (you may run out of ram, probably best to kill w/ ctl+c)" <<std::endl;
-		Frame::Exit ev = Frame::Exit(Frame::Exit::Reason::ERROR, "ScopeError", "Maximum recursion depth reached", feed.lineNumber());
+		std::cerr <<"Maximum scope depth reached! generating backtrace... (you may run out of ram, probably best to kill w/ ctl+c)" <<std::endl;
+		Frame::Exit ev = Frame::Exit(Frame::Exit::Reason::ERROR, "ScopeError", "Maximum scope depth reached", feed.lineNumber());
 		ev.genMsg(feed, this);
 		std::cerr <<"Error(" <<prev.size() <<"): " <<ev.msg;
-		ev = Frame::Exit(Frame::Exit::Reason::ERROR, "ScopeError", "Maximum recursion depth reached", feed.lineNumber());
+		ev = Frame::Exit(Frame::Exit::Reason::ERROR, "ScopeError", "Maximum scope depth reached", feed.lineNumber());
 		goto clean_exit;
 	}
+
 run_frame:
 	do {
 		// defs get automatically evaluated
@@ -153,3 +154,5 @@ std::shared_ptr<Frame> Frame::scope(const CodeFeed&& feed, bool copy_stack) {
 
 	return ret;
 }
+
+std::shared_ptr<Frame> main_entry_frame = std::make_shared<Frame>();

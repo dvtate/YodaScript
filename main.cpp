@@ -4,9 +4,6 @@
 
 #include "frame.hpp"
 
-std::shared_ptr<Frame> main_entry_frame = std::make_shared<Frame>();
-//Frame& main_entry_frame = *shared_main_entry_frame;
-
 
 void sigintHandle(int sig_num) {
 	Frame::Exit e(Frame::Exit::ERROR, "Interrupt", "the program has been killed.", main_entry_frame->feed.lineNumber());
@@ -20,7 +17,6 @@ void sigintHandle(int sig_num) {
 
 // trace on
 // print out every single token
-bool enable_token_trace = false;
 
 extern const char* ys_help_info;
 extern const char* ys_version_info;
@@ -37,7 +33,7 @@ int main(int argc, char** argv) {
 		if (argv[i][0] != '-') {
 			from_file = true;
 		} else if (!strcmp(argv[i], "--tron") || !strcmp(argv[i], "-t")) {
-			enable_token_trace = true;
+			CodeFeed::enable_token_trace = true;
 		} else if (!strcmp(argv[i], "--version") || !strcmp(argv[i], "-V")) {
 			std::cout <<ys_version_info <<std::endl;
 			return 0;

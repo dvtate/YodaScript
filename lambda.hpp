@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "namespace_def.hpp"
+#include "extend.hpp"
 
 class Frame;
 class Exit;

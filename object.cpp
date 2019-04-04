@@ -3,8 +3,8 @@
 //
 
 #include "value.hpp"
-#include "operators.hpp"
 #include "object.hpp"
+#include "frame.hpp"
 
 
 std::shared_ptr<Value>& Object::getMember(const std::string& name) {

@@ -370,7 +370,6 @@ namespace op_const_list {
 		// TODO: change this to run in same scope as f
 		// TODO: fix zero length list literal
 
-
 		std::vector<std::shared_ptr<Value>> ret;
 		std::string l_body;
 		if (!find_list(f.feed, l_body))
@@ -384,7 +383,7 @@ namespace op_const_list {
 			elem_proc->feed.offset = 0;
 			Frame::Exit ev = elem_proc->run(elem_proc);
 			if (ev.reason == Frame::Exit::ERROR)
-				return Frame::Exit(Frame::Exit::ERROR, "Syntax Error", DEBUG_FLI "Error while processing elem " + std::to_string(i) + " in list literal.", f.feed.lineNumber());
+				return Frame::Exit(Frame::Exit::ERROR, "Syntax Error", DEBUG_FLI "Error while processing elem " + std::to_string(i) + " in list literal.", f.feed.lineNumber(), ev);
 
 			ret.emplace_back(std::make_shared<Value>(elem_proc->stack.empty() ? Value() : elem_proc->stack.back()));
 			elem_proc->stack.clear();

@@ -133,4 +133,7 @@ public:
 	}
 };
 
+
+extern std::shared_ptr<Frame> main_entry_frame;
+
 #endif //YS2_FRAME_HPP

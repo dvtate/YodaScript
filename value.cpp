@@ -3,7 +3,7 @@
 #include <string>
 
 #include "value.hpp"
-#include "namespace_def.hpp"
+#include "extend.hpp"
 
 // constructors
 Value::Value():
@@ -292,6 +292,29 @@ const Value* Value::defer(std::vector<std::shared_ptr<Value>*>& pastPtrs) {
 	return (*ref)->defer(pastPtrs);
 }
 
+const Value* Value::defer(bool& imr, std::vector<std::shared_ptr<Value>*>& pastPtrs) {
+
+	// end of ref recursion
+	if (type != REF && type != IMR)
+		return this;
+	if (!ref)
+		return nullptr;
+
+	if (type == IMR)
+		imr = true;
+
+	// if it's been seen before it should be cyclic reference
+	if (std::find(pastPtrs.begin(), pastPtrs.end(), ref) != pastPtrs.end())
+		return nullptr;
+
+	// follow reference tree
+	pastPtrs.emplace_back(ref);
+	if (!ref || !*ref)
+		return nullptr;
+	return (*ref)->defer(pastPtrs);
+
+}
+
 // get (copy) the value that a reference points to
 bool Value::deferValue(Value& ret, std::vector<std::shared_ptr<Value>*>& pastPtrs) {
 	// end of ref recursion
@@ -338,6 +361,16 @@ Value* Value::deferMuteable(std::vector<std::shared_ptr<Value>*>& pastPtrs) {
 	if (!ref || !*ref)
 		return nullptr;
 	return (*ref)->deferMuteable(pastPtrs);
+}
+
+Value* Value::deferChange() {
+	const Value* v = defer();
+	Value* mut = deferMuteable();
+
+	if (v != mut)
+		mut->set(*v);
+
+	return mut;
 }
 
 // last reference before non-reference type
