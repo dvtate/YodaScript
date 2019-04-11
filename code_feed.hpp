@@ -31,8 +31,7 @@ public:
 		offset(0), isStdin(false), body(std::move(b)) { }
 
 	/// add a new line to the string
-	size_t getLine(const char* prompt = ". ")
-	{
+	bool getLine(const char* prompt = ". ") {
 
 		if (!isStdin)
 			return false;
@@ -47,6 +46,7 @@ public:
 		body += line;
 		//std::cout <<"BODY: \'" <<body <<"'\n";
 		return true;
+
 	}
 
 	void reset() {
@@ -105,6 +105,7 @@ public:
 	}
 
 	// TODO: make this tokenize out member accessors
+	// ie - `1 2 +` --> "1" "2" "+"
 	// ie - `stack:size` --> "stack" ":size"
 	bool setTok() {
 
@@ -136,7 +137,7 @@ public:
 		if (isspace(body[i - 1]))
 			i--;
 
-		tok = fix_accessors(body.substr(offset, i - offset));
+		tok = _fix_accessors(body.substr(offset, i - offset));
 
 		if (enable_token_trace)
 			std::cout <<"parseing token: `" <<tok <<"`\n";
@@ -145,16 +146,16 @@ public:
 
 	}
 
-private:
 
 	// some people are lazy and like to say $a.b.c or $c:b:a instead of $a .b .c
-	inline static std::string fix_accessors(std::string&& s) {
+	inline static std::string _fix_accessors(std::string&& s) {
 
+		const size_t len = s.length();
 		// empty string oof
-		if (s.length() <= 1)
+		if (len <= 1)
 			return s;
 
-		// dont split numbers
+		// dont split numbers (`.123` would get treated correctly tho)
 		if (s[0] == '-' || isdigit(s[0]))
 			return s;
 
@@ -162,14 +163,15 @@ private:
 		size_t i = (s.at(0) == ':') || (s.at(0) == '.') ? 1 : 0;
 
 		// find start of next req `:a`
-		while (i + 1 < s.length() && s.at(i) != ':' && s.at(i) != '.')
+		while (i + 1 < len && s.at(i) != ':' && s.at(i) != '.')
 			i++;
 
 		// if str is different then we return new substr
-		if (i < s.length() && (s.at(i) == ':' || s.at(i) == '.'))
+		if (i < len && (s.at(i) == ':' || s.at(i) == '.'))
 			return s.substr(0, i);
 		else
 			return s;
 	}
+
 };
 #endif //YS2_CODE_FEED_HPP

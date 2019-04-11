@@ -46,7 +46,6 @@ public:
 	// locally defined operators
 	Namespace defs;
 
-
 	Frame();
 	explicit Frame(const CodeFeed&);
 
@@ -63,7 +62,7 @@ public:
 	std::shared_ptr<Value> setVar(const std::string& name, const std::shared_ptr<Value>& val); // set var, found or not
 
 	// search through defined variables for the one referenced
-	std::string varName(const std::shared_ptr<Value> ref);
+	std::string varName(const std::shared_ptr<Value>& ref);
 };
 
 

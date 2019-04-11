@@ -5,7 +5,7 @@
 #include "list_stuff.hpp"
 
 namespace op_index {
-	inline size_t normalize_index(const Value& ind, size_t list_size) {
+	inline size_t normalize_index(const Value& ind, const size_t list_size) {
 		bool neg;
 		size_t i;
 		if (ind.type == Value::INT) {
@@ -40,13 +40,13 @@ namespace op_index {
 
 		DEFER_TOP(f);
 		if (f.stack.back().type != Value::ARR)
-			return Frame::Exit(Frame::Exit::ERROR, "TypeError", "can only index] lists currently. received: " + std::string(f.stack.back().typeName()), f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "can only index] lists currently. received: " + std::string(f.stack.back().typeName()), f.feed.lineNumber());
 
 		// support negative indicies
 		const size_t i = normalize_index(ind, f.stack.back().arr->size());
 
 		if (i >= f.stack.back().arr->size())
-			return Frame::Exit(Frame::Exit::ERROR, "IndexError", "list index out of bounds", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "IndexError", DEBUG_FLI "list index out of bounds", f.feed.lineNumber());
 
 
 		f.stack.back().set(f.stack.back().arr->at(i));
@@ -55,8 +55,50 @@ namespace op_index {
 	}
 }
 
+
+namespace list_fxns {
+	Frame::Exit pop(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "List:pop expected a list to act on", f.feed.lineNumber());
+
+		const Value* v = f.stack.back().deferChange();
+		if (v->type != Value::ARR)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "List:pop expected a list to act on", f.feed.lineNumber());
+
+		f.stack.back().set(v->arr->back());
+		v->arr->pop_back();
+		return Frame::Exit();
+	}
+
+
+
+}
+namespace op_list_ns {
+	const char* name = "List";
+
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+
+	const Namespace List = {
+		{ "pop", list_fxns::pop },
+	};
+
+	Frame::Exit act(Frame& f) {
+		f.stack.emplace_back(List);
+		return Frame::Exit();
+	}
+}
+
 /* list namespace
  * :pop
  * :push
+ * :size
+ *
+ * :map
+ * :foreach
+ * :find
+ * :sort
+ * :max, :min ?
  *
  */

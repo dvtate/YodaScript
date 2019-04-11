@@ -615,7 +615,6 @@ namespace op_bw_and {
 	}
 }
 
-
 // or
 
 namespace op_bw_xor {
