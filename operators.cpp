@@ -23,6 +23,7 @@
 #include "operators/threads.hpp"
 #include "operators/objects.hpp"
 #include "operators/libraries.hpp"
+#include "operators/math.hpp"
 
 
 
@@ -190,7 +191,12 @@ namespace operators {
 			OP_NS_TO_PAIR(op_quit),
 			OP_NS_TO_PAIR(op_obj_mem_acc_op),
 
-			OP_NS_TO_PAIR(op_load_lib)
+			OP_NS_TO_PAIR(op_load_lib),
+
+			OP_NS_TO_PAIR(op_math),
+			OP_NS_TO_PAIR(ns_object),
+			OP_NS_TO_PAIR(op_list_ns),
+
 		});
 	}
 

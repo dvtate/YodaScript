@@ -82,18 +82,18 @@ namespace op_obj_mem_acc_op {
 							   f.feed.lineNumber());
 
 		Value* v = (Value*) f.stack.back().defer();
-		std::string key;
-		if (v->type == Value::OBJ) { // they're requesting val at emptystring key
-			key = "";
-		} else if (v->type != Value::STR) { // $namespace (1,2,3) :  (not a string)
+
+		if (v->type != Value::STR) // $obj (1,2,3) .  (not a string)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " . operator expected a string key");
-		} else { // normative
-			key = *v->str;
-			f.stack.pop_back();
-			v = (Value*) f.stack.back().defer();
-			//if (v->type != Value::OBJ)
-			//	return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " . operator expected an object to act on");
-		}
+		// normative
+		std::string key = *v->str;
+		f.stack.pop_back();
+		v = (Value*) f.stack.back().defer();
+
+		// TODO: come up with a system to prevent changes to immuteable referenced values
+
+		//if (v->type != Value::OBJ)
+		//	return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " . operator expected an object to act on");
 
 		// if empty, make it an object
 		if (v->type != Value::OBJ) {
@@ -101,19 +101,19 @@ namespace op_obj_mem_acc_op {
 			v->set(Object());
 		}
 
-		auto mem = v->obj->getMember(f.feed.tok.substr(1));
+		auto mem = v->obj->getMember(key);
+
 		// reference the object member with the object as a dependency
 		f.stack.back().set(Value(mem, f.stack.back().lastRef()));
-
 
 		return Frame::Exit();
 	}
 }
 
-
-
-
 namespace ns_object {
+
+	const char* name = "Object";
+
 	Frame::Exit keys(Frame& f) {
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "Object:keys expected an object to key", f.feed.lineNumber());
@@ -125,7 +125,7 @@ namespace ns_object {
 
 		std::vector<std::shared_ptr<Value>> ret;
 		ret.reserve(f.stack.back().obj->members.size());
-		for (auto m : f.stack.back().obj->members)
+		for (const auto& m : f.stack.back().obj->members)
 			ret.push_back(std::make_shared<Value>(m.first));
 
 		f.stack.back().set(ret);
@@ -150,4 +150,13 @@ namespace ns_object {
 		return Frame::Exit();
 	}
 
+	const Namespace object_ns = {
+		{ "inherit", inherit },
+		{ "keys", keys 		 }
+	};
+
+	Frame::Exit act(Frame& f) {
+		f.stack.emplace_back(object_ns);
+		return Frame::Exit();
+	}
 }

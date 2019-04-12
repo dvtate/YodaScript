@@ -55,8 +55,9 @@ namespace op_index {
 	}
 }
 
+namespace op_list_ns {
+	const char* name = "List";
 
-namespace list_fxns {
 	Frame::Exit pop(Frame& f) {
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "List:pop expected a list to act on", f.feed.lineNumber());
@@ -71,21 +72,30 @@ namespace list_fxns {
 	}
 
 
+	Frame::Exit push(Frame& f) {
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "List:push expected a list and a value", f.feed.lineNumber());
 
-}
-namespace op_list_ns {
-	const char* name = "List";
+		Value v = f.stack.back();
+		f.stack.pop_back();
+		Value* l = f.stack.back().deferChange();
 
-	bool condition(Frame& f) {
-		return f.feed.tok == name;
+		if (l->type != Value::ARR)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "List:push expected a list but received " + std::string(l->typeName()), f.feed.lineNumber());
+
+		l->arr->emplace_back(std::make_shared<Value>(v));
+		f.stack.pop_back();
+
+		return Frame::Exit();
 	}
 
-	const Namespace List = {
-		{ "pop", list_fxns::pop },
+	const Namespace list_ns = {
+		{ "pop", pop },
+		{ "push", push },
 	};
 
 	Frame::Exit act(Frame& f) {
-		f.stack.emplace_back(List);
+		f.stack.emplace_back(list_ns);
 		return Frame::Exit();
 	}
 }

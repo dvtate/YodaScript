@@ -74,7 +74,7 @@ namespace stack {
 
 
 namespace op_stack {
-	const char* name = "stack";
+	const char* name = "Stack";
 	bool condition(Frame& f) {
 		return f.feed.tok == name;
 	}
