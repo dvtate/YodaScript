@@ -1,0 +1,25 @@
+# this program adds 10 to the user input
+# although this program could be optimized by using the stack instead of variables,
+# that would make the code more difficult to read. 
+
+
+"I am a fortune teller, however I need some information to identify you in order to procede" println
+
+"So, what is your name? " print
+
+# get the name from the user
+# input is recieved as a string
+$name input =
+
+"My records show there is more than one " $name + ". So, how old are you? " + print
+
+# notice we converted it into a number
+$age input num =
+
+
+# notice the + operator is overloaded
+"Well " $name + ", I can assure you that in 10 years you will be " +
+	$age 10 + + " years old." + println
+
+
+

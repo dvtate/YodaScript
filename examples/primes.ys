@@ -1,0 +1,20 @@
+# returns true if prime; false if not
+$isPrime? {
+	{
+		($num, $i 1 -) $isPrime? @ return
+	} else { 
+		false return
+	} $num $i % 0 == elseif {
+		true return
+	} $i 1 == if
+
+} ($num , $i) lambda =
+
+
+{
+	{
+		$number " is not prime." + println
+	} else {
+		$number " is prime." + println
+	} ($number, $number 1 - int) $isPrime? @ if
+} 2 21 range $number for-each

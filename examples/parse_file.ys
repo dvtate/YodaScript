@@ -1,0 +1,8 @@
+
+{
+        "«" $line "» has " + + print            # print line
+        $line strlen 1 + " chars" + println     # print length of line
+
+# for each line $line in the file "lorem_ipsum.txt" ...
+} "lorem_ipsum.txt" file_get_contents "\n" split $line foreach
+
