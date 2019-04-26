@@ -150,9 +150,10 @@ bool find_list (CodeFeed& feed, std::string& ret) {
 	int indLvl = 1;
 
 	while (indLvl > 0) {
+		if (feed.offset >= feed.body.length() && !feed.getLine())
+			return false;
 
 		char c = feed.body[feed.offset++];
-
 
 		if (c == '(') {
 			indLvl++;
@@ -173,7 +174,6 @@ bool find_list (CodeFeed& feed, std::string& ret) {
 				return false;
 			}
 
-
 			// strings
 		} else if (c == '\"') {
 			do {
@@ -184,7 +184,6 @@ bool find_list (CodeFeed& feed, std::string& ret) {
 			} while (feed.body[feed.offset - 1] == '\\');
 			feed.offset++;
 
-
 			// also strings?
 		} else if (c == '\'') {
 			do {
@@ -194,9 +193,7 @@ bool find_list (CodeFeed& feed, std::string& ret) {
 				}
 			} while (feed.body[feed.offset - 1] == '\\');
 			feed.offset++;
-
 		}
-
 	}
 
 	// push trimmed macro onto the stack

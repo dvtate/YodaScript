@@ -98,11 +98,12 @@ namespace op_list_ns {
 		if (f.stack.size() < 2)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " list:foreach expected a list and a lambda");
 
-		DEFER_TOP(f)
+		DEFER_TOP(f);
 		const Value list = f.stack.back();
 		f.stack.pop_back();
 		Value lam;
 		const bool ref = f.stack.back().deferValue(lam);
+
 		// get top
 		if (!ref)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " null/cyclic reference passed to list:foreach operator (expected lambda)", f.feed.lineNumber());
@@ -114,15 +115,20 @@ namespace op_list_ns {
 
 		Value arg_list;
 		arg_list.set(std::vector<std::shared_ptr<Value>>());
-		arg_list.arr->emplace_back(std::shared_ptr<Value>());
+		arg_list.arr->resize(3);
 
-		for (const std::shared_ptr<Value>& e : *list.arr) {
-			arg_list.arr->at(0) = e;
+		std::shared_ptr<Value> arr_ref = std::make_shared<Value>(list);
+		arg_list.arr->at(2) = arr_ref;
+
+		for (size_t i = 0; i < list.arr->size(); i++) {
+			arg_list.arr->at(0) = list.arr->at(i);
+			arg_list.arr->at(1) = std::make_shared<Value>(Value(mpz_class(i)));
+
 			f.stack.emplace_back(arg_list);
 
 			Frame::Exit ev = lam.lam->call(f);
 			if (ev.reason == Frame::Exit::ERROR)
-				return Frame::Exit(Frame::Exit::ERROR, "In lambda @", DEBUG_FLI, f.feed.lineNumber(), ev);
+				return Frame::Exit(Frame::Exit::ERROR, "In List:for_each", DEBUG_FLI + "Index - " + std::to_string(i), f.feed.lineNumber(), ev);
 
 			if (ev.reason == Frame::Exit::UP) {
 				ev.number--;
@@ -133,6 +139,12 @@ namespace op_list_ns {
 
 		}
 
+		return Frame::Exit();
+	}
+
+	Frame::Exit map() {
+
+		// similar to for_each but in new scope, also capturing return values
 		return Frame::Exit();
 	}
 
@@ -155,6 +167,7 @@ namespace op_list_ns {
  *
  * :map
  * :foreach
+ * :some
  * :find
  * :sort
  * :max, :min ?

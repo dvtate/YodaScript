@@ -198,6 +198,7 @@ namespace operators {
 			OP_NS_TO_PAIR(op_list_ns),
 			OP_NS_TO_PAIR(op_apply_namespace),
 
+			OP_NS_TO_PAIR(op_var_name),
 		});
 	}
 

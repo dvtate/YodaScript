@@ -39,7 +39,7 @@ Exit Lambda::call(Frame& f, std::shared_ptr<Value> slf) {
 		lam->defs.emplace("self", std::make_shared<Value>()); // empty
 
 	// set args
-	lam->defs.emplace("args", std::make_shared<Value>(std::move(args)));
+	lam->defs.emplace("arguments", std::make_shared<Value>(std::move(args)));
 
 	// capture exit value
 	const Frame::Exit&& ev = lam->run(lam);

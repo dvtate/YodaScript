@@ -155,4 +155,12 @@ std::shared_ptr<Frame> Frame::scope(const CodeFeed&& feed, bool copy_stack) {
 	return ret;
 }
 
+
+std::string Frame::varName(const std::shared_ptr<Value>& ref) {
+	for (const auto& p : vars)
+		if (*p.second.ref == ref)
+			return p.first;
+	return std::string();
+}
+
 std::shared_ptr<Frame> main_entry_frame = std::make_shared<Frame>();

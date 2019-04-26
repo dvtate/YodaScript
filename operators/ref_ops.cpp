@@ -146,3 +146,15 @@ namespace op_const {
 		return Frame::Exit();
 	}
 }
+
+
+namespace op_var_name {
+	const char* name = "var_name";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		f.stack.back().set(f.varName(*f.stack.back().ref));
+		return Frame::Exit();
+	}
+}
