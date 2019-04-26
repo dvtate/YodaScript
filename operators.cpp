@@ -105,7 +105,7 @@ namespace operators {
 		});
 	}
 
-	inline Namespace genOperators() {
+	inline const Namespace genOperators() {
 		return Namespace({
 
 			// cmp
@@ -196,6 +196,7 @@ namespace operators {
 			OP_NS_TO_PAIR(op_math),
 			OP_NS_TO_PAIR(ns_object),
 			OP_NS_TO_PAIR(op_list_ns),
+			OP_NS_TO_PAIR(op_apply_namespace),
 
 		});
 	}

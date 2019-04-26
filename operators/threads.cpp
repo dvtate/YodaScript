@@ -11,13 +11,10 @@ namespace op_quit {
 	}
 	Frame::Exit act(Frame& f) {
 		const Value* v = f.stack.empty() ? nullptr : f.stack.back().defer();
-		if (f.feed.isStdin)
-			if (v && v->type == Value::INT)  // trusting user to provide reasonable value
-				exit(v->mp_int->get_si());	// worst case: weird/unexpected exit code
-			else
-				exit(0);
+		if (v && v->type == Value::INT)  // trusting user to provide reasonable value
+			exit(v->mp_int->get_si());	// worst case: weird/unexpected exit code
 		else
-			f.feed.offset = f.feed.body.length() - 1;
+			exit(0);
 
 		return Frame::Exit(Frame::Exit::FEED_END);
 	}

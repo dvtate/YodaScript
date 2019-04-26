@@ -7,7 +7,7 @@
 
 
 namespace op_typeof {
-	const char* name = "typeof";
+	const char* name = "type";
 	bool condition(Frame& f) {
 		return f.feed.tok == name;
 	}

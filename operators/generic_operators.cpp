@@ -17,7 +17,7 @@ namespace op_size {
 		const Value* v = f.stack.back().defer();
 		if (!v)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " null/cyclic reference passed to size", f.feed.lineNumber());
-
+		//std::cout <<"size(" <<((Value*)v)->typeName() <<")";
 		switch (v->type) {
 			case Value::OBJ: {
 				Frame::Exit ev;
@@ -27,10 +27,10 @@ namespace op_size {
 			}
 
 			case Value::ARR:
-				f.stack.back().set(mpz_class(f.stack.back().arr->size()));
+				f.stack.back().set(mpz_class(v->arr->size()));
 				break;
 			case Value::STR: case Value::MAC:
-				f.stack.back().set(mpz_class(f.stack.back().str->length()));
+				f.stack.back().set(mpz_class(v->str->length()));
 				break;
 
 			default:
@@ -64,7 +64,7 @@ namespace op_keys {
 				keys.emplace_back(std::make_shared<Value>(p.first));
 
 		} else {
-			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " keys called on non-keyable object");
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " keys called on non-keyable value");
 		}
 
 		f.stack.back().set(keys);

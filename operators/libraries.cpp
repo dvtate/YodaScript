@@ -50,5 +50,23 @@ namespace op_load_lib {
 
 
 namespace op_apply_namespace {
+	const char* name = "apply";
+	bool condition (Frame& f) {
+		return f.feed.tok == name;
+	}
 
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "apply expected a namespace", f.feed.lineNumber());
+
+		DEFER_TOP(f);
+
+		if (f.stack.back().type != Value::NSP)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "apply expected a namespace, recieved" + std::string(f.stack.back().typeName()), f.feed.lineNumber());
+
+		for (auto& p : *f.stack.back().ns)
+			f.defs.emplace(p);
+		f.stack.pop_back();
+		return Frame::Exit();
+	}
 }

@@ -42,7 +42,6 @@ namespace NAME {\
 	FRAME.stack.back().set(_tmp_v ? *_tmp_v : Value(nullptr));\
 }
 
-
 namespace operators {
 
 	// operators.find is O(1)
