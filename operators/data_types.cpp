@@ -168,10 +168,14 @@ namespace op_lambda {
 				return Frame::Exit(Frame::Exit::ERROR, "ValueError", DEBUG_FLI " lambda params list contained null value and not string variable names", f.feed.lineNumber());
 			if (param->type == Value::EMT)
 				continue;
-			if (param->type != Value::STR)
+
+			if (param->type == Value::REF || param->type == Value::IMR)
+				v.params.push_back(f.varName(*param->ref));
+			else if (param->type == Value::STR)
+				v.params.push_back(*param->str);
+			else
 				return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI " params list should contain strings for variable names", f.feed.lineNumber());
 
-			v.params.push_back(*param->str);
 		}
 		f.stack.pop_back();
 

@@ -11,6 +11,6 @@
 OP_NS(op_load_lib);
 OP_NS(op_insert);
 OP_NS(op_apply_namespace);
-
+OP_NS(op_defs);
 
 #endif //YS2_LIBRARIES_HPP

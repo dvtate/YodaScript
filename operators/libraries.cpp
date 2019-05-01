@@ -70,3 +70,26 @@ namespace op_apply_namespace {
 		return Frame::Exit();
 	}
 }
+
+namespace op_defs {
+	const char* name = "defs";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+
+	Frame::Exit act(Frame& f) {
+		std::cout <<"Scope 0 (current):\n";
+		for (const auto& def : f.defs)
+			std::cout <<"\t" <<def.first << " - " <<Value(def.second).toString() <<"\n";
+
+		size_t i = 0;
+		for (; i < f.prev.size(); i++) {
+			std::cout <<"Scope " <<i + 1 <<":\n";
+			for (const auto& def : f.prev[i]->defs)
+				std::cout <<"\t" <<def.first << " - " <<Value(def.second).toString() <<"\n";
+
+		}
+
+		return Frame::Exit();
+	}
+}

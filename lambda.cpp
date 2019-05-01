@@ -15,6 +15,7 @@ Exit Lambda::call(Frame& f, std::shared_ptr<Value> slf) {
 		f.stack.pop_back();
 	}
 
+	
 	// scope into body
 
 	std::shared_ptr<Frame> lam = f.scope(body, false);

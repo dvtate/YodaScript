@@ -96,7 +96,7 @@ namespace op_list_ns {
 
 	Frame::Exit for_each(Frame& f) {
 		if (f.stack.size() < 2)
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " list:foreach expected a list and a lambda");
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " list:foreach expected a list and a lambda", f.feed.lineNumber());
 
 		DEFER_TOP(f);
 		const Value list = f.stack.back();
@@ -106,7 +106,7 @@ namespace op_list_ns {
 
 		// get top
 		if (!ref)
-			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " null/cyclic reference passed to list:foreach operator (expected lambda)", f.feed.lineNumber());
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " null/cyclic reference passed to list:for_each operator (expected lambda)", f.feed.lineNumber());
 
 		if (lam.type != Value::LAM)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " list:foreach expected a lambda, received " + std::string(lam.typeName()), f.feed.lineNumber());
@@ -117,12 +117,12 @@ namespace op_list_ns {
 		arg_list.set(std::vector<std::shared_ptr<Value>>());
 		arg_list.arr->resize(3);
 
-		std::shared_ptr<Value> arr_ref = std::make_shared<Value>(list);
-		arg_list.arr->at(2) = arr_ref;
+		// { } ($element, $index, $source_list) lambda
+		arg_list.arr->at(2) = std::make_shared<Value>(list);
 
 		for (size_t i = 0; i < list.arr->size(); i++) {
 			arg_list.arr->at(0) = list.arr->at(i);
-			arg_list.arr->at(1) = std::make_shared<Value>(Value(mpz_class(i)));
+			arg_list.arr->at(1) = std::make_shared<Value>(mpz_class(i));
 
 			f.stack.emplace_back(arg_list);
 
@@ -142,16 +142,86 @@ namespace op_list_ns {
 		return Frame::Exit();
 	}
 
-	Frame::Exit map() {
-
+	Frame::Exit map(Frame& f) {
 		// similar to for_each but in new scope, also capturing return values
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " List:map expected a list and a lambda", f.feed.lineNumber());
+
+		//const std::shared_ptr<Value> list_ref = f.stack.back().lastRef();
+
+		DEFER_TOP(f);
+		const Value list = f.stack.back();
+		f.stack.pop_back();
+
+		Value lam;
+		const bool ref = f.stack.back().deferValue(lam);
+		if (!ref)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " null/cyclic reference passed to List:map operator (expected lambda)", f.feed.lineNumber());
+		if (lam.type != Value::LAM)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " List:map expected a lambda, received " + std::string(lam.typeName()), f.feed.lineNumber());
+
+		f.stack.pop_back();
+
+		std::shared_ptr<Frame> scope = f.scope(CodeFeed(), false);
+
+
+		Value arg_list;
+		arg_list.set(std::vector<std::shared_ptr<Value>>());
+		arg_list.arr->resize(3);
+
+		// { } ($element, $index, $source_list) lambda
+		arg_list.arr->at(2) = std::make_shared<Value>(list);
+
+		Value ret_list = std::vector<std::shared_ptr<Value>>();
+		ret_list.arr->reserve(list.arr->size());
+
+
+		for (size_t i = 0; i < list.arr->size(); i++) {
+			// configure lambda arguments
+			arg_list.arr->at(0) = list.arr->at(i);
+			arg_list.arr->at(1) = std::make_shared<Value>(mpz_class(i));
+			scope->stack.emplace_back(arg_list);
+
+
+
+			// call lambda
+			scope->self_ref = scope;
+			Frame::Exit ev = lam.lam->call(*scope);
+			scope->self_ref = nullptr;
+
+			// early exit
+			if (ev.reason == Frame::Exit::ERROR)
+				return Frame::Exit(Frame::Exit::ERROR, "In List:map", DEBUG_FLI + " Index - " + std::to_string(i),
+								   f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::UP) {
+				ev.number--;
+				return ev;
+			}
+			if (ev.reason == Frame::Exit::ESCAPE)
+				break;
+
+
+
+			// add return value to the return list
+			ret_list.arr->emplace_back(scope->stack.empty() ?
+										std::make_shared<Value>(Value())
+										: std::make_shared<Value>(scope->stack.back()));
+
+			scope->stack.clear(); // reduce memory consumption (at cost of cpu?)
+
+		}
+
+		f.stack.emplace_back(ret_list);
+
 		return Frame::Exit();
+
 	}
 
 	const Namespace list_ns = {
-		{ "pop", pop },
-		{ "push", push },
+		{ "pop",	pop },
+		{ "push",	push },
 		{ "for_each", for_each },
+		{ "map",	map },
 	};
 
 	Frame::Exit act(Frame& f) {
@@ -161,15 +231,14 @@ namespace op_list_ns {
 }
 
 /* list namespace
- * :pop
- * :push
- * :size
+ * these could also be implemented in YodaScript
+ * # :pop
+ * # :push
  *
- * :map
- * :foreach
- * :some
+ * # :map
+ * # :foreach
+ * :filter
  * :find
  * :sort
  * :max, :min ?
- *
  */

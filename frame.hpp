@@ -20,6 +20,7 @@ class Frame {
 public:
 	typedef class Exit Exit;
 
+	// set to refrence self when being run/making scopes off of it
 	std::shared_ptr<Frame> self_ref{nullptr};
 
 	// functioning stack
@@ -54,7 +55,7 @@ public:
 	// evaluate code
 	Frame::Exit run(std::shared_ptr<Frame>& self);
 	Frame::Exit runDef(const Def& def);
-	std::shared_ptr<Frame> scope(const CodeFeed&& feed, bool copy_stack = true);
+	std::shared_ptr<Frame> scope(const CodeFeed&& cfeed, bool copy_stack = true);
 
 	// if var found return it's data reference
 	std::shared_ptr<Value> getVar(const std::string&); // if var is in previous scope, set it to default ref previous scoped variable

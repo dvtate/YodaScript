@@ -373,24 +373,37 @@ namespace op_const_list {
 			return Frame::Exit(Frame::Exit::ERROR, "SyntaxError", DEBUG_FLI "EOF while scanning for list");
 
 		std::vector<std::string> elems = split_list(l_body);
-		std::shared_ptr<Frame> elem_proc = f.scope(CodeFeed(), false);
+		//std::shared_ptr<Frame> elem_proc = f.scope(CodeFeed(), false);
+		std::vector<Value> proc_stack;
+		CodeFeed fcf = f.feed;
+		std::swap(f.stack, proc_stack);
+
 		ret.reserve(elems.size());
 		for (size_t i = 0; i < elems.size(); i++) {
-			elem_proc->feed.body = elems[i];
-			elem_proc->feed.offset = 0;
-			Frame::Exit ev = elem_proc->run(elem_proc);
-			if (ev.reason == Frame::Exit::ERROR)
-				return Frame::Exit(Frame::Exit::ERROR, "Syntax Error", DEBUG_FLI "Error while processing elem " + std::to_string(i) + " in list literal.", f.feed.lineNumber(), ev);
+			f.feed.body = elems[i];
+			f.feed.offset = 0;
+			Frame::Exit ev = f.run(f.self_ref);
+			if (ev.reason == Frame::Exit::ERROR) {
+				f.feed = fcf;
+				f.stack = proc_stack;
+				return Frame::Exit(Frame::Exit::ERROR, "Syntax Error",
+								   DEBUG_FLI "Error while processing elem " + std::to_string(i) + " in list literal.",
+								   f.feed.lineNumber(), ev);
+			}
 
-			ret.emplace_back(std::make_shared<Value>(elem_proc->stack.empty() ? Value() : elem_proc->stack.back()));
-			elem_proc->stack.clear();
+			ret.emplace_back(std::make_shared<Value>(f.stack.empty() ? Value() : f.stack.back()));
+			f.stack.clear();
 		}
 
-		// if intended to be an empty list, literal must be `()` or `( )`
+		f.feed = fcf;
+		f.stack = proc_stack;
+
+		// if intended to be an empty list, literal must be `()` or `( )` /\(\s+\)/
 		if (ret.size() == 1 && ret[0]->type == Value::EMT && elems[0].length() < 2)
 			ret.pop_back();
 
 		f.stack.emplace_back(std::move(ret));
+
 		return Frame::Exit();
 	}
 }
