@@ -62,6 +62,7 @@ namespace operators {
 	}
 	bool callOperator(Frame& f, Frame::Exit& exit, const Namespace& ns) {
 
+
 		auto d = ns.find(f.feed.tok);
 		if (d != ns.end()) {
 

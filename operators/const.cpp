@@ -21,7 +21,7 @@ namespace op_const_null {
 		return frame.feed.tok == name;
 	}
 	Frame::Exit act(Frame& frame) {
-		frame.stack.emplace_back((std::shared_ptr<Value>)nullptr);
+		frame.stack.emplace_back((std::shared_ptr<Value>) nullptr);
 		return Frame::Exit();
 	}
 }

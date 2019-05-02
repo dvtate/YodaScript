@@ -377,12 +377,13 @@ namespace op_const_list {
 		std::vector<Value> proc_stack;
 		CodeFeed fcf = f.feed;
 		std::swap(f.stack, proc_stack);
+		std::shared_ptr<Frame> f_ref = f.self_ref;
 
 		ret.reserve(elems.size());
 		for (size_t i = 0; i < elems.size(); i++) {
 			f.feed.body = elems[i];
 			f.feed.offset = 0;
-			Frame::Exit ev = f.run(f.self_ref);
+			Frame::Exit ev = f.run(f_ref);
 			if (ev.reason == Frame::Exit::ERROR) {
 				f.feed = fcf;
 				f.stack = proc_stack;
@@ -397,6 +398,7 @@ namespace op_const_list {
 
 		f.feed = fcf;
 		f.stack = proc_stack;
+		f.self_ref = f_ref;
 
 		// if intended to be an empty list, literal must be `()` or `( )` /\(\s+\)/
 		if (ret.size() == 1 && ret[0]->type == Value::EMT && elems[0].length() < 2)

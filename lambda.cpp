@@ -43,7 +43,12 @@ Exit Lambda::call(Frame& f, std::shared_ptr<Value> slf) {
 	lam->defs.emplace("arguments", std::make_shared<Value>(std::move(args)));
 
 	// capture exit value
-	const Frame::Exit&& ev = lam->run(lam);
+	Frame::Exit&& ev = lam->run(lam);
+
+	if (ev.reason == Frame::Exit::RETURN)
+		return Frame::Exit();
+	if (ev.reason == Frame::Exit::UP)
+		ev.number--;
 
 	// merge stacks
 	f.stack.insert(f.stack.end(), lam->stack.begin(), lam->stack.end());
