@@ -1,0 +1,139 @@
+$bs_tree {
+
+	self.root empty set
+
+	self.node {
+		{
+			self.left $left
+			self.right $right
+			self.value $value 
+		} object
+	} ($value, $left, $right) lambda set
+
+
+	self.add {
+		# "adding" $value + "...\n" + print
+		# using object scoping to overcome issue
+		$ref { } object set
+		$ref.ref self.root set
+		{
+			{
+				# branch left
+				{ $ref.ref $ref.ref.left set }
+				# branch right
+				{ $ref.ref $ref.ref.right set } $ref.ref.value $value >
+				# already in tree
+				{ return } $ref.ref.value ~ $value ~ ==
+			} cond
+		} { $ref.ref } while
+		
+		# replace value at reference
+		$ref.ref ($value) self.node @ =
+
+	} ($value) lambda set
+
+
+	# search for value in bs tree
+	self.has {
+		$ref { } object set
+		$ref.ref self.root set
+		{
+			{
+				# branch left
+				{ $ref.ref $ref.ref.left set }
+				# branch right
+				{ $ref.ref $ref.ref.right set } $ref.ref.value $value >
+				# already in tree
+				{ true return } $ref.ref.value ~ $value ~ ==
+			} cond
+		} { $ref.ref } while
+		false
+	} ($value) lambda set
+
+	self.height {
+		{ {	0 return } $node ! } cond
+
+		# greater of 2 given values
+		$max {
+			{ $v1 $v2 
+				$v1 $v2 < } cond
+		} ($v1, $v2) lambda set
+
+		# recursion
+		( 
+			($node.left) self.height @,
+			($node.right) self.height @
+		) $max @ 1 + return
+
+	} ($node) lambda set
+
+	self.__str {
+
+		$height (self.root) self.height @ set
+
+		$ref { } object set
+		$ref.node self.root set
+
+		# get all the nodes at a given level (non-existant nodes => empty )
+		$get_level {			
+			{	
+				{ # empty tree/node, therefore empty
+					$ret () set 
+					{ $ret empty List:push } 2 $depth ** repeat
+					$ret return
+				} $node !
+				{ # leaf, base case for recursion
+					($node.value) return 
+				} $depth ~ 0 ==
+			} cond
+			
+			$ret () set
+			{ $ret $e List:push } ($e) lambda Stack:dup
+				($node.left,	$depth 1 -) $get_level @ List:for_each
+				($node.right,	$depth 1 -) $get_level @ List:for_each
+			$ret return
+		} ($node, $depth) lambda set
+
+		$levels () set
+		$i 0 set
+		{	$levels (self.root, $i) $get_level @ List:push
+			$i $i 1 + =
+		} $height ~ repeat
+
+		$ret "" set
+		$width 2 $height ** set
+		{ # for each row
+			$width $width 2 // =
+			{ # for each elem
+				# use `-` instead of `empty`
+				{ { $n '-' = } $n ! } cond
+
+				# whitespace padding
+				$pad "" =
+				{ $pad $pad '\t' + = } $width ~ repeat
+				# pad both sides
+				$ret $ret $pad + $n str + $pad + =
+
+			} ($n) lambda $row List:for_each
+			$ret $ret '\n' + =
+		} ($row, $i) lambda $levels List:for_each
+
+		$ret return
+	} () lambda set
+} object set
+
+# generate a list of 20 ints between 0 & 19
+$nums () set
+{
+	$nums Math:random 20 * int List:push
+} 10 repeat
+
+# add each to the bs tree
+$bs_tree.add $nums List:for_each
+
+"Binary Search Tree generated" println
+$bs_tree println
+
+"Object Depcition: "
+$bs_tree str println
+
