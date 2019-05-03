@@ -62,7 +62,6 @@ namespace operators {
 	}
 	bool callOperator(Frame& f, Frame::Exit& exit, const Namespace& ns) {
 
-
 		auto d = ns.find(f.feed.tok);
 		if (d != ns.end()) {
 
@@ -201,6 +200,7 @@ namespace operators {
 
 			OP_NS_TO_PAIR(op_var_name),
 			OP_NS_TO_PAIR(op_defs),
+			OP_NS_TO_PAIR(op_strong),
 		});
 	}
 

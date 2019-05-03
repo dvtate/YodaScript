@@ -89,7 +89,7 @@ public:
 	std::string desc;
 
 	// same variable
-	union { size_t line; size_t number; };
+	union { ssize_t line; ssize_t number; };
 
 	std::vector<Exit> trace;
 

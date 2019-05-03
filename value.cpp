@@ -4,6 +4,7 @@
 
 #include "value.hpp"
 #include "extend.hpp"
+#include "frame.hpp"
 
 // constructors
 Value::Value():
@@ -188,8 +189,13 @@ std::string Value::depict() {
 		}
 	} else if (type == OBJ) {
 		std::string ret = "{";
-		for (const auto& v : obj->members)
-			ret += "\n\tself." + v.first + "\t" + v.second->depict();
+		for (const auto& v : obj->members) {
+			const Value* mem = v.second->defer();
+			if (mem->type != Value::OBJ)
+				ret += "\n\tself." + v.first + "\t" + v.second->depict();
+			else
+				ret += "\n\tself." + v.first + "\t { ... " + std::to_string(mem->obj->members.size()) + " members } object";
+		}
 		if (!obj->members.empty())
 			ret += '\n';
 		return ret + "} object";
@@ -254,8 +260,13 @@ std::string Value::toString() {
 		}
 	} else if (type == OBJ) {
 		std::string ret = "{";
-		for (const auto& v : obj->members)
-			ret += "\n\tself." + v.first + "\t" + v.second->depict();
+		for (const auto& v : obj->members) {
+			const Value* mem = v.second->defer();
+			if (mem->type != Value::OBJ)
+				ret += "\n\tself." + v.first + "\t" + v.second->depict();
+			else
+				ret += "\n\tself." + v.first + "\t { ... " + std::to_string(mem->obj->members.size()) + " members } object";
+		}
 		if (!obj->members.empty())
 			ret += '\n';
 		return ret + "} object";

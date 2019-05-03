@@ -62,6 +62,7 @@ namespace stack {
 	const Namespace stack_ns = {
 		{ std::string("clear"),		Def(clear)	},
 		{ std::string("top"),		Def(dup)	},
+		{ std::string("dup"),		Def(dup)	},
 		{ std::string("swap"),		Def(swap)	},
 		{ std::string("pop"),		Def(pop)	},
 		{ std::string("size"),		Def(size)	},

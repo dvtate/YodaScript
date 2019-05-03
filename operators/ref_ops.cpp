@@ -147,6 +147,26 @@ namespace op_const {
 	}
 }
 
+namespace op_strong {
+	const char* name = "strong";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "strong expected a reference to weaken", f.feed.lineNumber());
+
+		if (f.stack.back().type == Value::IMR)
+			f.stack.back().type = Value::REF;
+		else if (f.stack.back().type == Value::REF)
+			;
+		else
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "strong expected a refrence to unweaken", f.feed.lineNumber());
+
+		return Frame::Exit();
+	}
+}
+
 
 namespace op_var_name {
 	const char* name = "var_name";

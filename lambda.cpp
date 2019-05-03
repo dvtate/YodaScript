@@ -45,13 +45,13 @@ Exit Lambda::call(Frame& f, std::shared_ptr<Value> slf) {
 	// capture exit value
 	Frame::Exit&& ev = lam->run(lam);
 
+	// merge stacks
+	f.stack.insert(f.stack.end(), lam->stack.begin(), lam->stack.end());
+
 	if (ev.reason == Frame::Exit::RETURN)
 		return Frame::Exit();
 	if (ev.reason == Frame::Exit::UP)
 		ev.number--;
-
-	// merge stacks
-	f.stack.insert(f.stack.end(), lam->stack.begin(), lam->stack.end());
 
 	return ev;
 }

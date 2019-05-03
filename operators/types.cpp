@@ -27,10 +27,22 @@ namespace op_str {
 		return frame.feed.tok == name;
 	}
 
-	Frame::Exit act(Frame& frame) {
-		if (frame.stack.empty())
-			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI + std::string(name) + " expected a value to stringify", frame.feed.lineNumber());
-		frame.stack.back().set(frame.stack.back().toString());
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI + std::string(name) + " expected a value to stringify", f.feed.lineNumber());
+
+		const Value* v = f.stack.back().defer();
+		if (v && v->type == Value::OBJ) {
+			Frame::Exit ev;
+			const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+			if (!v->obj->callMember(f, "__str", ev, self))
+				return Frame::Exit(Frame::Exit::ERROR, "in object.__str", DEBUG_FLI , f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
+			return ev;
+		}
+
+		f.stack.back().set(f.stack.back().toString());
 		return Frame::Exit();
 	}
 }
@@ -43,6 +55,18 @@ namespace op_depict {
 	Frame::Exit act(Frame& f) {
 		if (f.stack.empty())
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI + std::string(name) + " expected a value to depict", f.feed.lineNumber());
+
+		const Value* v = f.stack.back().defer();
+		if (v && v->type == Value::OBJ) {
+			Frame::Exit ev;
+			const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+			if (!v->obj->callMember(f, "__depict", ev, self))
+				return Frame::Exit(Frame::Exit::ERROR, "in object.__depict", DEBUG_FLI , f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
+			return ev;
+		}
+
 		f.stack.back().set(f.stack.back().depict());
 		return Frame::Exit();
 	}

@@ -61,6 +61,7 @@ namespace op_repeat_loop {
 	}
 
 	Frame::Exit infLoop(Frame& f) {
+
 		f.stack.pop_back();
 		if (f.stack.back().type != Value::MAC)
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " repeat expected a macro and a number of times to run it", f.feed.lineNumber());
@@ -96,13 +97,11 @@ namespace op_repeat_loop {
 		if (f.stack.back().type == Value::INT)
 			times = *f.stack.back().mp_int;
 		else if (f.stack.back().type == Value::DEC) {
-			if (f.stack.back().dec == INFINITY) {
+			if (f.stack.back().dec == INFINITY)
 				return infLoop(f);
-			}
-		}
-		else if (f.stack.back().type == Value::DEC)
-			times = (long int) f.stack.back().dec;
-		else
+			else if (f.stack.back().type == Value::DEC)
+				times = f.stack.back().dec;
+		} else
 			return bad_exit;
 
 		f.stack.pop_back();
@@ -116,12 +115,22 @@ namespace op_repeat_loop {
 
 		Frame::Exit ev;
 		for (size_t i = times.get_ui(); i > 0; i--) {
+
 			loop->feed.offset = 0; // feed bodys are now immutable :)
 			ev = loop->run(loop);
-			if (ev.reason == Frame::Exit::ERROR)
-				return Frame::Exit(Frame::Exit::ERROR, "In Repeat Loop", DEBUG_FLI, f.feed.lineNumber(), ev);
-			else if (ev.reason != Frame::Exit::CONTINUE)
-				return ev;
+			if (ev.reason == Frame::Exit::ERROR) {
+				ev = Frame::Exit(Frame::Exit::ERROR, "In Repeat Loop", DEBUG_FLI, f.feed.lineNumber(), ev);
+				break;
+			}
+			if (ev.reason == Frame::Exit::ESCAPE) {
+				ev = Frame::Exit();
+				break;
+			}
+			if (ev.reason == Frame::Exit::UP) {
+				ev.number--;
+				if (ev.number > 0)
+					break;
+			}
 
 		}
 
@@ -240,9 +249,11 @@ namespace op_cond {
 			const Value* v = cond->stack.back().defer();
 			if (v && v->type == Value::MAC) {
 				std::shared_ptr<Frame> action = f.scope(*v->str, true);
-				const Frame::Exit ev = action->run(action);
+				Frame::Exit ev = action->run(action);
 				if (ev.reason == Frame::Exit::ERROR)
 					return Frame::Exit(Frame::Exit::ERROR, "In Cond", DEBUG_FLI, f.feed.lineNumber(), ev);
+				if (ev.reason == Frame::Exit::UP)
+					ev.number--;
 				// merge stack
 				f.stack = action->stack;
 				return ev;

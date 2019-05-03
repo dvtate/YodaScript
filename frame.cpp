@@ -62,6 +62,8 @@ run_frame:
 			stack.pop_back();
 			ev = runDef(d);
 		}
+		if (ev.reason != Frame::Exit::CONTINUE)
+			break;
 
 		// get first token once so that we dont have to find it for every operator
 		// stored in feed.tok

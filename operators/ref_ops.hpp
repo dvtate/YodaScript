@@ -13,6 +13,7 @@ OP_NS(op_var_op);
 OP_NS(op_equals);
 OP_NS(op_set);
 OP_NS(op_const);
+OP_NS(op_strong);
 OP_NS(op_copy_value);
 OP_NS(op_mod_equals);
 OP_NS(op_vars);

@@ -127,9 +127,11 @@ namespace op_list_ns {
 			f.stack.emplace_back(arg_list);
 
 			Frame::Exit ev = lam.lam->call(f);
-			if (ev.reason == Frame::Exit::ERROR)
-				return Frame::Exit(Frame::Exit::ERROR, "In List:for_each", DEBUG_FLI + "Index - " + std::to_string(i), f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::ERROR) {
+				return Frame::Exit(Frame::Exit::ERROR, "In List:for_each", DEBUG_FLI + "Index - " + std::to_string(i),
+								   f.feed.lineNumber(), ev);
 
+			}
 			if (ev.reason == Frame::Exit::UP) {
 				ev.number--;
 				return ev;
