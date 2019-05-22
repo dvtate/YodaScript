@@ -94,10 +94,10 @@ public:
 	std::vector<Exit> trace;
 
 	Exit(): reason(CONTINUE) {};
-	Exit(const Exit::Reason r, const std::string& r_title = "", const std::string& r_desc = "", const size_t line_num = 0):
+	Exit(const Exit::Reason r, const std::string&& r_title = "", const std::string&& r_desc = "", const size_t line_num = 0):
 			reason(r), title(r_title), desc(r_desc), line(line_num)
 	{}
-	Exit(const Exit::Reason r, const std::string& r_title, const std::string& r_desc, const size_t line_num, const Exit& e):
+	Exit(const Exit::Reason r, const std::string&& r_title, const std::string&& r_desc, const size_t line_num, const Exit& e):
 			reason(r), title(r_title), desc(r_desc), line(line_num)
 	{
 		trace.emplace_back(e);
@@ -109,6 +109,7 @@ public:
 
 
 	std::string msg{""};
+
 	void genMsg(CodeFeed& feed, Frame* frm = nullptr) {
 		feed.offset -= feed.tok.length();
 		msg += "\n" + title + ": " + desc; // red
@@ -127,7 +128,7 @@ public:
 
 	std::string backtrace() {
 		std::string ret = msg;
-		for (Exit e : trace)
+		for (const Exit& e : trace)
 			ret += e.msg;
 		return ret;
 	}

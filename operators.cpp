@@ -13,6 +13,7 @@
 #include "operators/const.hpp"
 #include "operators/ctl_flow.hpp"
 #include "operators/data_types.hpp"
+#include "operators/errors.hpp"
 #include "operators/generic_operators.hpp"
 #include "operators/io.hpp"
 #include "operators/list_stuff.hpp"
@@ -201,6 +202,10 @@ namespace operators {
 			OP_NS_TO_PAIR(op_var_name),
 			OP_NS_TO_PAIR(op_defs),
 			OP_NS_TO_PAIR(op_strong),
+			OP_NS_TO_PAIR(op_ref),
+			OP_NS_TO_PAIR(op_throw),
+			OP_NS_TO_PAIR(op_catch),
+			OP_NS_TO_PAIR(op_trace_ref),
 		});
 	}
 

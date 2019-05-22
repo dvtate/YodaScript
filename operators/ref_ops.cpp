@@ -167,14 +167,44 @@ namespace op_strong {
 	}
 }
 
-
-namespace op_var_name {
-	const char* name = "var_name";
+namespace op_ref {
+	const char* name = "reference";
 	bool condition(Frame& f) {
 		return f.feed.tok == name;
 	}
 	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "reference expected a value to reference", f.feed.lineNumber());
+		f.stack.back().set(std::make_shared<Value>(f.stack.back()));
+		return Frame::Exit();
+	}
+}
+
+
+namespace op_var_name {
+	const char* name = "_$";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty() || f.stack.back().type != Value::REF)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "_$ expected a reference to name", f.feed.lineNumber());
+
 		f.stack.back().set(f.varName(*f.stack.back().ref));
+		return Frame::Exit();
+	}
+}
+
+// generate a list of references leading to final value
+// $a = $b = $c = 5
+// $a ~trace => ($a, $b, $c, 5)
+namespace op_trace_ref {
+	const char* name = "~trace";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+
+	Frame::Exit act(Frame& f) {
 		return Frame::Exit();
 	}
 }

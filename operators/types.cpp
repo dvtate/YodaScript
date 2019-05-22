@@ -93,9 +93,18 @@ namespace op_int {
 		} else if (f.stack.back().type == Value::DEC) {
 			try {
 				f.stack.back().set(mpz_class(f.stack.back().dec));
-			} catch (const std::invalid_argument&) {
-				return Frame::Exit(Frame::Exit::ERROR, "ValueError", DEBUG_FLI " int received an invalid float", f.feed.lineNumber());
+			} catch (const std::invalid_argument &) {
+				return Frame::Exit(Frame::Exit::ERROR, "ValueError", DEBUG_FLI " int received an invalid float",
+								   f.feed.lineNumber());
 			}
+		} else if (f.stack.back().type == Value::OBJ) {
+			Frame::Exit ev;
+			const std::shared_ptr<Value>&& self = f.stack.back().lastRef();
+			if (!f.stack.back().obj->callMember(f, "__int", ev, self))
+				return Frame::Exit(Frame::Exit::ERROR, "in object.__int", DEBUG_FLI , f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
+			return ev;
 		} else
 			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " invalid " + std::string(f.stack.back().typeName()) + " passed to int" );
 

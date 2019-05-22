@@ -17,6 +17,8 @@ OP_NS(op_strong);
 OP_NS(op_copy_value);
 OP_NS(op_mod_equals);
 OP_NS(op_vars);
-
+OP_NS(op_ref);
 OP_NS(op_var_name);
+OP_NS(op_trace_ref);
+
 #endif //YS2_REF_OPS_HPP
