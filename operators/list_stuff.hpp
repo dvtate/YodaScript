@@ -5,8 +5,7 @@
 #ifndef YS2_LIST_STUFF_HPP
 #define YS2_LIST_STUFF_HPP
 
-#include "../operators.hpp"
-
+#include "../operator_ppcs.hpp"
 
 OP_NS(op_index);
 

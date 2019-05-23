@@ -5,8 +5,7 @@
 #ifndef YS2_LIBRARIES_HPP
 #define YS2_LIBRARIES_HPP
 
-#include "../operators.hpp"
-
+#include "../operator_ppcs.hpp"
 
 OP_NS(op_load_lib);
 OP_NS(op_insert);

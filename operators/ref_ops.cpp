@@ -57,7 +57,7 @@ namespace op_equals {
 }
 
 namespace op_set {
-	const char* name = "set";
+	const char* name = ":=";
 	bool condition(Frame& f) {
 		return f.feed.tok == name;
 	}
@@ -82,6 +82,28 @@ namespace op_set {
 	}
 }
 
+namespace op_let {
+	const char* name = "let";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "let expected a variable name to use", f.feed.lineNumber());
+
+		// convert variable literal to variable name ($a -> 'a')
+		if (f.stack.back().type == Value::REF || f.stack.back().type == Value::IMR)
+			f.stack.back().set(f.varName(*f.stack.back().ref));
+
+		if (f.stack.back().type != Value::STR)
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "let expected a string/variable to declare", f.feed.lineNumber());
+
+		f.stack.back().set(f.setVar(*f.stack.back().str, std::make_shared<Value>()));
+
+		return Frame::Exit();
+	}
+}
 namespace op_copy_value {
 	const char* name = "~";
 	bool condition(Frame& f) {
@@ -205,6 +227,11 @@ namespace op_trace_ref {
 	}
 
 	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "~trace expected a reference to trace", f.feed.lineNumber());
+
+		//if (f.stack.back().type != )
+
 		return Frame::Exit();
 	}
 }

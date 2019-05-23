@@ -5,8 +5,7 @@
 #ifndef YS2_IO_HPP
 #define YS2_IO_HPP
 
-#include "../operators.hpp"
-
+#include "../operator_ppcs.hpp"
 
 OP_NS(op_input);
 

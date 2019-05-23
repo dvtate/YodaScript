@@ -5,7 +5,7 @@
 #ifndef YS2_ERRORS_HPP
 #define YS2_ERRORS_HPP
 
-#include "../operators.hpp"
+#include "../operator_ppcs.hpp"
 
 OP_NS(op_throw);
 OP_NS(op_catch);

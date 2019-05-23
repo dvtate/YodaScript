@@ -5,7 +5,7 @@
 #ifndef YS2_BASIC_MATH_HPP
 #define YS2_BASIC_MATH_HPP
 
-#include "../operators.hpp"
+#include "../operator_ppcs.hpp"
 
 // its gonna suck when i have to add obj operator overloading to all of these :/
 OP_NS(op_add);

@@ -48,7 +48,7 @@ public:
 	Namespace defs;
 
 	Frame();
-	explicit Frame(const CodeFeed&);
+	explicit Frame(const CodeFeed);
 
 	~Frame() = default;
 
@@ -60,7 +60,7 @@ public:
 	// if var found return it's data reference
 	std::shared_ptr<Value> getVar(const std::string&); // if var is in previous scope, set it to default ref previous scoped variable
 	std::shared_ptr<Value> findVar(const std::string& name); // find var from prev scopes
-	std::shared_ptr<Value> setVar(const std::string& name, const std::shared_ptr<Value>& val); // set var, found or not
+	std::shared_ptr<Value> setVar(const std::string& name, const std::shared_ptr<Value>&& val); // set var, found or not
 
 	// search through defined variables for the one referenced
 	std::string varName(const std::shared_ptr<Value>& ref);

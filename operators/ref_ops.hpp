@@ -6,19 +6,29 @@
 #define YS2_REF_OPS_HPP
 
 
-#include "../operators.hpp"
+#include "../operator_ppcs.hpp"
 
 OP_NS(op_var_literal);
 OP_NS(op_var_op);
+
 OP_NS(op_equals);
 OP_NS(op_set);
+OP_NS(op_let);
+
+// weak/strong refs
 OP_NS(op_const);
 OP_NS(op_strong);
+
+// defer value
 OP_NS(op_copy_value);
-OP_NS(op_mod_equals);
+
+// debug
 OP_NS(op_vars);
+OP_NS(op_trace_ref);
+
 OP_NS(op_ref);
 OP_NS(op_var_name);
-OP_NS(op_trace_ref);
+
+
 
 #endif //YS2_REF_OPS_HPP

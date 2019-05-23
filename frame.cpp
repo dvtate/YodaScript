@@ -8,7 +8,7 @@ Frame::Frame(){
 	stack.reserve(30);
 }
 
-Frame::Frame(const CodeFeed& cf): feed(cf) {
+Frame::Frame(const CodeFeed cf): feed(std::move(cf)) {
 	stack.reserve(30);
 }
 
@@ -101,6 +101,20 @@ clean_exit:
 
 }
 
+
+std::shared_ptr<Frame> Frame::scope(const CodeFeed&& cfeed, bool copy_stack) {
+	std::shared_ptr<Frame> ret = std::make_shared<Frame>(cfeed);
+	ret->prev.emplace_back(self_ref);
+	for (const auto& f : prev)
+		ret->prev.emplace_back(f);
+
+	if (copy_stack)
+		ret->stack = stack; // copy stack
+
+	return ret;
+}
+
+
 std::shared_ptr<Value> Frame::getVar(const std::string& name) {
 	std::shared_ptr<Value> v = findVar(name);
 	if (!v) {
@@ -119,22 +133,28 @@ std::shared_ptr<Value> Frame::findVar(const std::string& name) {
 	if (v != vars.end())
 		return *v->second.ref;
 
+
+
+
 	// check previous scopes
 	for (const auto& scope : prev) {
 		v = scope->vars.find(name);
-		if (v != scope->vars.end()) {
+		if (v != scope->vars.end())
+			return *v->second.ref;
+		/*
+		{
 			// set it to a ref to tht var's value (double reference)
 			std::shared_ptr<Value> r = std::make_shared<Value>(v->second);
 			vars.emplace(name, r);
 			ref_vals.emplace_back(r);
 			return r;
-		}
+		}*/
 	}
 	return nullptr;
 }
 
 // set var in current scope
-std::shared_ptr<Value> Frame::setVar(const std::string& name, const std::shared_ptr<Value>& val) {
+std::shared_ptr<Value> Frame::setVar(const std::string& name, const std::shared_ptr<Value>&& val) {
 
 	auto v = vars.find(name);
 	if (v != vars.end())
@@ -145,23 +165,16 @@ std::shared_ptr<Value> Frame::setVar(const std::string& name, const std::shared_
 	return *v->second.ref;
 }
 
-std::shared_ptr<Frame> Frame::scope(const CodeFeed&& cfeed, bool copy_stack) {
-	std::shared_ptr<Frame> ret = std::make_shared<Frame>(cfeed);
-	ret->prev.emplace_back(self_ref);
-	for (const auto& f : prev)
-		ret->prev.emplace_back(f);
-
-	if (copy_stack)
-		ret->stack = stack; // copy stack
-
-	return ret;
-}
-
 
 std::string Frame::varName(const std::shared_ptr<Value>& ref) {
 	for (const auto& p : vars)
 		if (*p.second.ref == ref)
 			return p.first;
+
+	for (const auto& scope : prev)
+		for (const auto& p : scope->vars)
+			if (*p.second.ref == ref)
+				return p.first;
 	return std::string();
 }
 

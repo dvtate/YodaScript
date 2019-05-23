@@ -5,7 +5,7 @@
 #ifndef YS2_OBJECTS_HPP
 #define YS2_OBJECTS_HPP
 
-#include "../operators.hpp"
+#include "../operator_ppcs.hpp"
 
 OP_NS(op_object);
 OP_NS(op_obj_mem_acc);

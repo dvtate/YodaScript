@@ -203,9 +203,29 @@ namespace operators {
 			OP_NS_TO_PAIR(op_defs),
 			OP_NS_TO_PAIR(op_strong),
 			OP_NS_TO_PAIR(op_ref),
+			OP_NS_TO_PAIR(op_trace_ref),
+			OP_NS_TO_PAIR(op_let),
+
 			OP_NS_TO_PAIR(op_throw),
 			OP_NS_TO_PAIR(op_catch),
-			OP_NS_TO_PAIR(op_trace_ref),
+
+			// implementing these natively would involve >1000 lines of code
+			{ "<=", Def("> !", true) }, // le is opposite of gt
+			{ ">=", Def("< !", true) }, // ge is opposite of lt
+			{ "++", Def("Stack:dup 1 + =", true) },
+			{ "--", Def("Stack:dup 1 - =", true) },
+			{ "+=", Def("'v' let Stack:swap = Stack:dup $v + =", true) },
+			{ "-=", Def("'v' let Stack:swap = Stack:dup $v - =", true) },
+			{ "*=", Def("'v' let Stack:swap = Stack:dup $v * =", true) },
+			{ "/=", Def("'v' let Stack:swap = Stack:dup $v / =", true) },
+			{ "<<=", Def("'v' let Stack:swap = Stack:dup $v << =", true) },
+			{ ">>=", Def("'v' let Stack:swap = Stack:dup $v >> =", true) },
+			{ "%=", Def("'v' let Stack:swap = Stack:dup $v % =", true) },
+			{ "&=", Def("'v' let Stack:swap = Stack:dup $v & =", true) },
+			{ "|=", Def("'v' let Stack:swap = Stack:dup $v | =", true) },
+			{ "^=", Def("'v' let Stack:swap = Stack:dup $v ^ =", true) },
+			{ "**=", Def("'v' let Stack:swap = Stack:dup $v ** =", true) },
+
 		});
 	}
 

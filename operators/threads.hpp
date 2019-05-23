@@ -5,7 +5,7 @@
 #ifndef YS2_THREADS_HPP
 #define YS2_THREADS_HPP
 
-#include "../operators.hpp"
+#include "../operator_ppcs.hpp"
 
 OP_NS(op_thread);
 OP_NS(op_join);

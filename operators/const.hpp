@@ -5,7 +5,7 @@
 #ifndef YS2_CONST_HPP
 #define YS2_CONST_HPP
 
-#include "../operators.hpp"
+#include "../operator_ppcs.hpp"
 
 // const values
 OP_NS(op_const_empty);

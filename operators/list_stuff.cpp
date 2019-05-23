@@ -219,6 +219,24 @@ namespace op_list_ns {
 
 	}
 
+
+	Frame::Exit range(Frame& f) {
+		if (f.stack.size() < 2)
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI "List:range expected a start and end", f.feed.lineNumber());
+
+		ssize_t start, end;
+		DEFER_TOP(f);
+		if (f.stack.back().type == Value::INT) {
+
+		} else if (f.stack.back().type == Value::DEC) {
+
+		} else {
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "List:range end range expected a number, received "
+				+ std::string(f.stack.back().typeName()), f.feed.lineNumber());
+		}
+		DEFER_TOP(f);
+		return Frame::Exit();
+	}
 	const Namespace list_ns = {
 		{ "pop",	pop },
 		{ "push",	push },

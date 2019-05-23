@@ -5,8 +5,7 @@
 #ifndef YS2_CTL_FLOW_HPP
 #define YS2_CTL_FLOW_HPP
 
-#include "../operators.hpp"
-
+#include "../operator_ppcs.hpp"
 
 OP_NS(op_line_comment);
 OP_NS(op_multiline_comment);

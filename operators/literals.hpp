@@ -5,7 +5,7 @@
 #ifndef YS2_RAW_DATA_HPP
 #define YS2_RAW_DATA_HPP
 
-#include "../operators.hpp"
+#include "../operator_ppcs.hpp"
 
 // literals
 OP_NS(op_const_number);

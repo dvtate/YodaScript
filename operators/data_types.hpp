@@ -2,7 +2,7 @@
 #ifndef YS2_DATA_TYPES_HPP
 #define YS2_DATA_TYPES_HPP
 
-#include "../operators.hpp"
+#include "../operator_ppcs.hpp"
 
 OP_NS(op_namespace);
 OP_NS(op_lambda);

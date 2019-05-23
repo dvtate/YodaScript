@@ -6,7 +6,7 @@
 #define YS2_BOOLEAN_OPS_HPP
 
 
-#include "../operators.hpp"
+#include "../operator_ppcs.hpp"
 
 OP_NS(op_not)
 OP_NS(op_truthy)

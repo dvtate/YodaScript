@@ -1,7 +1,7 @@
 #ifndef YS2_TYPES_HPP
 #define YS2_TYPES_HPP
 
-#include "../operators.hpp"
+#include "../operator_ppcs.hpp"
 
 // type conversion
 // maybe somewhere else?
