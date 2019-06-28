@@ -1,4 +1,4 @@
-#include "../namespace_def.hpp"
+#include "../extend.hpp"
 #include "../frame.hpp"
 
 // $ g++ lib.cpp ../namespace_def.cpp ../value.cpp -lgmp -lgmpxx -fPIC -shared -o lib.so
