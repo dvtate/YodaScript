@@ -7,7 +7,7 @@
 
 #include "../operator_ppcs.hpp"
 
-OP_NS(op_throw);
-OP_NS(op_catch);
+OP_NS(op_throw)
+OP_NS(op_catch)
 
 #endif //YS2_ERRORS_HPP

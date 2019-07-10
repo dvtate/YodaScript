@@ -433,6 +433,7 @@ namespace op_remainder {
 	}
 }
 
+// TODO: move this to Math module
 namespace op_abs {
 	const char* name = "abs";
 	bool condition(Frame& f) {
@@ -686,6 +687,3 @@ namespace op_bw_or {
 }
 
 
-
-
-// TODO: modified assignment operators ://////

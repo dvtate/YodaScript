@@ -8,8 +8,8 @@
 
 #include "../operator_ppcs.hpp"
 
-OP_NS(op_stk_pop);
-OP_NS(op_stack);
+OP_NS(op_stk_pop)
+OP_NS(op_stack)
 namespace stack {
 	Frame::Exit clear(Frame& f);
 	Frame::Exit dup(Frame& f);

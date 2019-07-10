@@ -8,11 +8,11 @@
 #include "../operator_ppcs.hpp"
 
 // literals
-OP_NS(op_const_number);
-OP_NS(op_const_int);
-OP_NS(op_const_string);
-OP_NS(op_const_macro);
-OP_NS(op_const_list);
+OP_NS(op_const_number)
+OP_NS(op_const_int)
+OP_NS(op_const_string)
+OP_NS(op_const_macro)
+OP_NS(op_const_list)
 
 
 

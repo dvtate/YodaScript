@@ -7,7 +7,7 @@
 
 #include "../operator_ppcs.hpp"
 
-OP_NS(op_size);
-OP_NS(op_keys);
+OP_NS(op_size)
+OP_NS(op_keys)
 
 #endif //YS2_GENERIC_OPERATORS_HPP

@@ -182,7 +182,20 @@ namespace op_exec {
 	}
 }
 
+namespace op_eval {
+	const char* name = "eval";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " @ operator expected something to run", f.feed.lineNumber());
 
+		// same as op_exec, but run it in current scope
+
+		return Frame::Exit();
+	}
+}
 
 /*
 * {

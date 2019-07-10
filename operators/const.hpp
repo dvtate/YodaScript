@@ -8,9 +8,9 @@
 #include "../operator_ppcs.hpp"
 
 // const values
-OP_NS(op_const_empty);
-OP_NS(op_const_null);
-OP_NS(op_const_true);
-OP_NS(op_const_false);
+OP_NS(op_const_empty)
+OP_NS(op_const_null)
+OP_NS(op_const_true)
+OP_NS(op_const_false)
 
 #endif //YS2_CONST_HPP

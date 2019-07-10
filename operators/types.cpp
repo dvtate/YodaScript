@@ -111,3 +111,34 @@ namespace op_int {
 		return Frame::Exit();
 	}
 }
+
+namespace op_float {
+	const char* name = "float";
+	bool condition(Frame& f) {
+		return f.feed.tok == name;
+	}
+	Frame::Exit act(Frame& f) {
+		if (f.stack.empty())
+			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI + std::string(name) + " expected a value to convert to float", f.feed.lineNumber());
+
+		DEFER_TOP(f);
+		if (f.stack.back().type == Value::STR) {
+			f.stack.back().set(std::stod(*f.stack.back().str));
+		} else if (f.stack.back().type == Value::INT) {
+			f.stack.back().set(*f.stack.back().mp_int->get_d());
+		} else if (f.stack.back().type == Value::OBJ) {
+			Frame::Exit ev;
+			const std::shared_ptr<Value> &&self = f.stack.back().lastRef();
+			if (!f.stack.back().obj->callMember(f, "__float", ev, self))
+				return Frame::Exit(Frame::Exit::ERROR, "in object.__float", DEBUG_FLI, f.feed.lineNumber(), ev);
+			if (ev.reason == Frame::Exit::RETURN)
+				return Frame::Exit();
+			return ev;
+		} else if (f.stack.back().type == Value::DEC) {
+			;
+		} else
+			return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI "invalid type " + std::string(f.stack.back().typeName()) + " passed to float" );
+
+		
+	}
+}

@@ -21,6 +21,7 @@ class Object {
 public:
 
 	std::unordered_map<std::string, std::shared_ptr<Value>> members;
+	//Namespace defs;
 
 	std::shared_ptr<Value>& getMember(const std::string& name);
 

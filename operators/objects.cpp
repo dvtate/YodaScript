@@ -91,6 +91,7 @@ namespace op_obj_mem_acc_op {
 		v = (Value*) f.stack.back().defer();
 
 		// TODO: come up with a system to prevent changes to immuteable referenced values
+		// TODO: don't allow . operator on empty value
 
 		//if (v->type != Value::OBJ)
 		//	return Frame::Exit(Frame::Exit::ERROR, "TypeError", DEBUG_FLI " . operator expected an object to act on");
@@ -105,7 +106,13 @@ namespace op_obj_mem_acc_op {
 
 		// reference the object member with the object as a dependency
 		f.stack.back().set(Value(mem, f.stack.back().lastRef()));
+/*
+		// reference the object member with the object as a dependency
+		if (mem.type == Value::REF)
+			mem.related = new std::shared_ptr<Value>(f.stack.back().lastRef());
 
+		f.stack.back().set(mem);
+*/
 		return Frame::Exit();
 	}
 }

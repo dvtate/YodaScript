@@ -105,6 +105,8 @@ Value& Value::set_noerase(const Value& v) {
 		case LAM:
 			lam = new Lambda(*v.lam);
 			break;
+		case EMT:
+			break;
 	}
 
 	return *this;

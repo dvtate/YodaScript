@@ -7,11 +7,11 @@
 
 #include "../operator_ppcs.hpp"
 
-OP_NS(op_input);
+OP_NS(op_input)
 
 // data representation
-OP_NS(op_print);
-OP_NS(op_println);
+OP_NS(op_print)
+OP_NS(op_println)
 
 
 #endif //YS2_IO_HPP

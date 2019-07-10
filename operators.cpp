@@ -225,7 +225,6 @@ namespace operators {
 			{ "|=", Def("'v' let Stack:swap = Stack:dup $v | =", true) },
 			{ "^=", Def("'v' let Stack:swap = Stack:dup $v ^ =", true) },
 			{ "**=", Def("'v' let Stack:swap = Stack:dup $v ** =", true) },
-
 		});
 	}
 

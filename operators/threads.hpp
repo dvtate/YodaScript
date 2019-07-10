@@ -7,12 +7,12 @@
 
 #include "../operator_ppcs.hpp"
 
-OP_NS(op_thread);
-OP_NS(op_join);
-OP_NS(op_sleep);
-OP_NS(op_mutex);
-OP_NS(op_spawn);
-OP_NS(op_quit); // moves feed to EOF, causing interpreter to end
+OP_NS(op_thread)
+OP_NS(op_join)
+OP_NS(op_sleep)
+OP_NS(op_mutex)
+OP_NS(op_spawn)
+OP_NS(op_quit) // moves feed to EOF, causing interpreter to end
 
 
 /* if i could emulate js promises in some way tht would be cool

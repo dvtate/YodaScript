@@ -7,6 +7,6 @@
 
 #include "../operator_ppcs.hpp"
 
-OP_NS(op_math);
+OP_NS(op_math)
 
 #endif //YS2_MATH_HPP
