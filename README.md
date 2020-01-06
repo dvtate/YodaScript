@@ -1,24 +1,12 @@
 # ys-alpha
-I'm writing a new interpreter for yodascript that isn't held back by the same flaws of the old one.
-
-This will probably be renamed to `dvtate/yoda` and the old interpreter will be named something like `dvtate/yoda-v1`
-
-Changes in this version will break compatibility with the old version, however the syntax will remain largely unchanged.
-
-### Update 2019-9
-After taking a few months break from the language I've come to recognize that there are some flaws with the langauge. In it's current form. Although it has a lot of features, many of these features make the language harder to grasp and serve purposes provided by other langauge components. I think I need to focus on yodascript's strengths and trim down the language spec so I can focus on optimizing what I have. In addition there are some flaws I need to work out which will likely involve major implementation changes. 
-
-I've come to the following realizations:
-- I've added a lot of features (it's essentially like javascript with all the features of C++)
-- I think I need to strip down the langauge to it's bare essentials
-  - And then expand on these to provide the rest of the desired functionality
+New interpreter for YodaScript that isn't held back by the same flaws of the old one. This version of YodaScript is not backwards compatible with the old one however the syntax should be familiar.
 
 
 # New langauge quickstart
 
 ### YodaScript is postfix
 The syntax is different from most other other langauges but isn't hard to use. Although there 
-are some shortcuts that emulate infix notation, the spelled out form is always postfix.
+are some shortcuts that emulate infix/prefix notation, the spelled out form is always postfix.
 ```
 > # add 1 and 2 together
 > 1 2 + 
@@ -27,7 +15,7 @@ are some shortcuts that emulate infix notation, the spelled out form is always p
 12
 ```
 
-### Varaibles
+### References
 Variables start with a `$`. Although YodaScript isn't very strict about how you use variables, if you want to avoid problems you should use them as described here. All variables are `empty` until given a value (`$var ~ empty ==`). The copy operator `~` is required to convert from references to values.
 - `let`: declare variable in current scope and push a reference to it onto stack
 - `=`: (value change) alter the value that variable refers to
@@ -71,8 +59,18 @@ If we want to copy a variable by value we have to deference it using the copy op
 1
 ```
 
+### Macros
+Macros are a datatype used to store code. Use the `@` operator to execute macros.
+```
+> $macro let {
+.     "hi" print
+. } =
+> $macro @
+hi
+```
+
 ### Conditionals
-I haven't added old YodaScript's if statement syntax in yet as it is O(N^2) for no reason. For now you can use `cond`. 
+I haven't added old YodaScript's if statement syntax as it needs to be significantly refactored. For now you can use `cond`. 
 ```
 > $gpa let input float =
 3.863
@@ -83,16 +81,6 @@ I haven't added old YodaScript's if statement syntax in yet as it is O(N^2) for 
 .     { "WOW!" print } $gpa 4 >=
 . } cond
 Thats great
-```
-
-### Macros
-Macros are like special strings used to store code. Use the `@` operator to run macros.
-```
-> $macro let {
-.     "hi" print
-. } =
-> $macro @
-hi
 ```
 
 ### Lists
@@ -137,6 +125,7 @@ Lambdas are like macros but with infastructure attached. They are very similar i
 . } { $n 10 < } while
 1,2,3,4,5,6,7,8,9
 ```
+
 #### Repeat
 This is only here as I have yet to decide on a proper syntax for `for` loops.
 ```
@@ -197,3 +186,21 @@ Mutable key-value set (hashtable). Note
 . } object
 > 
 ```
+
+
+### Update 2020-1
+I plan on making a new language inspired by yodascript, that will involve the following:
+- change syntax to make json a native type
+- formal langauge spec created before I start development
+- stack-based bytecode compilation target
+- will also likely make a lisp-like syntax for broader appeal
+- increased focus on modules and extension system instead of kitchen sink approach
+
+
+### Update 2019-9
+After taking a few months break from the language I've come to recognize that there are some flaws with the langauge. In it's current form. Although it has a lot of features, many of these features make the language harder to grasp and serve purposes provided by other langauge components. I think I need to focus on yodascript's strengths and trim down the language spec so I can focus on optimizing what I have. In addition there are some flaws I need to work out which will likely involve major implementation changes. 
+
+I've come to the following realizations:
+- I've added a lot of features (it's essentially like javascript with all the features of C++)
+- I think I need to strip down the langauge to it's bare essentials
+  - And then expand on these to provide the rest of the desired functionality
