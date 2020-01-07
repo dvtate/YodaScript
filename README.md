@@ -2,7 +2,7 @@
 New interpreter for YodaScript that isn't held back by the same flaws of the old one. This version of YodaScript is not backwards compatible with the old one however the syntax should be familiar.
 
 
-# New langauge quickstart
+# Quickstart Guide
 
 ### YodaScript is postfix
 The syntax is different from most other other langauges but isn't hard to use. Although there 
