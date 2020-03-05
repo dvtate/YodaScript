@@ -25,11 +25,11 @@ Variables start with a `$`. Although YodaScript isn't very strict about how you 
 In the following example, the value that a refers to is changed from `empty` and set to the integer 5. We then change 5 into the string "hello". Because we left a reference to $a on the stack it stays there after the reassignment and we see the value update after the reassignment.
 ```
 > $a let 5 = 
-> $a
+> $a print
 5
 > $a 'hello' = 
-> # note reference to $a is still on stack
-"hello"
+> $a print
+hello
 ```
 
 We can declare a reference before using it by naming and then it and calling `let`. The `;` is used to remove the reference from the stack. References can refer to other references. Here we use the reference change operator to make $b reference $a (from previous example).
@@ -44,7 +44,6 @@ hello
 Notice that if we use the value change operator on b it changes the value that a references
 ```
 > $b 1.23 =
-> 
 > $a print
 1.23
 ```
