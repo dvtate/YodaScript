@@ -104,7 +104,7 @@ public:
 		return body.substr(offset, body.length());
 	}
 
-	// TODO: make this tokenize out member accessors
+	// sets this->tok = next token
 	// ie - `1 2 +` --> "1" "2" "+"
 	// ie - `stack:size` --> "stack" ":size"
 	bool setTok() {
