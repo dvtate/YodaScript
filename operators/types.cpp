@@ -125,7 +125,7 @@ namespace op_float {
 		if (f.stack.back().type == Value::STR) {
 			f.stack.back().set(std::stod(*f.stack.back().str));
 		} else if (f.stack.back().type == Value::INT) {
-			f.stack.back().set(*f.stack.back().mp_int->get_d());
+			f.stack.back().set(f.stack.back().mp_int->get_d());
 		} else if (f.stack.back().type == Value::OBJ) {
 			Frame::Exit ev;
 			const std::shared_ptr<Value> &&self = f.stack.back().lastRef();
