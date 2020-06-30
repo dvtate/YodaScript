@@ -16,7 +16,7 @@ typedef decltype(nullptr) nullptr_t;
 /*
 * - could contain any reperesentable value
 * - union + enum system to preserve memory
-* -
+* TODO: convert this to use std::variant for better performance
 *
 */
 
@@ -24,6 +24,7 @@ typedef decltype(nullptr) nullptr_t;
 #include "object.hpp"
 #include "lambda.hpp"
 
+// Variant data type
 class Value {
 public:
 
@@ -67,8 +68,6 @@ public:
 			// typedef in namespace_def.hpp
 
 		/* could be added in future:
-		 DRF ? double ref - reference with a related value to prevent it from getting gc'd
-
 		 CHR ? character		- prolly not bc international == confusion
 		 BLN ? boolean			- prolly not, truthy values are fine
 		 RXP ? reg exp			- prolly not, could be added through lang extension
@@ -90,6 +89,7 @@ public:
 		Namespace* ns;
 		Def* def;
 
+		// Used to manage reference counting and method binding
 		struct {
 			std::shared_ptr<Value>* ref;
 			std::shared_ptr<Value>* related;
@@ -161,6 +161,7 @@ public:
 		std::vector<std::shared_ptr<Value>*> ptrs;
 		return defer(imr, ptrs);
 	}
+	
 	// get muteable value
 	// stops at immuteable references
 	Value* deferMuteable(std::vector<std::shared_ptr<Value>*>& pastPtrs);
