@@ -1,12 +1,11 @@
-# ys-alpha
+# YodaScript 2
 New interpreter for YodaScript that isn't held back by the same flaws of the old one. This version of YodaScript is not backwards compatible with the old one however the syntax should be familiar.
 
 
 # Quickstart Guide
 
 ### YodaScript is postfix
-The syntax is different from most other other langauges but isn't hard to use. Although there 
-are some shortcuts that emulate infix/prefix notation, the spelled out form is always postfix.
+The syntax is different from most other other langauges. Although there are some shortcuts that emulate infix/prefix notation, the spelled out form is always postfix.
 ```
 > # add 1 and 2 together
 > 1 2 + 
