@@ -35,7 +35,7 @@ We can declare a reference before using it by naming and then it and calling `le
 ```
 > $b let ;
 > # $b->$a->5 
-> $a :=
+> $b $a :=
 > $b print
 hello
 ```
@@ -185,6 +185,8 @@ Mutable key-value set (hashtable). Note
 > 
 ```
 
+### Update 2020-7
+[new lang](https://github.com/dvtate/dlang20)
 
 ### Update 2020-1
 I plan on making a new language inspired by yodascript, that will involve the following:
