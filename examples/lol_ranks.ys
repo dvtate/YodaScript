@@ -1,0 +1,22 @@
+# Quick test program for LoL ranks
+
+$rank_obj {
+	self.tiers ("Iron", "Bronze", "Silver", "Gold", "Platinum", "Diamond", 
+				"Master", "Grandmaster", "Challenger")
+	self.divisions (4, 3, 2, 1)
+	
+	self.randomRank {
+		
+		$tier Math:random self.tiers size * int set 
+		$div 1 set
+		{{ # no divisions in Master+
+			$div self.divisions self.divisions size Math:random * int ] =
+		} $tier 5 > ! } cond 
+		self.tiers ~ $tier ~ ] $div + Stack:top println return
+	} () lambda
+
+} object set
+
+# Print some random ranks
+() $rank_obj.randomRank @ println 
+() $rank_obj.randomRank @ println
