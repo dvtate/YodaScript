@@ -15,6 +15,8 @@ The syntax is different from most other other langauges. Although there are some
 ```
 
 ### References
+This is probably the most confusing part of YodaScript, to summarize, apart from literals, everything is a reference. This includes anything assignable.
+
 Variables start with a `$`. Although YodaScript isn't very strict about how you use variables, if you want to avoid problems you should use them as described here. All variables are `empty` until given a value (`$var ~ empty ==`). The copy operator `~` is required to convert from references to values.
 - `let`: declare variable in current scope and push a reference to it onto stack
 - `=`: (value change) alter the value that variable refers to
@@ -68,7 +70,7 @@ hi
 ```
 
 ### Conditionals
-I haven't added old YodaScript's if statement syntax as it needs to be significantly refactored. For now you can use `cond`. 
+Due to the technical challenges, I haven't added old YodaScript's if statement syntax. For now you can use the same `cond` syntax as in V1.
 ```
 > $gpa let input float =
 3.863
@@ -125,7 +127,7 @@ Lambdas are like macros but with infastructure attached. They are very similar i
 ```
 
 #### Repeat
-This is only here as I have yet to decide on a proper syntax for `for` loops.
+Run same macro a given number of times
 ```
 > {
 .     "hip hip hooray! " print
@@ -159,7 +161,7 @@ hello
 ```
 
 ### Namespaces
-Immutable key-value set (immutable)
+Immutable key-value set
 ```
 > $num {
 .     "five" 5 define
