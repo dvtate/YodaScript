@@ -17,8 +17,8 @@ jobs:
       run: |
           mkdir build 
           cd build
-          export CXX=g++-7.5.0
-          export CC=gcc-7.5.0
+          export CXX=g++-9
+          export CC=gcc-9
           echo /usr/bin/g*
           cmake ..
           make
