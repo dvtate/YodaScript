@@ -166,7 +166,7 @@ Immutable key-value set
 > $num {
 .     "five" 5 define
 .     "@sum" {+} define
-. } namespace
+. } namespace =
 > $num:five print
 5
 > $num "five" : print
@@ -183,7 +183,7 @@ Mutable key-value set (hashtable). Note
 .     self.deposit {
 .         self.balance $amount +=
 .     } ($amount) lambda
-. } object
+. } object =
 > 
 ```
 
