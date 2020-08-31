@@ -26,14 +26,13 @@ Variables start with a `$`. Although YodaScript isn't very strict about how you 
 In the following example, the value that a refers to is changed from `empty` and set to the integer 5. We then change 5 into the string "hello". Because we left a reference to $a on the stack it stays there after the reassignment and we see the value update after the reassignment.
 ```
 > $a let 5 = 
-> $a print
+> $a
 5
 > $a 'hello' = 
-> $a print
-hello
+"hello"
 ```
 
-We can declare a reference before using it by naming and then it and calling `let`. The `;` is used to remove the reference from the stack. References can refer to other references. Here we use the reference change operator to make $b reference $a (from previous example).
+We can declare a reference before using it by naming it and then using `let`. The `;` is used to remove the reference from the stack. References can refer to other references. Here we use the reference change operator (`:=`) to make $b reference $a (from previous example).
 ```
 > $b let ;
 > # $b->$a->5 
@@ -42,7 +41,7 @@ We can declare a reference before using it by naming and then it and calling `le
 hello
 ```
 
-Notice that if we use the value change operator on b it changes the value that a references
+Notice that if we use the value change operator on b, it changes the value that a references
 ```
 > $b 1.23 =
 > $a print
@@ -70,7 +69,7 @@ hi
 ```
 
 ### Conditionals
-Due to the technical challenges, I haven't added old YodaScript's if statement syntax. For now you can use the same `cond` syntax as in V1.
+Eventually I'll add old YodaScript's if statement syntactic sugar. For now you can use `cond` which acts the same way as before.
 ```
 > $gpa let input float =
 3.863
@@ -84,7 +83,7 @@ Thats great
 ```
 
 ### Lists
-Lists are Arrays of references.
+Lists are Arrays of references and behave about like you'd expect with indicies starting at zero.
 ```
 > $values let (1, "dog", 1.2, empty, { "hi" print }) =
 > $values 1 ] "cat" =
@@ -96,7 +95,7 @@ hi
 . * This is likely temporary, see namespaces
 . */
 > List
-{ # namespace gets explained later
+{
 	"map"	<native> @define
 	"for_each"	<native> @define
 	"push"	<native> @define
@@ -105,7 +104,8 @@ hi
 ```
 
 ### Lambdas
-Lambdas are like macros but with infastructure attached. They are very similar in concept to JavaScript's arrow functions. Lambdas take a list of `arguments` as references defined in a new scope when the `@` operator is called.
+Lambdas are like macros but with some extra infastructure attached. They are basically just anonymous functions. Lambdas take a list of `arguments` as references defined in a new scope when the `@` operator is called. 
+- Note: the `arguments` operator replaces old YodaScript missing handlers and variable arguments 
 ```
 > $add {
      $v1 $v2 + return
@@ -117,6 +117,8 @@ Lambdas are like macros but with infastructure attached. They are very similar i
 ### Loops
 
 #### While
+While loops are like C but backwards
+- Note: `++` is internally defined as `1 +=`
 ```
 > $n let 0 =
 > {
@@ -150,18 +152,20 @@ c 2 ("a", "b", "c")
 ```
 
 ### Definitions
-You can define new keywords. The run by default option might be removed or reworked in future releases.
+You can define new keywords. The run by default option might be removed or reworked in future releases. Several built-in operators are actually defined in terms of other operators by the interpreter.
 ```
 > "five" 5 define
 > five five + print
 10
-> "@say_hi" { "hello" print } define
-> say_hi
-hello
+> "@is_even?" { 2 % 0 == } define
+> five is_even?
+0
+> five five + is_even?
+1
 ```
 
 ### Namespaces
-Immutable key-value set
+Immutable key-value set. There are several useful global namespaces defined by the interpreter.
 ```
 > $num {
 .     "five" 5 define
