@@ -190,20 +190,7 @@ Mutable key-value set (hashtable). Note
 > 
 ```
 
-# Updates
-### Update 2020-11
-Although I recognize that there are still flaws with this langauge I'd rather make new ones instead as there are some performance bottlenecks and other design flaws associated with this one which I'd have to dramatically alter the language to fix. So I'll leave this as is for now.
-
-### Update 2020-1
-I plan on making a new language inspired by yodascript, that will involve the following:
-- change syntax to make json a native type
-- formal langauge spec created before I start development
-- stack-based bytecode compilation target
-- will also likely make a lisp-like syntax for broader appeal
-- increased focus on modules and extension system instead of kitchen sink approach
-
-
-### Update 2019-9
+# Update 2019-9
 After taking a few months break from the language I've come to recognize that there are some flaws with the langauge. In it's current form. Although it has a lot of features, many of these features make the language harder to grasp and serve purposes provided by other langauge components. I think I need to focus on yodascript's strengths and trim down the language spec so I can focus on optimizing what I have. In addition there are some flaws I need to work out which will likely involve major implementation changes. 
 
 I've come to the following realizations:
