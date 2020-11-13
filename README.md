@@ -1,6 +1,5 @@
 # YodaScript 2
-New interpreter for YodaScript that isn't held back by the same flaws of the old one. This version of YodaScript is not backwards compatible with the old one however the syntax should be familiar.
-
+New interpreter for YodaScript that isn't held back by the same flaws of [the old one](https://github.com/dvtate/old-yoda). This version of YodaScript is not backwards compatible with the old one however the syntax should be familiar.
 
 # Quickstart Guide
 
@@ -191,8 +190,9 @@ Mutable key-value set (hashtable). Note
 > 
 ```
 
-### Update 2020-7
-[new lang](https://github.com/dvtate/dlang20)
+# Updates
+### Update 2020-11
+Although I recognize that there are still flaws with this langauge I'd rather make new ones instead as there are some performance bottlenecks and other design flaws associated with this one which I'd have to dramatically alter the language to fix. So I'll leave this as is for now.
 
 ### Update 2020-1
 I plan on making a new language inspired by yodascript, that will involve the following:
