@@ -22,12 +22,20 @@ namespace op_var_op {
 	bool condition(Frame& f) {
 		return f.feed.tok == name;
 	}
-	Frame::Exit act(Frame& f) {
+	Frame::Exit act(Frame& f) {		const bool isNull = !f.stack.back().deferValue(f.stack.back());
+		if (isNull)
+			f.stack.back().set(nullptr);
+		// Deref
+		const bool isNull = !f.stack.back().deferValue(f.stack.back());
+		if (isNull)
+			f.stack.back().set(nullptr);
+		
+		// Typecheck
 		if (!f.stack.size() || f.stack.back().type != Value::STR)
 			return Frame::Exit(Frame::Exit::ERROR, "ArgError", DEBUG_FLI " $ operator expected a string variable name", f.feed.lineNumber());
 
+		// Convert to id reference
 		f.stack.back() = Value(f.getVar(*f.stack.back().str));
-
 		return Frame::Exit();
 	}
 }
