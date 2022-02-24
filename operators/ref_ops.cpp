@@ -22,9 +22,7 @@ namespace op_var_op {
 	bool condition(Frame& f) {
 		return f.feed.tok == name;
 	}
-	Frame::Exit act(Frame& f) {		const bool isNull = !f.stack.back().deferValue(f.stack.back());
-		if (isNull)
-			f.stack.back().set(nullptr);
+	Frame::Exit act(Frame& f) {
 		// Deref
 		const bool isNull = !f.stack.back().deferValue(f.stack.back());
 		if (isNull)
